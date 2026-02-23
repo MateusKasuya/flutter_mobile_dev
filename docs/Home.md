@@ -10,6 +10,13 @@ created: 2026-02-23
 
 ---
 
+## ✅ Tasks
+*Specs de execução — lidas pelo agente de código para implementação.*
+
+- [[Tasks/_index]]
+
+---
+
 ## 🗺️ Roadmap
 - [[Roadmap/Backlog]]
 

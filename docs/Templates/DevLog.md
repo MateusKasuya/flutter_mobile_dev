@@ -9,6 +9,10 @@ date: {{date:YYYY-MM-DD}}
 
 ---
 
+## Task
+
+> *Linkar a task executada: [[Tasks/]]*
+
 ## O que foi feito
 
 
