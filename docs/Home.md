@@ -25,15 +25,22 @@ created: 2026-02-23
 ## 📓 DevLog
 *Registro cronológico de sessões de desenvolvimento.*
 
+- [[DevLog/2026-02-23-login-api]]
+
 ---
 
 ## 🧠 Aprendizados
 *Notas temáticas sobre Flutter, Dart, ferramentas e conceitos.*
 
+- [[Aprendizados/2026-02-23-injecao-de-dependencia]]
+- [[Aprendizados/2026-02-23-uri-http]]
+
 ---
 
 ## 🐛 Bugs
 *Problemas encontrados e como foram resolvidos.*
+
+- [[Bugs/2026-02-23-status-202]]
 
 ---
 
