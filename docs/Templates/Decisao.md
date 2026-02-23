@@ -33,4 +33,4 @@ status: proposta
 
 ## Status
 
-`proposta` | `aceita` | `descartada` | `substituída por [[Decisões/]]`
+`proposta` | `aceita` | `descartada` | `substituída por [[Decisoes/]]`

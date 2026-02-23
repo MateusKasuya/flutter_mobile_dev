@@ -14,11 +14,11 @@ date: {{date:YYYY-MM-DD}}
 
 ## Decisões tomadas
 
-> *Linkar ADRs se relevante: [[Decisões/]]*
+> *Linkar ADRs se relevante: [[Decisoes/]]*
 
 ## Problemas encontrados
 
-> *Linkar se documentado: [[Problemas & Soluções/]]*
+> *Linkar se documentado: [[Bugs/]]*
 
 ## Aprendizados
 

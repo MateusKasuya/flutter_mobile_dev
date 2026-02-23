@@ -15,14 +15,14 @@ created: 2026-02-23
 
 ---
 
-## 📋 Decisões de Arquitetura
+## 📋 Decisoes
 *ADRs — o quê foi decidido, quando e por quê.*
 
-- [[Decisões/2026-02-23 — Stack inicial]]
+- [[Decisoes/2026-02-23-stack-inicial]]
 
 ---
 
-## 📓 Dev Log
+## 📓 DevLog
 *Registro cronológico de sessões de desenvolvimento.*
 
 ---
@@ -32,13 +32,13 @@ created: 2026-02-23
 
 ---
 
-## 🐛 Problemas & Soluções
-*Bugs, bloqueios e como foram resolvidos.*
+## 🐛 Bugs
+*Problemas encontrados e como foram resolvidos.*
 
 ---
 
 ## 📎 Templates
-- [[Templates/Dev Log]]
-- [[Templates/Decisão]]
+- [[Templates/DevLog]]
+- [[Templates/Decisao]]
 - [[Templates/Aprendizado]]
-- [[Templates/Problema & Solução]]
+- [[Templates/Bug]]

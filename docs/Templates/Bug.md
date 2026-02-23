@@ -1,5 +1,5 @@
 ---
-tags: [bug, solução]
+tags: [bug, solucao]
 date: {{date:YYYY-MM-DD}}
 resolved: false
 ---

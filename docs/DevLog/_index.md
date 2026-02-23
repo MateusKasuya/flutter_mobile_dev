@@ -2,9 +2,9 @@
 tags: [index]
 ---
 
-# Dev Log
+# DevLog
 
-[[Home]] | Template: [[Templates/Dev Log]]
+[[Home]] | Template: [[Templates/DevLog]]
 
 ---
 
