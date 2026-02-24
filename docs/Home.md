@@ -33,6 +33,7 @@ created: 2026-02-23
 *Registro cronológico de sessões de desenvolvimento.*
 
 - [[DevLog/2026-02-23-login-api]]
+- [[DevLog/2026-02-24-login-campos-cpf-senha]]
 
 ---
 
