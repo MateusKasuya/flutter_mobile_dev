@@ -42,6 +42,8 @@ created: 2026-02-23
 
 - [[Aprendizados/2026-02-23-injecao-de-dependencia]]
 - [[Aprendizados/2026-02-23-uri-http]]
+- [[Aprendizados/2026-02-24-shared-preferences-em-testes]]
+- [[Aprendizados/2026-02-24-textformfield-em-testes]]
 
 ---
 
@@ -49,6 +51,7 @@ created: 2026-02-23
 *Problemas encontrados e como foram resolvidos.*
 
 - [[Bugs/2026-02-23-status-202]]
+- [[Bugs/2026-02-24-shared-preferences-falha-em-testes]]
 
 ---
 
