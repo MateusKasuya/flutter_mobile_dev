@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../utils/cpf_validator.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -37,10 +38,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final token = await widget.loginFn(
-        _cpfController.text.trim(),
-        _passwordController.text,
-      );
+      final cpf = _cpfController.text.replaceAll(RegExp(r'[^\d]'), '').trim();
+      final token = await widget.loginFn(cpf, _passwordController.text);
 
       if (!mounted) return;
 
@@ -73,12 +72,16 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _cpfController,
                 keyboardType: TextInputType.number,
+                inputFormatters: [maskFormatter],
                 decoration: const InputDecoration(
                   labelText: 'CPF',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) return 'Informe o CPF';
+                  final digits = value.replaceAll(RegExp(r'[^\d]'), '');
+                  if (digits.length < 11) return 'CPF incompleto';
+                  if (!isValidCpf(value)) return 'CPF inválido';
                   return null;
                 },
               ),
