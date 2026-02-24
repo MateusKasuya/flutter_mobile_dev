@@ -27,6 +27,7 @@ date: 2026-02-24
 - Aplicada máscara `###.###.###-##` no campo CPF via `MaskTextInputFormatter`
 - CPF sanitizado (sem máscara) antes de enviar à API
 - Adicionado toggle de visibilidade da senha com `IconButton` e ícones `visibility`/`visibility_off`
+- Corrigida lógica dos ícones do toggle: `visibility_off` quando senha oculta (padrão), `visibility` quando visível — ícone reflete o estado atual do campo
 - Adicionado `shared_preferences` ao projeto
 - Implementado checkbox "Lembrar usuário e senha" com persistência via `SharedPreferences`
 - Credenciais carregadas automaticamente no `initState` quando `remember_me = true`
