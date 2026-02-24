@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import '../utils/cpf_validator.dart';
 import 'home_screen.dart';
@@ -8,7 +9,10 @@ class LoginScreen extends StatefulWidget {
   // Em produção, usa a função real do auth_service automaticamente.
   final Future<String> Function(String cpf, String senha) loginFn;
 
-  const LoginScreen({super.key, this.loginFn = login});
+  // prefs permite injetar SharedPreferences nos testes.
+  final SharedPreferences? prefs;
+
+  const LoginScreen({super.key, this.loginFn = login, this.prefs});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -21,7 +25,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _rememberMe = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final prefs = widget.prefs ?? await SharedPreferences.getInstance();
+    final remember = prefs.getBool('remember_me') ?? false;
+    if (remember && mounted) {
+      setState(() {
+        _rememberMe = true;
+        _cpfController.text = prefs.getString('saved_cpf') ?? '';
+        _passwordController.text = prefs.getString('saved_password') ?? '';
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -41,6 +64,17 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final cpf = _cpfController.text.replaceAll(RegExp(r'[^\d]'), '').trim();
       final token = await widget.loginFn(cpf, _passwordController.text);
+
+      final prefs = widget.prefs ?? await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setBool('remember_me', true);
+        await prefs.setString('saved_cpf', _cpfController.text);
+        await prefs.setString('saved_password', _passwordController.text);
+      } else {
+        await prefs.remove('remember_me');
+        await prefs.remove('saved_cpf');
+        await prefs.remove('saved_password');
+      }
 
       if (!mounted) return;
 
@@ -108,7 +142,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              CheckboxListTile(
+                title: const Text('Lembrar usuário e senha'),
+                value: _rememberMe,
+                onChanged: (value) =>
+                    setState(() => _rememberMe = value ?? false),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              ),
+              const SizedBox(height: 8),
               if (_errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
