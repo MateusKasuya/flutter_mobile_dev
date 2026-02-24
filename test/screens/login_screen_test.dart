@@ -105,18 +105,18 @@ void main() {
       (tester) async {
     await tester.pumpWidget(buildApp((_, __) async => 'token'));
 
-    expect(find.byIcon(Icons.visibility), findsOneWidget);
+    expect(find.byIcon(Icons.visibility_off), findsOneWidget);
   });
 
   testWidgets('toque no ícone alterna visibilidade da senha', (tester) async {
     await tester.pumpWidget(buildApp((_, __) async => 'token'));
 
-    // Toca no ícone de visibilidade
-    await tester.tap(find.byIcon(Icons.visibility));
+    // Toca no ícone de invisibilidade (estado padrão: senha oculta)
+    await tester.tap(find.byIcon(Icons.visibility_off));
     await tester.pump();
 
-    // Ícone deve mudar para visibility_off
-    expect(find.byIcon(Icons.visibility_off), findsOneWidget);
+    // Ícone deve mudar para visibility (senha visível)
+    expect(find.byIcon(Icons.visibility), findsOneWidget);
   });
 
   // ---------------------------------------------------------------------------
