@@ -15,11 +15,18 @@ Future<String> login(String cpfusuario, String senhausuario) async {
     body: jsonEncode({'cpfusuario': cpfusuario, 'senhausuario': senhausuario}),
   );
 
+  //print(response.statusCode);
+
   if (response.statusCode == 202) {
     final data = jsonDecode(response.body);
     return data['access_token'] as String;
-  } else {
+  }
+  // else if (response.statusCode == 422) {
+  //   final data = jsonDecode(response.body);
+  //   throw Exception(data['detail'][0]['msg']);
+  // }
+   else {
     final data = jsonDecode(response.body);
-    throw Exception(data['message'] ?? 'Erro ao fazer login');
+    throw Exception(data['detail'] ?? 'Erro ao fazer login');
   }
 }
