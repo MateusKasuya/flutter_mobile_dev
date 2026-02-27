@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
       title: 'Realizando login...',
       subtitle: 'Aguarde enquanto autenticamos',
       child: Scaffold(
-        appBar: AppBar()),
+        appBar: AppBar(),
         body: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
