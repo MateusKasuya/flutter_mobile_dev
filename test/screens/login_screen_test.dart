@@ -53,11 +53,9 @@ void main() {
     expect(find.text(fakeToken), findsOneWidget);
   });
 
-  testWidgets('login com falha exibe mensagem de erro', (tester) async {
-    const mensagemErro = 'Credenciais inválidas';
-
+  testWidgets('login com falha permanece na LoginScreen', (tester) async {
     await tester.pumpWidget(
-      buildApp((_, _) async => throw Exception(mensagemErro)),
+      buildApp((_, _) async => throw Exception('Credenciais inválidas')),
     );
 
     // CPF válido para passar a validação do formulário
@@ -66,8 +64,9 @@ void main() {
     await tester.tap(find.text('Entrar'));
     await tester.pumpAndSettle();
 
+    // toast não é verificável via flutter_test (canal nativo)
+    // verifica apenas que não houve navegação
     expect(find.byType(LoginScreen), findsOneWidget);
-    expect(find.text(mensagemErro), findsOneWidget);
   });
 
   // ---------------------------------------------------------------------------

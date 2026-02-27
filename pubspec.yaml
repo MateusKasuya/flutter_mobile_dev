@@ -12,6 +12,7 @@ dependencies:
   http: ^1.2.0
   mask_text_input_formatter: ^2.9.0
   shared_preferences: ^2.5.4
+  fluttertoast: ^9.0.0
 
 dev_dependencies:
   flutter_test:

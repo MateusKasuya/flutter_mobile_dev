@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import '../utils/cpf_validator.dart';
 import 'home_screen.dart';
+import '../utils/app_toast.dart';
 
 class LoginScreen extends StatefulWidget {
   // loginFn permite trocar a função de login nos testes.
@@ -26,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _rememberMe = false;
-  String? _errorMessage;
 
   @override
   void initState() {
@@ -58,7 +58,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
 
     try {
@@ -83,9 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => HomeScreen(token: token)),
       );
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      });
+      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
     } finally {
       setState(() {
         _isLoading = false;
@@ -151,14 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 contentPadding: EdgeInsets.zero,
               ),
               const SizedBox(height: 8),
-              if (_errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
