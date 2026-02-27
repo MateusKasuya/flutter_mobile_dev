@@ -28,7 +28,7 @@ void main() {
   // ---------------------------------------------------------------------------
 
   testWidgets('exibe campos CPF e Senha e botão Entrar', (tester) async {
-    await tester.pumpWidget(buildApp((_, __) async => 'token'));
+    await tester.pumpWidget(buildApp((_, _) async => 'token'));
 
     expect(find.text('CPF'), findsOneWidget);
     expect(find.text('Senha'), findsOneWidget);
@@ -57,7 +57,7 @@ void main() {
     const mensagemErro = 'Credenciais inválidas';
 
     await tester.pumpWidget(
-      buildApp((_, __) async => throw Exception(mensagemErro)),
+      buildApp((_, _) async => throw Exception(mensagemErro)),
     );
 
     // CPF válido para passar a validação do formulário
@@ -76,7 +76,7 @@ void main() {
 
   testWidgets('submeter com campos vazios exibe mensagens de validação',
       (tester) async {
-    await tester.pumpWidget(buildApp((_, __) async => 'token'));
+    await tester.pumpWidget(buildApp((_, _) async => 'token'));
 
     await tester.tap(find.text('Entrar'));
     await tester.pump();
@@ -87,7 +87,7 @@ void main() {
 
   testWidgets('submeter CPF inválido exibe mensagem de CPF inválido',
       (tester) async {
-    await tester.pumpWidget(buildApp((_, __) async => 'token'));
+    await tester.pumpWidget(buildApp((_, _) async => 'token'));
 
     await tester.enterText(find.byType(TextField).first, '12345678900');
     await tester.enterText(find.byType(TextField).last, 'senha123');
@@ -103,13 +103,13 @@ void main() {
 
   testWidgets('ícone de visibilidade está presente no campo de senha',
       (tester) async {
-    await tester.pumpWidget(buildApp((_, __) async => 'token'));
+    await tester.pumpWidget(buildApp((_, _) async => 'token'));
 
     expect(find.byIcon(Icons.visibility_off), findsOneWidget);
   });
 
   testWidgets('toque no ícone alterna visibilidade da senha', (tester) async {
-    await tester.pumpWidget(buildApp((_, __) async => 'token'));
+    await tester.pumpWidget(buildApp((_, _) async => 'token'));
 
     // Toca no ícone de invisibilidade (estado padrão: senha oculta)
     await tester.tap(find.byIcon(Icons.visibility_off));
@@ -124,7 +124,7 @@ void main() {
   // ---------------------------------------------------------------------------
 
   testWidgets('checkbox lembrar usuário e senha está presente', (tester) async {
-    await tester.pumpWidget(buildApp((_, __) async => 'token'));
+    await tester.pumpWidget(buildApp((_, _) async => 'token'));
 
     expect(find.text('Lembrar usuário e senha'), findsOneWidget);
     expect(find.byType(CheckboxListTile), findsOneWidget);
@@ -139,7 +139,7 @@ void main() {
     });
     final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(buildApp((_, __) async => 'token', prefs: prefs));
+    await tester.pumpWidget(buildApp((_, _) async => 'token', prefs: prefs));
     await tester.pumpAndSettle();
 
     expect(find.text('070.699.539-25'), findsOneWidget);
