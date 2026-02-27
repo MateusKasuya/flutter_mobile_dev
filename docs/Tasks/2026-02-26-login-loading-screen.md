@@ -29,61 +29,85 @@ git checkout -b feat/login-loading-screen
 
 ## Arquivos a criar
 
-- Nenhum
+- `lib/components/loading_overlay.dart` — widget reutilizável com `title` (obrigatório) e `subtitle` (opcional)
 
 ## Arquivos a modificar
 
-- `lib/screens/login_screen.dart` — substituir `Scaffold` como raiz por `Stack(Scaffold, overlay)`
+- `lib/screens/login_screen.dart` — usar `LoadingOverlay` no lugar do `Scaffold` como raiz
 
 ---
 
 ## Implementação
 
-### Passo 1 — Envolver o Scaffold com Stack
+### Passo 1 — Criar `lib/components/loading_overlay.dart`
 
-O `build` retorna um `Stack` no lugar do `Scaffold`. O `Scaffold` vira o primeiro filho e o overlay o segundo, garantindo cobertura total da tela (incluindo AppBar):
+Widget genérico que recebe `child`, `isLoading`, `title` e `subtitle` opcional:
 
 ```dart
-return Stack(
-  children: [
-    Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(...), // formulário sem alterações
-    ),
-    if (_isLoading)
-      Material(
-        type: MaterialType.transparency,
-        child: Container(
-          color: Colors.black.withValues(alpha: 0.8),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  strokeWidth: 4,
+class LoadingOverlay extends StatelessWidget {
+  final Widget child;
+  final bool isLoading;
+  final String title;
+  final String? subtitle;
+
+  const LoadingOverlay({
+    super.key,
+    required this.child,
+    required this.isLoading,
+    required this.title,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        if (isLoading)
+          Material(
+            type: MaterialType.transparency,
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.8),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 4,
+                    ),
+                    const SizedBox(height: 30),
+                    Text(title, style: const TextStyle(...)),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 15),
+                      Text(subtitle!, style: const TextStyle(...)),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 30),
-                const Text('Realizando login...',
-                  style: TextStyle(color: Colors.white, fontSize: 20,
-                    fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                const SizedBox(height: 15),
-                const Text('Aguarde enquanto autenticamos',
-                  style: TextStyle(color: Colors.white, fontSize: 16,
-                    fontWeight: FontWeight.w500, letterSpacing: 0.3),
-                  textAlign: TextAlign.center),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-  ],
+      ],
+    );
+  }
+}
+```
+
+- `Material(type: MaterialType.transparency)` é necessário para que os `Text` herdem o tema corretamente fora da árvore do `Scaffold`.
+- `subtitle` condicional com spread operator `...[]` para renderizar apenas quando fornecido.
+
+### Passo 2 — Usar LoadingOverlay no login
+
+```dart
+return LoadingOverlay(
+  isLoading: _isLoading,
+  title: 'Realizando login...',
+  subtitle: 'Aguarde enquanto autenticamos',
+  child: Scaffold(...),
 );
 ```
 
-- `Material(type: MaterialType.transparency)` é necessário para que os `Text` dentro do overlay herdem o tema de tipografia corretamente. Sem ele, o Flutter aplica o `DefaultTextStyle` padrão (amarelo sublinhado) pois o overlay está fora da árvore do `Scaffold`.
-
-### Passo 2 — Simplificar o botão
+### Passo 3 — Simplificar o botão
 
 Remover o `CircularProgressIndicator` de dentro do `ElevatedButton`. O botão continua desabilitado durante loading, mas exibe sempre o texto "Entrar":
 
@@ -103,7 +127,9 @@ ElevatedButton(
 - [x] Overlay bloqueia interações com o formulário enquanto loading
 - [x] Botão "Entrar" fica desabilitado e exibe apenas texto (sem spinner interno)
 - [x] Overlay desaparece após sucesso ou erro da API
+- [x] `LoadingOverlay` aceita `title` e `subtitle` opcional como parâmetros
 - [x] `flutter analyze` sem erros
+- [x] `flutter test` sem falhas (15/15)
 
 ---
 

@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../utils/cpf_validator.dart';
 import 'home_screen.dart';
 import '../utils/app_toast.dart';
+import '../components/loading_overlay.dart';
 
 class LoginScreen extends StatefulWidget {
   // loginFn permite trocar a função de login nos testes.
@@ -92,116 +93,78 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          appBar: AppBar(title: const Text('Login')),
-          body: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextFormField(
-                    controller: _cpfController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [maskFormatter],
-                    decoration: const InputDecoration(
-                      labelText: 'CPF',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return 'Informe o CPF';
-                      final digits = value.replaceAll(RegExp(r'[^\d]'), '');
-                      if (digits.length < 11) return 'CPF incompleto';
-                      if (!isValidCpf(value)) return 'CPF inválido';
-                      return null;
-                    },
+    return LoadingOverlay(
+      isLoading: _isLoading,
+      title: 'Realizando login...',
+      subtitle: 'Aguarde enquanto autenticamos',
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Login')),
+        body: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextFormField(
+                  controller: _cpfController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [maskFormatter],
+                  decoration: const InputDecoration(
+                    labelText: 'CPF',
+                    border: OutlineInputBorder(),
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'Senha',
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Informe o CPF';
+                    final digits = value.replaceAll(RegExp(r'[^\d]'), '');
+                    if (digits.length < 11) return 'CPF incompleto';
+                    if (!isValidCpf(value)) return 'CPF inválido';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Senha',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) return 'Informe a senha';
-                      return null;
-                    },
-                  ),
-                  CheckboxListTile(
-                    title: const Text('Lembrar usuário e senha'),
-                    value: _rememberMe,
-                    onChanged: (value) =>
-                        setState(() => _rememberMe = value ?? false),
-                    controlAffinity: ListTileControlAffinity.leading,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _handleLogin,
-                      child: const Text('Entrar'),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     ),
                   ),
-                ],
-              ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Informe a senha';
+                    return null;
+                  },
+                ),
+                CheckboxListTile(
+                  title: const Text('Lembrar usuário e senha'),
+                  value: _rememberMe,
+                  onChanged: (value) =>
+                      setState(() => _rememberMe = value ?? false),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleLogin,
+                    child: const Text('Entrar'),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-        if (_isLoading)
-          Material(
-            type: MaterialType.transparency,
-            child: Container(
-            color: Colors.black.withValues(alpha: 0.8),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 4,
-                  ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    'Realizando login...',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  const Text(
-                    'Aguarde enquanto autenticamos',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.3,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          ),
-        ],
-      );
+      ),
+    );
   }
 }
