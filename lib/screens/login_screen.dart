@@ -5,6 +5,7 @@ import '../utils/cpf_validator.dart';
 import 'home_screen.dart';
 import '../utils/app_toast.dart';
 import '../components/loading_overlay.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginScreen extends StatefulWidget {
   // loginFn permite trocar a função de login nos testes.
@@ -101,67 +102,81 @@ class _LoginScreenState extends State<LoginScreen> {
         appBar: AppBar(title: const Text('Login')),
         body: Padding(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextFormField(
-                  controller: _cpfController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [maskFormatter],
-                  decoration: const InputDecoration(
-                    labelText: 'CPF',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return 'Informe o CPF';
-                    final digits = value.replaceAll(RegExp(r'[^\d]'), '');
-                    if (digits.length < 11) return 'CPF incompleto';
-                    if (!isValidCpf(value)) return 'CPF inválido';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Senha',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 24),
+              SvgPicture.asset(
+                'assets/icone_Frota.svg',
+                height: 35,
+              ),
+              Expanded(
+                child: Center(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextFormField(
+                          controller: _cpfController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [maskFormatter],
+                          decoration: const InputDecoration(
+                            labelText: 'CPF',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return 'Informe o CPF';
+                            final digits = value.replaceAll(RegExp(r'[^\d]'), '');
+                            if (digits.length < 11) return 'CPF incompleto';
+                            if (!isValidCpf(value)) return 'CPF inválido';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Senha',
+                            border: const OutlineInputBorder(),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) return 'Informe a senha';
+                            return null;
+                          },
+                        ),
+                        CheckboxListTile(
+                          title: const Text('Lembrar usuário e senha'),
+                          value: _rememberMe,
+                          onChanged: (value) =>
+                              setState(() => _rememberMe = value ?? false),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _handleLogin,
+                            child: const Text('Entrar'),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return 'Informe a senha';
-                    return null;
-                  },
                 ),
-                CheckboxListTile(
-                  title: const Text('Lembrar usuário e senha'),
-                  value: _rememberMe,
-                  onChanged: (value) =>
-                      setState(() => _rememberMe = value ?? false),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
-                    child: const Text('Entrar'),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
