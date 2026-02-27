@@ -20,4 +20,4 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-02-26-login-loading-screen\|Tela de loading durante chamada da API]] | feat/login-loading-screen | ✅ concluída |
 | [[Tasks/2026-02-26-login-logo-svg\|Inserir logo SVG na tela de login]] | main | ✅ concluída |
 | [[Tasks/2026-02-26-app-theme-color\|Definir tema de cores padrão do app]] | feat/app-theme-color | ✅ concluída |
-| [[Tasks/2026-02-26-login-modularization\|Modularizar a tela de login]] | feat/login-modularization | 📋 planejada |
+| [[Tasks/2026-02-26-login-modularization\|Modularizar a tela de login]] | feat/login-modularization | ✅ concluída |

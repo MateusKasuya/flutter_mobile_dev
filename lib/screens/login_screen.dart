@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../services/auth_service.dart';
-import '../utils/cpf_validator.dart';
-import 'home_screen.dart';
-import '../utils/app_toast.dart';
-import '../components/loading_overlay.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../components/cpf_field.dart';
+import '../components/loading_overlay.dart';
+import '../components/password_field.dart';
+import '../components/remember_me_checkbox.dart';
+import '../services/auth_service.dart';
+import '../utils/app_toast.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   // loginFn permite trocar a função de login nos testes.
@@ -27,7 +29,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
-  bool _obscurePassword = true;
   bool _rememberMe = false;
 
   @override
@@ -99,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
       title: 'Realizando login...',
       subtitle: 'Aguarde enquanto autenticamos',
       child: Scaffold(
-        appBar: AppBar(title: const Text('Login')),
+        appBar: AppBar()),
         body: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -117,51 +118,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextFormField(
-                          controller: _cpfController,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [maskFormatter],
-                          decoration: const InputDecoration(
-                            labelText: 'CPF',
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return 'Informe o CPF';
-                            final digits = value.replaceAll(RegExp(r'[^\d]'), '');
-                            if (digits.length < 11) return 'CPF incompleto';
-                            if (!isValidCpf(value)) return 'CPF inválido';
-                            return null;
-                          },
-                        ),
+                        CpfField(controller: _cpfController),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            labelText: 'Senha',
-                            border: const OutlineInputBorder(),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
-                              onPressed: () =>
-                                  setState(() => _obscurePassword = !_obscurePassword),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) return 'Informe a senha';
-                            return null;
-                          },
-                        ),
-                        CheckboxListTile(
-                          title: const Text('Lembrar usuário e senha'),
+                        PasswordField(controller: _passwordController),
+                        RememberMeCheckbox(
                           value: _rememberMe,
-                          onChanged: (value) =>
-                              setState(() => _rememberMe = value ?? false),
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: EdgeInsets.zero,
+                          onChanged: (v) => setState(() => _rememberMe = v ?? false),
                         ),
                         const SizedBox(height: 8),
                         SizedBox(
