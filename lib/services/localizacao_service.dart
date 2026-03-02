@@ -9,7 +9,7 @@ const String _baseUrl = 'fretefacilweb.ccmcloud.com.br:8624';
 ///
 /// Lança uma [Exception] com a mensagem de erro em caso de falha.
 Future<List<Localizacao>> fetchLocalizacoes(String token) async {
-  final url = Uri.http(_baseUrl, '/api/frota/pneu/qlocalizacaopneus');
+  final url = Uri.http(_baseUrl, '/api-frota/pneu/qlocalizacaopneus');
   final response = await http.get(
     url,
     headers: {'Authorization': 'Bearer $token'},
