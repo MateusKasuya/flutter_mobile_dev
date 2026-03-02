@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/localizacao.dart';
 import '../services/localizacao_service.dart';
 import '../utils/app_toast.dart';
+import 'movimento_screen.dart';
 
 const _localizacaoIcons = <String, IconData>{
   'ESTOQUE': Icons.inventory,
@@ -70,6 +71,22 @@ class _HomeScreenState extends State<HomeScreen> {
               .toList(), 
           ),
         ),
+        floatingActionButton: Transform.scale(
+          scale: 1.2,
+          child: FloatingActionButton.extended(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MovimentoScreen()),
+              );
+            },
+            icon: const Icon(Icons.swap_horiz),
+            label: const Text('Movimento'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Colors.white,
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
