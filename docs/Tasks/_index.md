@@ -21,3 +21,7 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-02-26-login-logo-svg\|Inserir logo SVG na tela de login]] | main | ✅ concluída |
 | [[Tasks/2026-02-26-app-theme-color\|Definir tema de cores padrão do app]] | feat/app-theme-color | ✅ concluída |
 | [[Tasks/2026-02-26-login-modularization\|Modularizar a tela de login]] | feat/login-modularization | ✅ concluída |
+| [[Tasks/2026-03-02-localizacao-service\|Modelo e serviço de localizações de pneus]] | feat/localizacao-service | ✅ concluída |
+| [[Tasks/2026-03-02-home-grid-localizacoes\|Home Screen com GridView de localizações]] | feat/home-grid-localizacoes | 🔲 planejada |
+| [[Tasks/2026-03-02-home-fab-movimento\|FloatingActionButton Movimento na Home]] | feat/home-fab-movimento | 🔲 planejada |
+| [[Tasks/2026-03-02-home-tests\|Testes da Home Screen (service, GridView e FAB)]] | feat/home-tests | 🔲 planejada |
