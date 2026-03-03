@@ -26,3 +26,4 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-03-02-home-grid-estilizacao\|Estilização dos cards do GridView]] | feat/home-grid-estilizacao | ✅ concluída |
 | [[Tasks/2026-03-02-home-fab-movimento\|FloatingActionButton Movimento na Home]] | feat/home-fab-movimento | ✅ concluída |
 | [[Tasks/2026-03-02-home-tests\|Testes da Home Screen (service, GridView e FAB)]] | main | ✅ concluída |
+| [[Tasks/2026-03-03-movimento-screen-cards\|Tela Movimento com cards de navegação]] | main | ✅ concluída |
