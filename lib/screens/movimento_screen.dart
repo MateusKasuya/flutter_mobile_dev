@@ -12,20 +12,20 @@ class MovimentoScreen extends StatelessWidget {
         children: <Widget>[
             _MovimentoCard(
               label: 'Frotas',
+              subtitle: 'Movimentações de frota',
               icon: Icons.directions_car,
-              onTap: null,
             ),
             const SizedBox(height: 16),
             _MovimentoCard(
               label: 'Pneu',
+              subtitle: 'Controle de pneus',
               icon: Icons.tire_repair,
-              onTap: null,
             ),
             const SizedBox(height: 16),
             _MovimentoCard(
               label: 'Abastecimento',
+              subtitle: 'Registro de abastecimento',
               icon: Icons.local_gas_station,
-              onTap: null,
             ),
           ],
         ),
@@ -36,13 +36,13 @@ class MovimentoScreen extends StatelessWidget {
 class _MovimentoCard extends StatelessWidget {
   const _MovimentoCard({
     required this.label,
+    required this.subtitle,
     required this.icon,
-    this.onTap,
   });
 
   final String label;
+  final String subtitle;
   final IconData icon;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,6 @@ class _MovimentoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: SizedBox(
           height: 100,
@@ -72,15 +71,29 @@ class _MovimentoCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            Icon(icon, size: 28, color: colorScheme.primary),
+            Icon(icon, size: 40, color: colorScheme.primary),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(

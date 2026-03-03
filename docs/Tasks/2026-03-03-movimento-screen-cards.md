@@ -1,7 +1,7 @@
 ---
 tags: [task]
 date: 2026-03-03
-status: planejada
+status: concluída
 branch: feat/movimento-screen-cards
 ---
 
@@ -153,9 +153,92 @@ class _MovimentoCard extends StatelessWidget {
 
 ---
 
+### Passo 3 — Adicionar subtítulo a cada card
+
+Cada card deve exibir um subtítulo descritivo abaixo do label principal.
+
+**Atualizar `_MovimentoCard` para aceitar `subtitle`:**
+
+```dart
+class _MovimentoCard extends StatelessWidget {
+  const _MovimentoCard({
+    required this.label,
+    required this.subtitle,
+    required this.icon,
+    this.onTap,
+  });
+
+  final String label;
+  final String subtitle;
+  final IconData icon;
+  final VoidCallback? onTap;
+```
+
+**Substituir o `Text` do label por uma `Column` com título e subtítulo:**
+
+```dart
+Expanded(
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        subtitle,
+        style: TextStyle(
+          fontSize: 12,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+    ],
+  ),
+),
+```
+
+**Atualizar as instâncias de `_MovimentoCard` com os subtítulos:**
+
+```dart
+_MovimentoCard(
+  label: 'Frotas',
+  subtitle: 'Movimentações de frota',
+  icon: Icons.directions_car,
+),
+// ...
+_MovimentoCard(
+  label: 'Pneu',
+  subtitle: 'Controle de pneus',
+  icon: Icons.tire_repair,
+),
+// ...
+_MovimentoCard(
+  label: 'Abastecimento',
+  subtitle: 'Registro de abastecimento',
+  icon: Icons.local_gas_station,
+),
+```
+
+**O que é novo e por quê:**
+
+- **`Column` com `mainAxisAlignment: MainAxisAlignment.center`** — centraliza verticalmente os dois textos dentro da altura fixa de 100px do card. Sem isso, os textos ficam colados no topo.
+
+- **`crossAxisAlignment: CrossAxisAlignment.start`** — alinha os textos à esquerda. O padrão do `Column` é `center` (centralizado horizontalmente), o que ficaria estranho numa lista.
+
+- **`colorScheme.onSurfaceVariant`** — cor semântica do Material Design para texto secundário sobre superfícies. Automaticamente mais clara que `onSurface` (usada para texto principal), criando hierarquia visual sem precisar hardcodar um valor como `Colors.grey`.
+
+- **`SizedBox(height: 2)`** — espaçamento mínimo entre título e subtítulo. Suficiente para separar visualmente sem afastar demais.
+
+---
+
 ### Estado final do arquivo completo
 
-Após os dois ajustes, o `lib/screens/movimento_screen.dart` deve ficar assim:
+Após os três passos, o `lib/screens/movimento_screen.dart` deve ficar assim:
 
 ```dart
 import 'package:flutter/material.dart';
@@ -172,16 +255,19 @@ class MovimentoScreen extends StatelessWidget {
         children: <Widget>[
           _MovimentoCard(
             label: 'Frotas',
+            subtitle: 'Movimentações de frota',
             icon: Icons.directions_car,
           ),
           const SizedBox(height: 16),
           _MovimentoCard(
             label: 'Pneu',
+            subtitle: 'Controle de pneus',
             icon: Icons.tire_repair,
           ),
           const SizedBox(height: 16),
           _MovimentoCard(
             label: 'Abastecimento',
+            subtitle: 'Registro de abastecimento',
             icon: Icons.local_gas_station,
           ),
         ],
@@ -193,11 +279,13 @@ class MovimentoScreen extends StatelessWidget {
 class _MovimentoCard extends StatelessWidget {
   const _MovimentoCard({
     required this.label,
+    required this.subtitle,
     required this.icon,
     this.onTap,
   });
 
   final String label;
+  final String subtitle;
   final IconData icon;
   final VoidCallback? onTap;
 
@@ -232,12 +320,26 @@ class _MovimentoCard extends StatelessWidget {
               Icon(icon, size: 28, color: colorScheme.primary),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Padding(
@@ -261,11 +363,12 @@ class _MovimentoCard extends StatelessWidget {
 
 ## Critérios de aceite
 
-- [ ] `MovimentoScreen` exibe 3 cards: Frotas, Pneu, Abastecimento
-- [ ] Cada card tem barra lateral colorida, ícone, label e seta
-- [ ] Padding único de 16px no `ListView` (sem `Padding` externo duplicado)
-- [ ] `_MovimentoCard` aceita `VoidCallback? onTap` opcional
-- [ ] Cards envolvidos em `InkWell` com ripple respeitando `borderRadius`
+- [x] `MovimentoScreen` exibe 3 cards: Frotas, Pneu, Abastecimento
+- [x] Cada card tem barra lateral colorida, ícone, label e seta
+- [x] Padding único de 16px no `ListView` (sem `Padding` externo duplicado)
+- [x] `_MovimentoCard` aceita `VoidCallback? onTap` opcional
+- [x] Cards envolvidos em `InkWell` com ripple respeitando `borderRadius`
+- [ ] Cada card exibe subtítulo abaixo do label com `colorScheme.onSurfaceVariant`
 - [ ] `flutter analyze` sem erros
 
 ---

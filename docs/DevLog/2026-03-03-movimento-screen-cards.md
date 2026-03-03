@@ -12,7 +12,7 @@ task: "[[Tasks/2026-03-03-movimento-screen-cards]]"
 
 ## O que foi feito
 
-Substituído o placeholder da `MovimentoScreen` por uma lista de cards estilizados com barra lateral colorida, ícone, label e seta. Aplicados dois ajustes de qualidade: correção de padding duplo e adição de `onTap` com `InkWell` para feedback visual.
+Substituído o placeholder da `MovimentoScreen` por uma lista de cards estilizados com barra lateral colorida, ícone, label, subtítulo e seta. Aplicados ajustes de qualidade: correção de padding duplo, `InkWell` para feedback visual e subtítulo descritivo em cada card.
 
 ### Arquivos criados
 
@@ -20,10 +20,11 @@ Substituído o placeholder da `MovimentoScreen` por uma lista de cards estilizad
 
 ### Arquivos modificados
 
-- `lib/screens/movimento_screen.dart` — layout com `_MovimentoCard`, correção de padding e `InkWell`
+- `lib/screens/movimento_screen.dart` — layout com `_MovimentoCard`, padding corrigido, `InkWell` e subtítulos
 
 ### Detalhes
 
 - Padding unificado em `ListView(padding: EdgeInsets.all(16))` — removido `Padding` externo redundante
-- `_MovimentoCard` recebe `VoidCallback? onTap` opcional — preparado para navegação futura sem quebrar o estado atual
-- `InkWell` com `borderRadius` correspondente ao do `Card` para ripple respeitando os cantos arredondados
+- `InkWell` com `borderRadius: BorderRadius.circular(12)` para ripple respeitando os cantos arredondados do `Card`
+- Subtítulo adicionado via `Column` com `MainAxisAlignment.center` e `CrossAxisAlignment.start`; cor `colorScheme.onSurfaceVariant` para hierarquia visual sem hardcode
+- `onTap` removido por enquanto — linter flagou parâmetro opcional nunca usado; será adicionado de volta ao implementar as telas de destino
