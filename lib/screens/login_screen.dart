@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../components/cpf_field.dart';
 import '../components/loading_overlay.dart';
 import '../components/password_field.dart';
 import '../components/remember_me_checkbox.dart';
+import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
 import '../utils/app_toast.dart';
 import 'home_screen.dart';
@@ -80,9 +82,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
+      context.read<AuthProvider>().setToken(token);
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => HomeScreen(token: token)),
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } catch (e) {
       showErrorToast(e.toString().replaceFirst('Exception: ', ''));
@@ -129,6 +133,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,     // cor do texto
+                            ),
                             onPressed: _isLoading ? null : _handleLogin,
                             child: const Text('Entrar'),
                           ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/localizacao.dart';
+import '../providers/auth_provider.dart';
 import '../services/localizacao_service.dart';
 import '../utils/app_toast.dart';
 import 'movimento_screen.dart';
@@ -13,13 +15,11 @@ const _localizacaoIcons = <String, IconData>{
 };
 
 class HomeScreen extends StatefulWidget {
-  final String token;
   final Future<List<Localizacao>> Function(String token) fetchFn;
 
   const HomeScreen({
     super.key,
-    required this.token,
-    this.fetchFn = fetchLocalizacoes
+    this.fetchFn = fetchLocalizacoes,
   });
 
   @override
@@ -38,7 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _load() async {
     try {
-      final data = await widget.fetchFn(widget.token);
+      final token = context.read<AuthProvider>().token;
+      final data = await widget.fetchFn(token);
       if (!mounted) return;
       setState(() {
         _localizacoes = data;

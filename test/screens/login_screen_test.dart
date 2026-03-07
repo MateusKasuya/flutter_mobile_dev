@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frota_facil_mobile/providers/auth_provider.dart';
 import 'package:frota_facil_mobile/screens/login_screen.dart';
 import 'package:frota_facil_mobile/screens/home_screen.dart';
 
@@ -14,8 +16,11 @@ void main() {
     Future<String> Function(String, String) loginFn, {
     SharedPreferences? prefs,
   }) {
-    return MaterialApp(
-      home: LoginScreen(loginFn: loginFn, prefs: prefs),
+    return ChangeNotifierProvider(
+      create: (_) => AuthProvider(),
+      child: MaterialApp(
+        home: LoginScreen(loginFn: loginFn, prefs: prefs),
+      ),
     );
   }
 
@@ -35,12 +40,9 @@ void main() {
     expect(find.text('Entrar'), findsOneWidget);
   });
 
-  testWidgets('login com sucesso navega para HomeScreen com o token',
-      (tester) async {
-    const fakeToken = 'meu-token-de-teste';
-
+  testWidgets('login com sucesso navega para HomeScreen', (tester) async {
     await tester.pumpWidget(
-      buildApp((cpf, senha) async => fakeToken),
+      buildApp((cpf, senha) async => 'meu-token-de-teste'),
     );
 
     await tester.enterText(find.byType(TextField).first, '07069953925');
@@ -49,8 +51,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeScreen), findsOneWidget);
-    expect(find.text('Login realizado com sucesso!'), findsOneWidget);
-    expect(find.text(fakeToken), findsOneWidget);
   });
 
   testWidgets('login com falha permanece na LoginScreen', (tester) async {

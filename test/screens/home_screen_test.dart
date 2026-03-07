@@ -2,15 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import 'package:frota_facil_mobile/models/localizacao.dart';
+import 'package:frota_facil_mobile/providers/auth_provider.dart';
 import 'package:frota_facil_mobile/screens/home_screen.dart';
 import 'package:frota_facil_mobile/screens/movimento_screen.dart';
 
 void main() {
   Widget buildApp(Future<List<Localizacao>> Function(String) fetchFn) {
-    return MaterialApp(
-      home: HomeScreen(token: 'test-token', fetchFn: fetchFn),
+    return ChangeNotifierProvider(
+      create: (_) => AuthProvider()..setToken('test-token'),
+      child: MaterialApp(
+        home: HomeScreen(fetchFn: fetchFn),
+      ),
     );
   }
 
