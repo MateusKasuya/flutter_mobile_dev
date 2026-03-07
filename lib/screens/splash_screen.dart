@@ -49,14 +49,6 @@ class _SplashScreenState extends State<SplashScreen> {
               'assets/logo_frota_branco.svg',
               height: 80,
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'por transportefacil.com.br',
-              style: TextStyle(
-                color: Color(0xFFFFFFFF),
-                fontSize: 10,
-              ),
-            ),
           ],
         ),
       ),
