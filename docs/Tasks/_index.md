@@ -35,7 +35,7 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-03-05-frota-pneus-lista\|Lista de pneus do veiculo]] | feat/frota-pneus-lista | planejada |
 | [[Tasks/2026-03-05-frota-camera-ocr\|Camera + OCR da placa]] | feat/frota-camera-ocr | planejada |
 | [[Tasks/2026-03-05-frota-tests\|Testes do modulo Frota]] | feat/frota-tests | planejada |
-| [[Tasks/2026-03-05-splash-screen\|Splash Screen]] | feat/splash-screen | planejada |
+| [[Tasks/2026-03-05-splash-screen\|Splash Screen]] | feat/splash-screen | ✅ concluída |
 | [[Tasks/2026-03-05-estilizacao-login\|Estilizacao do Login]] | feat/estilizacao-login | planejada |
 | [[Tasks/2026-03-05-estilizacao-home\|Estilizacao da Home]] | feat/estilizacao-home | planejada |
 | [[Tasks/2026-03-05-estilizacao-movimento\|Estilizacao do Movimento]] | feat/estilizacao-movimento | planejada |
