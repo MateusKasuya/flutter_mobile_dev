@@ -28,7 +28,7 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-03-02-home-tests\|Testes da Home Screen (service, GridView e FAB)]] | main | ✅ concluída |
 | [[Tasks/2026-03-03-movimento-screen-cards\|Tela Movimento com cards de navegação]] | main | ✅ concluída |
 | [[Tasks/2026-03-05-frota-models\|Models Veiculo e Pneu]] | feat/frota-models | ✅ concluída |
-| [[Tasks/2026-03-05-frota-service\|Service de frota]] | feat/frota-service | planejada |
+| [[Tasks/2026-03-05-frota-service\|Service de frota]] | feat/frota-service | ✅ concluída |
 | [[Tasks/2026-03-05-frota-busca-placa\|Tela de busca de veiculo por placa]] | feat/frota-busca-placa | planejada |
 | [[Tasks/2026-03-05-frota-veiculo-card\|Card de dados do veiculo]] | feat/frota-veiculo-card | planejada |
 | [[Tasks/2026-03-05-frota-pneus-lista\|Lista de pneus do veiculo]] | feat/frota-pneus-lista | planejada |
