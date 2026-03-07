@@ -19,7 +19,9 @@ class _PasswordFieldState extends State<PasswordField> {
       obscureText: _obscurePassword,
       decoration: InputDecoration(
         labelText: 'Senha',
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
         suffixIcon: IconButton(
           icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),

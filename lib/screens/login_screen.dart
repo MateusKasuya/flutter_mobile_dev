@@ -104,23 +104,50 @@ class _LoginScreenState extends State<LoginScreen> {
       title: 'Realizando login...',
       subtitle: 'Aguarde enquanto autenticamos',
       child: Scaffold(
-        appBar: AppBar(),
-        body: Padding(
-          padding: const EdgeInsets.all(24),
+        body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 24),
-              SvgPicture.asset(
-                'assets/icone_Frota.svg',
-                height: 35,
+              Container(
+                width: double.infinity,
+                height: 180,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFFCEFCF1),
+                      Color(0xFFFFFFFF),
+                    ],
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/icone_Frota.svg',
+                      height: 35,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Entre na sua conta\nFrota!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF003156),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Expanded(
-                child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Form(
                     key: _formKey,
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CpfField(controller: _cpfController),
                         const SizedBox(height: 16),
@@ -131,14 +158,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         SizedBox(
-                          width: double.infinity,
+                          width: 300,
+                          height: 56,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Colors.white,     // cor do texto
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(56),
+                              ),
                             ),
                             onPressed: _isLoading ? null : _handleLogin,
-                            child: const Text('Entrar'),
+                            child: const Text(
+                              'Entrar',
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                            ),
                           ),
                         ),
                       ],
@@ -146,6 +180,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+              const Text(
+                'por transportefacil.com.br',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),

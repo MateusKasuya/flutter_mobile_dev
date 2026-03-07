@@ -12,9 +12,11 @@ class CpfField extends StatelessWidget {
       controller: controller,
       keyboardType: TextInputType.number,
       inputFormatters: [maskFormatter],
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'CPF',
-        border: OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Informe o CPF';
