@@ -63,7 +63,12 @@ class _VeiculoCard extends StatelessWidget {
               children: [
                 _InfoRow(label: 'Marca', value: veiculo.marca),
                 _InfoRow(label: 'Modelo', value: veiculo.modelo),
-                _InfoRow(label: 'Ano', value: '${veiculo.ano}/${veiculo.anoModelo}'),
+                _InfoRow(
+  label: 'Ano',
+  value: veiculo.anoModelo.isEmpty
+      ? veiculo.ano
+      : '${veiculo.ano}/${veiculo.anoModelo}',
+),
                 _InfoRow(label: 'Cor', value: veiculo.cor),
                 _InfoRow(label: 'Tipo', value: veiculo.tipo),
               ],
