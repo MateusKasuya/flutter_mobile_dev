@@ -25,14 +25,14 @@ class Veiculo {
 
   factory Veiculo.fromJson(Map<String, dynamic> json) {
     return Veiculo(
-      placa: json['PLACA'] as String,
-      nroFrota: json['NROFROTA'] as String,
-      marca: json['MARCA'] as String,
-      modelo: json['MODELO'] as String,
-      ano: json['ANO'] as String,
-      anoModelo: json['ANOMODELO'] as String,
-      cor: json['COR'] as String,
-      tipo: json['TIPO'] as String,
+      placa: (json['PLACA'] ?? '') as String,
+      nroFrota: (json['NROFROTA'] ?? '') as String,
+      marca: (json['MARCA'] ?? '') as String,
+      modelo: (json['MODELO'] ?? '') as String,
+      ano: (json['ANO'] ?? '') as String,
+      anoModelo: (json['ANOMODELO'] ?? '') as String,
+      cor: (json['COR'] ?? '') as String,
+      tipo: (json['TIPO'] ?? '') as String,
       pneus: (json['pneus'] as List)
           .map((e) => Pneu.fromJson(e as Map<String, dynamic>))
           .toList(),
