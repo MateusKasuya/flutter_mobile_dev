@@ -137,22 +137,6 @@ class _PneuCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Spacer(),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    pneu.situacao,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -160,12 +144,17 @@ class _PneuCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _InfoRow(label: 'Marca / Modelo', value: '${pneu.marca} ${pneu.modelo}'),
+                _InfoRow(label: 'N Pneu', value: pneu.nroPneu),
+                _InfoRow(label: 'Esquema Eixo', value: pneu.codEsqEixo),
+                _InfoRow(label: 'Local Eixo', value: pneu.localEixo),
+                _InfoRow(label: 'Marca', value: pneu.marca),
+                _InfoRow(label: 'Modelo', value: pneu.modelo),
                 _InfoRow(label: 'Dimensão', value: pneu.dimensao),
-                _InfoRow(label: 'N Série', value: pneu.nroSerie),
-                _InfoRow(label: 'DOT', value: pneu.nroDot),
-                _InfoRow(label: 'Km Rodado', value: pneu.kmRodado),
-                _InfoRow(label: 'Vida', value: '${pneu.vidaPneu}%'),
+                _InfoRow(label: 'Tipo', value: pneu.tipo),
+                _InfoRow(label: 'Qtd. Vida', value: pneu.vidaPneu),
+                _InfoRow(label: 'KM Atual', value: pneu.kmRodado),
+                _InfoRow(label: 'KM Ult. Vei.', value: pneu.kmAtuVei),
+                _InfoRow(label: 'D. Ult. Atualização', value: pneu.dataAtzKm),
               ],
             ),
           ),
