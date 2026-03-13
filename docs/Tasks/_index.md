@@ -31,7 +31,7 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-03-05-frota-service\|Service de frota]] | feat/frota-service | ✅ concluída |
 | [[Tasks/2026-03-06-auth-provider\|Migrar token para Provider]] | feat/auth-provider | ✅ concluída |
 | [[Tasks/2026-03-05-frota-busca-placa\|Tela de busca de veiculo por placa]] | feat/frota-busca-placa | ✅ concluída |
-| [[Tasks/2026-03-05-frota-veiculo-card\|Card de dados do veiculo]] | feat/frota-veiculo-card | planejada |
+| [[Tasks/2026-03-05-frota-veiculo-card\|Card de dados do veiculo]] | feat/frota-veiculo-card | ✅ concluída |
 | [[Tasks/2026-03-05-frota-pneus-lista\|Lista de pneus do veiculo]] | feat/frota-pneus-lista | planejada |
 | [[Tasks/2026-03-05-frota-camera-ocr\|Camera + OCR da placa]] | feat/frota-camera-ocr | planejada |
 | [[Tasks/2026-03-05-frota-tests\|Testes do modulo Frota]] | feat/frota-tests | planejada |
