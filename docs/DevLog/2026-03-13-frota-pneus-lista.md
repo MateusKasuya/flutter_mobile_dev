@@ -25,7 +25,7 @@ Nenhuma decisão de arquitetura nova.
 
 ## Problemas encontrados
 
-Nenhum.
+Após validação com dados reais, os campos exibidos no card foram ajustados: removidos série, DOT e badge de situação; adicionados N Pneu, Esquema Eixo, Local Eixo, Tipo, KM Ult. Vei. e D. Ult. Atualização. Header do card passou a exibir o número do pneu em vez do localEixo.
 
 ## Aprendizados
 
