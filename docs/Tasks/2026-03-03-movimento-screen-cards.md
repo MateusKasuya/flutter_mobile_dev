@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/movimento]
 date: 2026-03-03
 status: concluída
 branch: feat/movimento-screen-cards
@@ -7,7 +7,7 @@ branch: feat/movimento-screen-cards
 
 # Task — Tela Movimento com cards de navegação
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

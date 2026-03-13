@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/frota]
 date: 2026-03-05
 status: planejada
 branch: feat/frota-models
@@ -7,7 +7,7 @@ branch: feat/frota-models
 
 # Task — Models Veiculo e Pneu
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

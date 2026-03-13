@@ -1,12 +1,12 @@
 ---
-tags: [devlog]
+tags: [tipo/devlog, dominio/movimento]
 date: 2026-03-03
 task: "[[Tasks/2026-03-03-movimento-screen-cards]]"
 ---
 
 # Dev Log — Tela Movimento com cards de navegação
 
-[[Home]]
+[[DevLog/_index|DevLog]]
 
 ---
 

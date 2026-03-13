@@ -1,12 +1,12 @@
 ---
-tags: [bug, solucao]
+tags: [tipo/bug, dominio/]
 date: {{date:YYYY-MM-DD}}
 resolved: false
 ---
 
 # Problema — {{título}}
 
-[[Home]]
+[[Bugs/_index|Bugs]]
 
 ---
 

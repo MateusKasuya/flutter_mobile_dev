@@ -1,12 +1,12 @@
 ---
-tags: [devlog]
+tags: [tipo/devlog, dominio/home]
 date: 2026-03-02
 task: "[[Tasks/2026-03-02-localizacao-service]]"
 ---
 
 # Dev Log — Modelo e serviço de localizações de pneus
 
-[[Home]]
+[[DevLog/_index|DevLog]]
 
 ---
 

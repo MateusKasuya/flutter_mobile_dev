@@ -1,5 +1,5 @@
 ---
-tags: [index]
+tags: [tipo/moc]
 ---
 
 # Aprendizados
@@ -19,3 +19,8 @@ tags: [index]
 ## Flutter / Networking
 
 - [[Aprendizados/2026-02-23-uri-http]]
+
+## Flutter / UI
+
+- [[Aprendizados/2026-03-09-responsive-design-mobile]]
+- [[Aprendizados/2026-03-09-stack-positioned]]

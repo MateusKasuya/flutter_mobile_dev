@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login]
 date: 2026-02-24
 status: planejada
 branch: feat/login-form-validation
@@ -7,7 +7,7 @@ branch: feat/login-form-validation
 
 # Task — Migrar para Form com validação de campos vazios
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

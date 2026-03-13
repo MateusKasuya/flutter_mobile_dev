@@ -1,11 +1,11 @@
 ---
-tags: [dev-log]
+tags: [tipo/devlog, dominio/]
 date: {{date:YYYY-MM-DD}}
 ---
 
 # Dev Log — {{date:DD/MM/YYYY}}
 
-[[Home]]
+[[DevLog/_index|DevLog]]
 
 ---
 

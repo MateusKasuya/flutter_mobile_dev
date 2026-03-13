@@ -1,12 +1,12 @@
 ---
-tags: [bug]
+tags: [tipo/bug, dominio/home]
 date: 2026-03-02
 status: resolvido
 ---
 
 # Bug — 404 ao chamar endpoint de localizações
 
-[[Home]]
+[[Bugs/_index|Bugs]]
 
 ---
 

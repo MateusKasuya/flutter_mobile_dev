@@ -1,5 +1,5 @@
 ---
-tags: [roadmap, backlog]
+tags: [tipo/roadmap]
 updated: 2026-02-23
 ---
 

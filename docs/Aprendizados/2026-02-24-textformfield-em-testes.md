@@ -1,12 +1,12 @@
 ---
-tags: [aprendizado]
+tags: [tipo/aprendizado, dominio/login]
 date: 2026-02-24
 topic: Flutter / Testes
 ---
 
 # TextFormField em testes de widget
 
-[[Home]]
+[[Aprendizados/_index|Aprendizados]]
 
 ---
 

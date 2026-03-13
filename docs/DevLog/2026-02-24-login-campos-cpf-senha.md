@@ -1,11 +1,11 @@
 ---
-tags: [dev-log]
+tags: [tipo/devlog, dominio/login]
 date: 2026-02-24
 ---
 
 # Dev Log — 24/02/2026
 
-[[Home]]
+[[DevLog/_index|DevLog]]
 
 ---
 

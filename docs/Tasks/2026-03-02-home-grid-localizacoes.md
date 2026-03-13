@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/home]
 date: 2026-03-02
 status: concluída
 branch: feat/home-grid-localizacoes
@@ -7,7 +7,7 @@ branch: feat/home-grid-localizacoes
 
 # Task — Home Screen com GridView de localizações
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

@@ -1,12 +1,12 @@
 ---
-tags: [devlog]
+tags: [tipo/devlog, dominio/home, dominio/estilizacao]
 date: 2026-03-02
 task: "[[Tasks/2026-03-02-home-grid-estilizacao]]"
 ---
 
 # Dev Log — Estilização dos cards do GridView
 
-[[Home]]
+[[DevLog/_index|DevLog]]
 
 ---
 

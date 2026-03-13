@@ -1,12 +1,12 @@
 ---
-tags: [ADR]
+tags: [tipo/adr, dominio/]
 date: {{date:YYYY-MM-DD}}
 status: proposta
 ---
 
 # ADR — {{título}}
 
-[[Home]]
+[[Decisoes/_index|Decisões]]
 
 ---
 

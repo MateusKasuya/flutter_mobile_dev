@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/home]
 date: 2026-03-02
 status: planejada
 branch: feat/localizacao-service
@@ -7,7 +7,7 @@ branch: feat/localizacao-service
 
 # Task — Modelo e serviço de localizações de pneus
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

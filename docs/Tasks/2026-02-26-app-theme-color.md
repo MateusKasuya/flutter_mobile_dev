@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/infra]
 date: 2026-02-26
 status: concluída
 branch: feat/app-theme-color
@@ -7,7 +7,7 @@ branch: feat/app-theme-color
 
 # Task — Definir tema de cores padrão do app
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

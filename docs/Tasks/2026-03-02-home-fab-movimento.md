@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/home]
 date: 2026-03-02
 status: planejada
 branch: feat/home-fab-movimento
@@ -7,7 +7,7 @@ branch: feat/home-fab-movimento
 
 # Task — FloatingActionButton Movimento na Home Screen
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

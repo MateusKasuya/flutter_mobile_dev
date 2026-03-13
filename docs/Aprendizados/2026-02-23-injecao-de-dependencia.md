@@ -1,12 +1,12 @@
 ---
-tags: [aprendizado]
+tags: [tipo/aprendizado, dominio/infra]
 date: 2026-02-23
 topic: Flutter, testes, arquitetura
 ---
 
 # Injeção de dependência simples em Flutter
 
-[[Home]]
+[[Aprendizados/_index|Aprendizados]]
 
 ---
 

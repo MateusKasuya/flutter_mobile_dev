@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/home]
 date: 2026-03-02
 status: concluída
 branch: main
@@ -7,7 +7,7 @@ branch: main
 
 # Task — Testes da Home Screen (service, GridView e FAB)
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

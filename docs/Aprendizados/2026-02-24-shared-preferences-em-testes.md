@@ -1,12 +1,12 @@
 ---
-tags: [aprendizado]
+tags: [tipo/aprendizado, dominio/infra]
 date: 2026-02-24
 topic: Flutter / Testes
 ---
 
 # SharedPreferences em testes de widget
 
-[[Home]]
+[[Aprendizados/_index|Aprendizados]]
 
 ---
 

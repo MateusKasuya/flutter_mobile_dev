@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/]
 date: {{date:YYYY-MM-DD}}
 status: planejada
 branch: feat/{{slug}}
@@ -7,7 +7,7 @@ branch: feat/{{slug}}
 
 # Task — {{título}}
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

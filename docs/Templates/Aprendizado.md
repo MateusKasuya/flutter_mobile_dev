@@ -1,12 +1,12 @@
 ---
-tags: [aprendizado]
+tags: [tipo/aprendizado, dominio/]
 date: {{date:YYYY-MM-DD}}
 topic:
 ---
 
 # {{título}}
 
-[[Home]]
+[[Aprendizados/_index|Aprendizados]]
 
 ---
 

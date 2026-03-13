@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login]
 date: 2026-02-26
 status: concluída
 branch: feat/login-loading-screen
@@ -7,7 +7,7 @@ branch: feat/login-loading-screen
 
 # Task — Tela de loading durante chamada da API de login
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

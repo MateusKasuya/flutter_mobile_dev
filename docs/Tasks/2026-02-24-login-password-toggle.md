@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login]
 date: 2026-02-24
 status: planejada
 branch: feat/login-password-toggle
@@ -7,7 +7,7 @@ branch: feat/login-password-toggle
 
 # Task — Toggle de visibilidade da senha
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

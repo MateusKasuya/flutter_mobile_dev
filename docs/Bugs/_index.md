@@ -1,5 +1,5 @@
 ---
-tags: [index]
+tags: [tipo/moc]
 ---
 
 # Bugs
@@ -12,3 +12,4 @@ tags: [index]
 
 - [[Bugs/2026-02-23-status-202]]
 - [[Bugs/2026-02-24-shared-preferences-falha-em-testes]]
+- [[Bugs/2026-03-02-404-endpoint-path]]

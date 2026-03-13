@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login]
 date: 2026-02-24
 status: planejada
 branch: feat/login-fields-tests
@@ -7,7 +7,7 @@ branch: feat/login-fields-tests
 
 # Task — Testes completos dos campos de login
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

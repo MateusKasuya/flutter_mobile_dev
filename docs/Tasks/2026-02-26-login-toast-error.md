@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login]
 date: 2026-02-26
 status: concluída
 branch: feat/login-toast-error
@@ -7,7 +7,7 @@ branch: feat/login-toast-error
 
 # Task — Toast notification para erros de login
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

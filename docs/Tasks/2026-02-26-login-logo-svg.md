@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login]
 date: 2026-02-26
 status: concluída
 branch: main
@@ -7,7 +7,7 @@ branch: main
 
 # Task — Inserir logo SVG de frota na tela de login
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login]
 date: 2026-02-24
 status: planejada
 branch: feat/login-remember-me
@@ -7,7 +7,7 @@ branch: feat/login-remember-me
 
 # Task — Checkbox "Lembrar usuário e senha"
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

@@ -1,12 +1,12 @@
 ---
-tags: [devlog]
+tags: [tipo/devlog, dominio/home]
 date: 2026-03-02
 task: "[[Tasks/2026-03-02-home-fab-movimento]]"
 ---
 
 # Dev Log — FAB Movimento e tela placeholder
 
-[[Home]]
+[[DevLog/_index|DevLog]]
 
 ---
 

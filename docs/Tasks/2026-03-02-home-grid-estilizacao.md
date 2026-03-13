@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/home, dominio/estilizacao]
 date: 2026-03-02
 status: planejada
 branch: feat/home-grid-estilizacao
@@ -7,7 +7,7 @@ branch: feat/home-grid-estilizacao
 
 # Task — Estilização dos cards do GridView da Home Screen
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

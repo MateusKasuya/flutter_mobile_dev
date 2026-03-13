@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login]
 date: 2026-02-24
 status: planejada
 branch: feat/login-cpf-mask
@@ -7,7 +7,7 @@ branch: feat/login-cpf-mask
 
 # Task — Máscara e validação de CPF
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 

@@ -1,12 +1,12 @@
 ---
-tags: [ADR, stack]
+tags: [tipo/adr, dominio/infra]
 date: 2026-02-23
 status: aceita
 ---
 
 # ADR — Stack inicial
 
-[[Home]]
+[[Decisoes/_index|Decisões]]
 
 ---
 

@@ -1,12 +1,12 @@
 ---
-tags: [bug, solucao]
+tags: [tipo/bug, dominio/infra]
 date: 2026-02-24
 resolved: true
 ---
 
 # Problema — SharedPreferences.getInstance() falha em testes de widget
 
-[[Home]]
+[[Bugs/_index|Bugs]]
 
 ---
 

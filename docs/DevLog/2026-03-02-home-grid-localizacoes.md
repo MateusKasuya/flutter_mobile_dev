@@ -1,12 +1,12 @@
 ---
-tags: [devlog]
+tags: [tipo/devlog, dominio/home]
 date: 2026-03-02
 task: "[[Tasks/2026-03-02-home-grid-localizacoes]]"
 ---
 
 # Dev Log — Home Screen com GridView de localizações
 
-[[Home]]
+[[DevLog/_index|DevLog]]
 
 ---
 

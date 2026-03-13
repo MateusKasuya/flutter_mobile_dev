@@ -1,5 +1,5 @@
 ---
-tags: [task]
+tags: [tipo/task, dominio/login, dominio/infra]
 date: 2026-02-26
 status: concluída
 branch: feat/login-modularization
@@ -7,7 +7,7 @@ branch: feat/login-modularization
 
 # Task — Modularizar a tela de login
 
-[[Home]]
+[[Tasks/_index|Tasks]]
 
 ---
 
