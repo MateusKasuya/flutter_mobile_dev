@@ -26,7 +26,7 @@ Nenhuma decisão de arquitetura nova — segue os padrões já estabelecidos.
 
 ## Problemas encontrados
 
-Nenhum.
+Campo `anoModelo` vinha `null` da API para alguns veículos, resultando em `"1967/"` na tela. Corrigido exibindo só `veiculo.ano` quando `anoModelo` estiver vazio.
 
 ## Aprendizados
 
