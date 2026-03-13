@@ -131,7 +131,7 @@ class _PneuCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  pneu.localEixo,
+                  'Pneu ${pneu.nroPneu}',
                   style: TextStyle(
                     color: colorScheme.onSecondaryContainer,
                     fontWeight: FontWeight.bold,
