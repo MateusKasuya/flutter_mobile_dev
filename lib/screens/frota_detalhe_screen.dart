@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/pneu.dart';
 import '../models/veiculo.dart';
 
 class FrotaDetalheScreen extends StatelessWidget {
@@ -9,12 +10,32 @@ class FrotaDetalheScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: Text(veiculo.placa)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _VeiculoCard(veiculo: veiculo),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Icon(Icons.tire_repair, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                'Pneus (${veiculo.pneus.length})',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...veiculo.pneus.map((pneu) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _PneuCard(pneu: pneu),
+              )),
         ],
       ),
     );
@@ -64,13 +85,87 @@ class _VeiculoCard extends StatelessWidget {
                 _InfoRow(label: 'Marca', value: veiculo.marca),
                 _InfoRow(label: 'Modelo', value: veiculo.modelo),
                 _InfoRow(
-  label: 'Ano',
-  value: veiculo.anoModelo.isEmpty
-      ? veiculo.ano
-      : '${veiculo.ano}/${veiculo.anoModelo}',
-),
+                  label: 'Ano',
+                  value: veiculo.anoModelo.isEmpty
+                      ? veiculo.ano
+                      : '${veiculo.ano}/${veiculo.anoModelo}',
+                ),
                 _InfoRow(label: 'Cor', value: veiculo.cor),
                 _InfoRow(label: 'Tipo', value: veiculo.tipo),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PneuCard extends StatelessWidget {
+  final Pneu pneu;
+
+  const _PneuCard({required this.pneu});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: colorScheme.secondaryContainer,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.tire_repair,
+                  size: 18,
+                  color: colorScheme.onSecondaryContainer,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  pneu.localEixo,
+                  style: TextStyle(
+                    color: colorScheme.onSecondaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    pneu.situacao,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                _InfoRow(label: 'Marca / Modelo', value: '${pneu.marca} ${pneu.modelo}'),
+                _InfoRow(label: 'Dimensão', value: pneu.dimensao),
+                _InfoRow(label: 'N Série', value: pneu.nroSerie),
+                _InfoRow(label: 'DOT', value: pneu.nroDot),
+                _InfoRow(label: 'Km Rodado', value: pneu.kmRodado),
+                _InfoRow(label: 'Vida', value: '${pneu.vidaPneu}%'),
               ],
             ),
           ),
