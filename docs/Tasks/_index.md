@@ -33,7 +33,7 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-03-05-frota-busca-placa\|Tela de busca de veiculo por placa]] | feat/frota-busca-placa | ✅ concluída |
 | [[Tasks/2026-03-05-frota-veiculo-card\|Card de dados do veiculo]] | feat/frota-veiculo-card | ✅ concluída |
 | [[Tasks/2026-03-05-frota-pneus-lista\|Lista de pneus do veiculo]] | feat/frota-pneus-lista | ✅ concluída |
-| [[Tasks/2026-03-05-frota-camera-ocr\|Camera + OCR da placa]] | feat/frota-camera-ocr | planejada |
+| [[Tasks/2026-03-05-frota-camera-ocr\|Camera + OCR da placa]] | feat/frota-camera-ocr | ✅ concluída |
 | [[Tasks/2026-03-05-frota-tests\|Testes do modulo Frota]] | feat/frota-tests | planejada |
 | [[Tasks/2026-03-05-splash-screen\|Splash Screen]] | feat/splash-screen | ✅ concluída |
 | [[Tasks/2026-03-05-estilizacao-login\|Estilizacao do Login]] | feat/estilizacao-login | ✅ concluída |
