@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../models/veiculo.dart';
@@ -28,6 +30,29 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
   void dispose() {
     _placaController.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanPlaca() async {
+    final picker = ImagePicker();
+    final photo = await picker.pickImage(source: ImageSource.camera);
+    if (photo == null) return;
+
+    final inputImage = InputImage.fromFilePath(photo.path);
+    final textRecognizer = TextRecognizer();
+
+    try {
+      final recognized = await textRecognizer.processImage(inputImage);
+      final text =
+          recognized.text.replaceAll(RegExp(r'[\s\-]'), '').toUpperCase();
+
+      if (text.isNotEmpty && mounted) {
+        setState(() {
+          _placaController.text = text;
+        });
+      }
+    } finally {
+      textRecognizer.close();
+    }
   }
 
   Future<void> _buscar() async {
@@ -108,6 +133,12 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _scanPlaca,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.camera_alt),
       ),
     );
   }
