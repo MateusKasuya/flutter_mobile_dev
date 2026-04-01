@@ -7,6 +7,7 @@ import '../models/veiculo.dart';
 import '../providers/auth_provider.dart';
 import '../services/frota_service.dart' as frota_service;
 import '../utils/app_toast.dart';
+import '../utils/placa_utils.dart';
 import 'frota_detalhe_screen.dart';
 
 class FrotaBuscaScreen extends StatefulWidget {
@@ -42,13 +43,15 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
 
     try {
       final recognized = await textRecognizer.processImage(inputImage);
-      final text =
-          recognized.text.replaceAll(RegExp(r'[\s\-]'), '').toUpperCase();
+      final placa = extractPlaca(recognized.text);
 
-      if (text.isNotEmpty && mounted) {
+      if (placa != null && mounted) {
         setState(() {
-          _placaController.text = text;
+          _placaController.text = placa;
         });
+        _buscar();
+      } else if (mounted) {
+        showErrorToast('Não foi possível identificar a placa na foto');
       }
     } finally {
       textRecognizer.close();
