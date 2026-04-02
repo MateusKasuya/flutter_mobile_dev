@@ -41,3 +41,9 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-03-05-estilizacao-home\|Estilizacao da Home]] | feat/estilizacao-home | ✅ concluída |
 | [[Tasks/2026-03-05-estilizacao-movimento\|Estilizacao do Movimento]] | feat/estilizacao-movimento | ✅ concluída |
 | [[Tasks/2026-03-13-remocao-svgs-redundantes\|Remoção de SVGs redundantes]] | main | ✅ concluída |
+| [[Tasks/2026-03-16-ocr-extract-placa\|Extração inteligente de placa do OCR]] | feat/ocr-extract-placa | ✅ concluída |
+| [[Tasks/2026-03-16-ocr-extract-placa-tests\|Testes do extractPlaca]] | feat/ocr-extract-placa-tests | ✅ concluída |
+| [[Tasks/2026-04-01-eixo-layout-model\|Modelo Eixo e parser de LOCALEIXO]] | feat/eixo-layout-model | ✅ concluída |
+| [[Tasks/2026-04-01-diagrama-eixos-widget\|Widget do diagrama de eixos TOCO]] | feat/diagrama-eixos-widget | ✅ concluída |
+| [[Tasks/2026-04-01-diagrama-eixos-integracao\|Integração do diagrama na FrotaDetalheScreen]] | feat/diagrama-eixos-integracao | ✅ concluída |
+| [[Tasks/2026-04-01-diagrama-eixos-tests\|Testes do diagrama de eixos]] | feat/diagrama-eixos-tests | planejada |
