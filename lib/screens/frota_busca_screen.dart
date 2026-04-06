@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../models/veiculo.dart';
 import '../providers/auth_provider.dart';
 import '../services/frota_service.dart' as frota_service;
+import '../services/ocr_service.dart' as ocr_service;
 import '../utils/app_toast.dart';
 import '../utils/placa_utils.dart';
 import 'frota_detalhe_screen.dart';
@@ -19,16 +19,8 @@ Future<XFile?> _defaultPickImage() async {
   );
 }
 
-Future<String> _defaultOcr(String imagePath) async {
-  return FlutterTesseractOcr.extractText(
-    imagePath,
-    language: 'eng',
-    args: {
-      'psm': '6',
-      'preserve_interword_spaces': '1',
-    },
-  );
-}
+Future<String> _defaultOcr(String imagePath) =>
+    ocr_service.extractTextFromImage(imagePath);
 
 class FrotaBuscaScreen extends StatefulWidget {
   final Future<Veiculo> Function(String token, String placa) fetchFn;
