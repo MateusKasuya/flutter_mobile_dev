@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -10,12 +10,36 @@ import '../utils/app_toast.dart';
 import '../utils/placa_utils.dart';
 import 'frota_detalhe_screen.dart';
 
+Future<XFile?> _defaultPickImage() async {
+  final picker = ImagePicker();
+  return picker.pickImage(
+    source: ImageSource.camera,
+    preferredCameraDevice: CameraDevice.rear,
+    imageQuality: 85,
+  );
+}
+
+Future<String> _defaultOcr(String imagePath) async {
+  return FlutterTesseractOcr.extractText(
+    imagePath,
+    language: 'eng',
+    args: {
+      'psm': '6',
+      'preserve_interword_spaces': '1',
+    },
+  );
+}
+
 class FrotaBuscaScreen extends StatefulWidget {
   final Future<Veiculo> Function(String token, String placa) fetchFn;
+  final Future<XFile?> Function() pickImageFn;
+  final Future<String> Function(String imagePath) ocrFn;
 
   const FrotaBuscaScreen({
     super.key,
     this.fetchFn = frota_service.fetchVeiculo,
+    this.pickImageFn = _defaultPickImage,
+    this.ocrFn = _defaultOcr,
   });
 
   @override
@@ -34,27 +58,25 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
   }
 
   Future<void> _scanPlaca() async {
-    final picker = ImagePicker();
-    final photo = await picker.pickImage(source: ImageSource.camera);
+    final photo = await widget.pickImageFn();
     if (photo == null) return;
 
-    final inputImage = InputImage.fromFilePath(photo.path);
-    final textRecognizer = TextRecognizer();
+    setState(() => _isLoading = true);
 
     try {
-      final recognized = await textRecognizer.processImage(inputImage);
-      final placa = extractPlaca(recognized.text);
+      final ocrText = await widget.ocrFn(photo.path);
+      final placa = extractPlaca(ocrText);
 
-      if (placa != null && mounted) {
-        setState(() {
-          _placaController.text = placa;
-        });
-        _buscar();
-      } else if (mounted) {
-        showErrorToast('Não foi possível identificar a placa na foto');
+      if (placa != null) {
+        _placaController.text = placa;
+        showSuccessToast('Placa detectada: $placa');
+      } else {
+        showErrorToast('Nenhuma placa encontrada na imagem');
       }
+    } catch (e) {
+      showErrorToast('Erro ao processar imagem: $e');
     } finally {
-      textRecognizer.close();
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

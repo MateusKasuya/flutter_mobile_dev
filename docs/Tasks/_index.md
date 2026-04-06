@@ -46,4 +46,6 @@ Lista de tasks planejadas, em progresso e concluídas.
 | [[Tasks/2026-04-01-eixo-layout-model\|Modelo Eixo e parser de LOCALEIXO]] | feat/eixo-layout-model | ✅ concluída |
 | [[Tasks/2026-04-01-diagrama-eixos-widget\|Widget do diagrama de eixos TOCO]] | feat/diagrama-eixos-widget | ✅ concluída |
 | [[Tasks/2026-04-01-diagrama-eixos-integracao\|Integração do diagrama na FrotaDetalheScreen]] | feat/diagrama-eixos-integracao | ✅ concluída |
-| [[Tasks/2026-04-01-diagrama-eixos-tests\|Testes do diagrama de eixos]] | feat/diagrama-eixos-tests | planejada |
+| [[Tasks/2026-04-01-diagrama-eixos-tests\|Testes do diagrama de eixos]] | feat/diagrama-eixos-tests | ✅ concluída |
+| [[Tasks/2026-04-06-ocr-reimplementacao-tesseract\|Reimplementar OCR de placa com Tesseract]] | feat/ocr-reimplementacao-tesseract | 🟡 planejada |
+| [[Tasks/2026-04-06-ocr-reimplementacao-tests\|Testes da integração OCR com Tesseract]] | feat/ocr-reimplementacao-tests | 🟡 planejada |
