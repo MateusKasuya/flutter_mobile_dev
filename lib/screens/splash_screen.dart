@@ -47,7 +47,9 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             SvgPicture.asset(
               'assets/logo_frota_branco.svg',
-              height: 80,
+              height: 114.95,
+              width: 154.04,
+              
             ),
           ],
         ),

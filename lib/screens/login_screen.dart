@@ -8,6 +8,8 @@ import '../components/password_field.dart';
 import '../components/remember_me_checkbox.dart';
 import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 import '../utils/app_toast.dart';
 import 'home_screen.dart';
 
@@ -104,92 +106,111 @@ class _LoginScreenState extends State<LoginScreen> {
       title: 'Realizando login...',
       subtitle: 'Aguarde enquanto autenticamos',
       child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: double.infinity,
-                height: 180,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFCEFCF1),
-                      Color(0xFFFFFFFF),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/icone_Frota.svg',
-                      height: 35,
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Entre na sua conta\nFrota!',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF003156),
-                      ),
-                    ),
-                  ],
+        backgroundColor: AppColors.gradientEnd,
+        body: Stack(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 180,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [AppColors.gradientStart, AppColors.gradientEnd],
                 ),
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CpfField(controller: _cpfController),
-                        const SizedBox(height: 16),
-                        PasswordField(controller: _passwordController),
-                        RememberMeCheckbox(
-                          value: _rememberMe,
-                          onChanged: (v) => setState(() => _rememberMe = v ?? false),
-                        ),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: 300,
-                          height: 56,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(56),
+            ),
+            SafeArea(
+              top: false,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: LayoutBuilder(
+                    builder: (context, constraints) => SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 38),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SvgPicture.asset(
+                                'assets/logo_horizontal.svg',
+                                height: 24,
+                                width: 155.74,
                               ),
-                            ),
-                            onPressed: _isLoading ? null : _handleLogin,
-                            child: const Text(
-                              'Entrar',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                            ),
+                              const SizedBox(height: 25),
+                              SizedBox(
+                                width: 324,
+                                child: Text(
+                                  'Entre na sua conta\nFrota!',
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.heading,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                width: 300,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 3),
+                                  child: Text('CPF', style: AppTextStyles.label),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              CpfField(controller: _cpfController),
+                              const SizedBox(height: 19),
+                              SizedBox(
+                                width: 300,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 3),
+                                  child: Text('Senha', style: AppTextStyles.label),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              PasswordField(controller: _passwordController),
+                              const SizedBox(height: 25),
+                              RememberMeCheckbox(
+                                value: _rememberMe,
+                                onChanged: (v) => setState(() => _rememberMe = v ?? false),
+                              ),
+                              const SizedBox(height: 58),
+                              SizedBox(
+                                width: 300,
+                                height: 56,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Theme.of(context).colorScheme.primary,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(56),
+                                    ),
+                                  ),
+                                  onPressed: _isLoading ? null : _handleLogin,
+                                  child: Text('Entrar', style: AppTextStyles.button),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                  ),
+                  Positioned(
+                    bottom: 16,
+                    left: 0,
+                    right: 0,
+                    child: Text(
+                      'por transportefacil.com.br',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.footer,
+                    ),
+                  ),
+                ],
               ),
-              const Text(
-                'por transportefacil.com.br',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -12,7 +12,7 @@ const _pneu = Pneu(
   dimensao: '295/80R22.5',
   tipo: 'Radial',
   situacao: 'Em uso',
-  localEixo: 'Dianteiro esquerdo',
+  localEixo: '1E',
   codEsqEixo: '1',
   localizacao: '1',
   nroDot: '4523',
@@ -36,7 +36,7 @@ const _pneu = Pneu(
 
 void main() {
   group('FrotaDetalheScreen', () {
-    testWidgets('exibe dados do veículo e pneu', (tester) async {
+    testWidgets('exibe dados do veículo', (tester) async {
       final veiculo = Veiculo(
         placa: 'ABC1D23',
         nroFrota: '001',
@@ -59,13 +59,29 @@ void main() {
       expect(find.text('2020/2021'), findsOneWidget);
       expect(find.text('Branco'), findsOneWidget);
       expect(find.text('Caminhão'), findsOneWidget);
-      expect(find.text('Pneus (1)'), findsOneWidget);
-      expect(find.text('Dianteiro esquerdo'), findsOneWidget);
-      expect(find.text('Pirelli'), findsOneWidget);
-      expect(find.text('295/80R22.5'), findsOneWidget);
     });
 
-    testWidgets('exibe Pneus (0) quando veículo sem pneus', (tester) async {
+    testWidgets('exibe número do pneu no diagrama', (tester) async {
+      final veiculo = Veiculo(
+        placa: 'ABC1D23',
+        nroFrota: '001',
+        marca: 'Marca Y',
+        modelo: 'Modelo X',
+        ano: '2020',
+        anoModelo: '',
+        cor: 'Branco',
+        tipo: 'Caminhão',
+        pneus: [_pneu],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(home: FrotaDetalheScreen(veiculo: veiculo)),
+      );
+
+      expect(find.text('1'), findsOneWidget);
+    });
+
+    testWidgets('veículo sem pneus exibe diagrama vazio', (tester) async {
       final veiculo = Veiculo(
         placa: 'XYZ9K88',
         nroFrota: '002',
@@ -83,7 +99,7 @@ void main() {
       );
 
       expect(find.text('XYZ9K88 - Frota 002'), findsOneWidget);
-      expect(find.text('Pneus (0)'), findsOneWidget);
+      expect(find.text('Frente'), findsNothing);
     });
   });
 }

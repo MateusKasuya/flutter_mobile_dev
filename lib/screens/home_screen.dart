@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:frota_facil_mobile/theme/app_colors.dart';
+import 'package:frota_facil_mobile/theme/app_text_styles.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../models/localizacao.dart';
 import '../providers/auth_provider.dart';
 import '../services/localizacao_service.dart';
 import '../utils/app_toast.dart';
 import 'movimento_screen.dart';
 
-const _localizacaoIcons = <String, IconData>{
-  'ESTOQUE': Icons.inventory,
-  'FROTA': Icons.local_shipping,
-  'SUCATA': Icons.recycling,
-  'VENDA': Icons.sell,
-  'CONSERTO': Icons.build,
+const _localizacaoIcons = <String, String>{
+  'ESTOQUE': 'assets/estoque.svg',
+  'FROTA': 'assets/frota.svg',
+  'SUCATA': 'assets/sucata.svg',
+  'VENDA': 'assets/venda.svg',
+  'CONSERTO': 'assets/conserto.svg',
+  'RECAPAGEM': 'assets/recapagem.svg',
 };
 
 class HomeScreen extends StatefulWidget {
@@ -56,38 +60,69 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
-      //backgroundColor: Theme.of(context).colorScheme.surfaceContainerLow,
+      appBar: AppBar(
+        toolbarHeight: 91,
+        backgroundColor: Colors.white,
+        title: SvgPicture.asset(
+              'assets/logo_horizontal.svg',
+              height: 24,
+              width: 155.74,
+              alignment: AlignmentGeometry.centerLeft,
+        ),
+        centerTitle: false,
+        titleSpacing: 28,
+      ),
+      backgroundColor: AppColors.backgroundScreen,
       body: _isLoading
         ? const Center(child: CircularProgressIndicator())
         : Padding(
-          padding: const EdgeInsets.all(16),
-          child: GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.1,
-            children: _localizacoes
-              .map((loc) => _LocalizacaoCard(localizacao: loc))
-              .toList(), 
+            padding: const EdgeInsets.only(bottom: 80),
+            child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Monitoramento de\nmovimentações da Frota',
+                style: AppTextStyles.body,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 26),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 13),
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.785,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: _localizacoes
+                      .map((loc) => _LocalizacaoCard(localizacao: loc))
+                      .toList(),
+                ),
+              ),
+            ],
           ),
         ),
-        floatingActionButton: Transform.scale(
-          scale: 1.2,
-          child: FloatingActionButton.extended(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const MovimentoScreen()),
-              );
-            },
-            icon: const Icon(Icons.swap_horiz),
-            label: const Text('Movimento'),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Colors.white,
+      floatingActionButton: SizedBox(
+        width: 300,
+        height: 56,
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MovimentoScreen()),
+            );
+          },
+          icon: SvgPicture.asset('assets/mais-icon.svg'),
+          label: Text('Adicionar Movimento', style: AppTextStyles.labelFloatButton),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(56),
           ),
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
@@ -99,52 +134,34 @@ class _LocalizacaoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-    final icon = _localizacaoIcons[localizacao.nome] ?? Icons.help_outline;
+    final svgPath = _localizacaoIcons[localizacao.nome];
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          width: 1,
+          color: const Color(0xFFC4C4C4),
+        ),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Row(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 6,
-            color: primary,
+          if (svgPath != null)
+            SvgPicture.asset(svgPath)
+          else
+            const Icon(Icons.help_outline, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            '${localizacao.quantidade}',
+            style: AppTextStyles.bigNumbers,
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    icon,
-                    size: 32,
-                    color: primary,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${localizacao.quantidade}',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    localizacao.nome,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          letterSpacing: 0.5,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
+          const SizedBox(height: 4),
+          Text(
+            localizacao.nome,
+            style: AppTextStyles.labelNumbers,
+            textAlign: TextAlign.center,
           ),
         ],
       ),

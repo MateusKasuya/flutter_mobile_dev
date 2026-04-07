@@ -141,6 +141,8 @@ void main() {
       );
 
       await tester.tap(find.text('2396'));
+      // GestureDetector com onDoubleTap adia o onTap pelo timeout de duplo clique
+      await tester.pump(const Duration(milliseconds: 500));
       expect(tappedPneu, isNotNull);
       expect(tappedPneu!.nroPneu, '2396');
     });
@@ -156,7 +158,8 @@ void main() {
       expect(find.text('Frente'), findsNothing);
     });
 
-    testWidgets('long press inicia drag do pneu', (tester) async {
+    testWidgets('double tap chama onPneuDoubleTap', (tester) async {
+      Pneu? doubleTappedPneu;
       final pneu = _makePneu('2396', '1D');
 
       await tester.pumpWidget(
@@ -164,23 +167,19 @@ void main() {
           home: Scaffold(
             body: DiagramaEixos(
               eixos: [Eixo(numero: 1, direitoExterno: pneu)],
+              onPneuDoubleTap: (p) => doubleTappedPneu = p,
             ),
           ),
         ),
       );
 
-      // Inicia long press para ativar o drag
-      final gesture =
-          await tester.startGesture(tester.getCenter(find.text('2396')));
-      await tester.pump(const Duration(milliseconds: 600));
-
-      // Durante o drag, o feedback deve estar visível
-      // e o placeholder cinza deve aparecer no lugar original
-      // (o LongPressDraggable cria uma cópia como feedback)
-      expect(find.text('2396'), findsWidgets);
-
-      await gesture.up();
+      await tester.tap(find.text('2396'));
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tap(find.text('2396'));
       await tester.pumpAndSettle();
+
+      expect(doubleTappedPneu, isNotNull);
+      expect(doubleTappedPneu!.nroPneu, '2396');
     });
   });
 }

@@ -1,14 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
-// URL base da API — troque pelo endereço real do seu servidor
-const String _baseUrl = 'fretefacilweb.ccmcloud.com.br:8624';
+import '../config/api_config.dart';
 
 /// Faz login na API e retorna o token de autenticação.
 ///
 /// Lança uma [Exception] com a mensagem de erro se o login falhar.
 Future<String> login(String cpfusuario, String senhausuario) async {
-  final url = Uri.http(_baseUrl, '/sftlogin/login');
+  final url = Uri.http(apiBaseUrl, '/sftlogin/login');
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},

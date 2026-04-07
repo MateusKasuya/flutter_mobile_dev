@@ -126,7 +126,7 @@ void main() {
     await tester.pumpWidget(buildApp((_, _) async => 'token'));
 
     expect(find.text('Lembrar usuário e senha'), findsOneWidget);
-    expect(find.byType(CheckboxListTile), findsOneWidget);
+    expect(find.byType(Checkbox), findsOneWidget);
   });
 
   testWidgets('campos são preenchidos automaticamente quando lembrar-me ativo',

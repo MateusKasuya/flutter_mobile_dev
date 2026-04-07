@@ -4,6 +4,7 @@ import 'package:frota_facil_mobile/theme/app_colors.dart';
 import 'package:frota_facil_mobile/theme/app_text_styles.dart';
 
 import 'frota_busca_screen.dart';
+import 'pneu_lista_screen.dart';
 
 class MovimentoScreen extends StatelessWidget {
   const MovimentoScreen({super.key});
@@ -41,6 +42,14 @@ class MovimentoScreen extends StatelessWidget {
               label: 'Pneus',
               subtitle: 'Controle de Pneus',
               svgAsset: 'assets/pneu-icon.svg',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PneuListaScreen(),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 30),
             _MovimentoCard(

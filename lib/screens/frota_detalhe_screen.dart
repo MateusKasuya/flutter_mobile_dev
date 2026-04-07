@@ -1,39 +1,78 @@
 import 'package:flutter/material.dart';
 
 import '../components/diagrama_eixos.dart';
+import '../components/pneu_acoes_dialog.dart';
+import '../models/eixo.dart';
 import '../models/pneu.dart';
-import '../models/pneu_acao.dart';
 import '../models/veiculo.dart';
-import '../utils/app_toast.dart';
 import '../utils/eixo_utils.dart';
 
-class FrotaDetalheScreen extends StatelessWidget {
+class FrotaDetalheScreen extends StatefulWidget {
   final Veiculo veiculo;
 
   const FrotaDetalheScreen({super.key, required this.veiculo});
 
   @override
-  Widget build(BuildContext context) {
-    final eixos = buildEixoLayout(veiculo.pneus);
+  State<FrotaDetalheScreen> createState() => _FrotaDetalheScreenState();
+}
 
+class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
+  late List<Eixo> _eixos;
+
+  @override
+  void initState() {
+    super.initState();
+    _eixos = buildEixoLayout(widget.veiculo.pneus);
+  }
+
+  void _onPneuConfirmed(Pneu pneu) {
+    setState(() {
+      _eixos = _eixos.map((e) => e.withoutPneu(pneu)).toList();
+    });
+  }
+
+  void _onSlotVazioConfirmed(String localEixo, Pneu pneu) {
+    final eixoNumero = int.parse(localEixo[0]);
+    final posicao = localEixo.substring(1);
+    setState(() {
+      _eixos = _eixos.map((e) {
+        if (e.numero == eixoNumero) return e.withPneuAt(posicao, pneu);
+        return e;
+      }).toList();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(veiculo.placa)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(title: Text(widget.veiculo.placa)),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _VeiculoCard(veiculo: veiculo),
-          const SizedBox(height: 24),
-          DiagramaEixos(
-            eixos: eixos,
-            onPneuTap: (pneu) => _showPneuDetails(context, pneu),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: _VeiculoCard(veiculo: widget.veiculo),
           ),
-          const SizedBox(height: 24),
-          const _AcoesHeader(),
-          const SizedBox(height: 12),
-          _AcoesGrid(
-            onPneuAction: (pneu, acao) => _confirmAction(context, pneu, acao),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: DiagramaEixos(
+                eixos: _eixos,
+                onPneuTap: (pneu) => _showPneuDetails(context, pneu),
+                onPneuDoubleTap: (pneu) => showPneuAcoesDialog(
+                  context,
+                  pneu,
+                  onConfirmed: _onPneuConfirmed,
+                ),
+                onSlotVazioDoubleTap: (localEixo) =>
+                    showSlotVazioAcoesDialog(
+                      context,
+                      localEixo,
+                      onConfirmed: _onSlotVazioConfirmed,
+                    ),
+              ),
+            ),
           ),
-          const SizedBox(height: 24),
         ],
       ),
     );
@@ -85,125 +124,6 @@ void _showPneuDetails(BuildContext context, Pneu pneu) {
       ),
     ),
   );
-}
-
-void _confirmAction(
-    BuildContext context, Pneu pneu, PneuAcao acao) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text(acao.label),
-      content: Text('Mover pneu ${pneu.nroPneu} para ${acao.label}?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: FilledButton.styleFrom(backgroundColor: acao.color),
-          child: const Text('Confirmar'),
-        ),
-      ],
-    ),
-  );
-
-  if (confirmed == true) {
-    // TODO: chamar API quando endpoint estiver disponível
-    showSuccessToast('Pneu ${pneu.nroPneu} movido para ${acao.label}');
-  }
-}
-
-class _AcoesHeader extends StatelessWidget {
-  const _AcoesHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(Icons.drag_indicator, size: 18, color: Colors.grey.shade500),
-        const SizedBox(width: 8),
-        Text(
-          'Arraste um pneu para uma ação',
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey.shade500,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AcoesGrid extends StatelessWidget {
-  final void Function(Pneu pneu, PneuAcao acao) onPneuAction;
-
-  const _AcoesGrid({required this.onPneuAction});
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      alignment: WrapAlignment.center,
-      children: PneuAcao.values
-          .map((acao) => _ActionZone(acao: acao, onPneuAction: onPneuAction))
-          .toList(),
-    );
-  }
-}
-
-class _ActionZone extends StatelessWidget {
-  final PneuAcao acao;
-  final void Function(Pneu pneu, PneuAcao acao) onPneuAction;
-
-  const _ActionZone({required this.acao, required this.onPneuAction});
-
-  @override
-  Widget build(BuildContext context) {
-    return DragTarget<Pneu>(
-      onAcceptWithDetails: (details) => onPneuAction(details.data, acao),
-      builder: (context, candidateData, rejectedData) {
-        final isHovering = candidateData.isNotEmpty;
-
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 100,
-          height: 80,
-          decoration: BoxDecoration(
-            color: isHovering
-                ? acao.color.withValues(alpha: 0.15)
-                : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isHovering ? acao.color : Colors.grey.shade300,
-              width: isHovering ? 2.5 : 1,
-            ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                acao.icon,
-                color: isHovering ? acao.color : Colors.grey.shade600,
-                size: 28,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                acao.label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isHovering ? acao.color : Colors.grey.shade600,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }
 
 class _VeiculoCard extends StatelessWidget {

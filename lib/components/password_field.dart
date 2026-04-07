@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../components/app_input_decoration.dart';
+import '../theme/app_colors.dart';
 
 class PasswordField extends StatefulWidget {
   final TextEditingController controller;
@@ -14,23 +16,25 @@ class _PasswordFieldState extends State<PasswordField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      obscureText: _obscurePassword,
-      decoration: InputDecoration(
-        labelText: 'Senha',
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+    return SizedBox(
+      width: 300,
+      height: 50,
+      child: TextFormField(
+        controller: widget.controller,
+        obscureText: _obscurePassword,
+        decoration: appInputDecoration(
+          hintText: 'Digite a senha',
+          suffixIcon: IconButton(
+            icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+            color: AppColors.primaryBorder,
+            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+          ),
         ),
-        suffixIcon: IconButton(
-          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) return 'Informe a senha';
+          return null;
+        },
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Informe a senha';
-        return null;
-      },
     );
   }
 }

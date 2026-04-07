@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
 import '../models/localizacao.dart';
-
-const String _baseUrl = 'fretefacilweb.ccmcloud.com.br:8624';
 
 /// Busca as localizações de pneus com suas quantidades.
 ///
@@ -14,7 +13,7 @@ Future<List<Localizacao>> fetchLocalizacoes(String token,
   final createdClient = client == null;
   final c = client ?? http.Client();
   try {
-    final url = Uri.http(_baseUrl, '/api-frota/pneu/qlocalizacaopneus');
+    final url = Uri.http(apiBaseUrl, '/api-frota/pneu/qlocalizacaopneus');
     final response = await c.get(
       url,
       headers: {'Authorization': 'Bearer $token'},
