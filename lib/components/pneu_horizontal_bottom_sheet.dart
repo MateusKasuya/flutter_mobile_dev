@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
+import '../models/fornecedor.dart';
 import '../models/pneu.dart';
 import '../models/pneu_acao.dart';
 import '../models/pneu_mov_horizontal.dart';
 import '../models/pneu_movimentacao.dart';
+import '../providers/auth_provider.dart';
 import '../screens/pneu_lista_screen.dart';
+import '../services/fornecedor_service.dart' as fornecedor_service;
 import '../services/pneu_service.dart' as pneu_service;
+import '../services/sucata_service.dart' as sucata_service;
 import '../theme/app_colors.dart';
+import '../utils/app_toast.dart';
 import 'shared/form_helpers.dart';
 
 Future<PneuMovHorizontal?> showPneuHorizontalSheet(
@@ -50,13 +55,23 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
   final _dataController = TextEditingController();
   final _valorController = TextEditingController();
   final _motivoController = TextEditingController();
-  final _fornecedorRecapController = TextEditingController();
   final _observacaoController = TextEditingController();
 
   Pneu? _selectedPneu;
   MotivoSucateamento? _motivoSucateamento;
+  Fornecedor? _selectedFornecedor;
   bool _proibidoFuturaRecap = false;
   bool _pneuError = false;
+
+  // Dados vindos da API; carregados sob demanda em initState dependendo
+  // dos campos visíveis no fluxo origem→destino atual.
+  List<MotivoSucateamento> _motivos = [];
+  bool _loadingMotivos = false;
+  String? _erroMotivos;
+
+  List<Fornecedor> _fornecedores = [];
+  bool _loadingFornecedores = false;
+  String? _erroFornecedores;
 
   // ── Lógica de exibição dos campos ────────────────────────────────────────
 
@@ -105,6 +120,8 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     super.initState();
     _selectedPneu = widget.initialPneu;
     _dataController.text = formatDate(DateTime.now());
+    if (_showMotivoSucateamento) _carregarMotivos();
+    if (_showFornecedorRecap) _carregarFornecedores();
   }
 
   @override
@@ -112,9 +129,54 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     _dataController.dispose();
     _valorController.dispose();
     _motivoController.dispose();
-    _fornecedorRecapController.dispose();
     _observacaoController.dispose();
     super.dispose();
+  }
+
+  Future<void> _carregarMotivos() async {
+    setState(() {
+      _loadingMotivos = true;
+      _erroMotivos = null;
+    });
+    try {
+      final token = context.read<AuthProvider>().token;
+      final motivos = await sucata_service.fetchMotivosSucateamento(token);
+      if (!mounted) return;
+      setState(() {
+        _motivos = motivos;
+        _loadingMotivos = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erroMotivos = e.toString().replaceFirst('Exception: ', '');
+        _loadingMotivos = false;
+      });
+      showErrorToast(_erroMotivos!);
+    }
+  }
+
+  Future<void> _carregarFornecedores() async {
+    setState(() {
+      _loadingFornecedores = true;
+      _erroFornecedores = null;
+    });
+    try {
+      final token = context.read<AuthProvider>().token;
+      final fornecedores = await fornecedor_service.fetchFornecedores(token);
+      if (!mounted) return;
+      setState(() {
+        _fornecedores = fornecedores;
+        _loadingFornecedores = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erroFornecedores = e.toString().replaceFirst('Exception: ', '');
+        _loadingFornecedores = false;
+      });
+      showErrorToast(_erroFornecedores!);
+    }
   }
 
   // ── Ações ────────────────────────────────────────────────────────────────
@@ -159,6 +221,15 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       setState(() => _pneuError = true);
       return;
     }
+    // Bloqueia submit enquanto dados da API ainda não chegaram.
+    if (_showMotivoSucateamento && _motivos.isEmpty) {
+      showErrorToast('Aguarde os motivos carregarem');
+      return;
+    }
+    if (_showFornecedorRecap && _fornecedores.isEmpty) {
+      showErrorToast('Aguarde os fornecedores carregarem');
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     Navigator.pop(
@@ -170,8 +241,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
         data: _dataController.text,
         valor: _showValor ? _valorController.text : null,
         motivo: _showMotivo ? _motivoController.text : null,
-        fornecedorRecap:
-            _showFornecedorRecap ? _fornecedorRecapController.text : null,
+        fornecedorRecap: _showFornecedorRecap ? _selectedFornecedor : null,
         motivoSucateamento:
             _showMotivoSucateamento ? _motivoSucateamento : null,
         proibidoFuturaRecap: _proibidoFuturaRecap,
@@ -284,11 +354,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                       const SizedBox(height: 14),
                       FieldLabel('Fornecedor de Recauchutagem'),
                       const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _fornecedorRecapController,
-                        decoration:
-                            formInputDecoration(hint: 'Nome do fornecedor'),
-                      ),
+                      _buildFornecedorField(),
                     ],
                     if (_showFlagProibidoRecap) ...[
                       const SizedBox(height: 14),
@@ -303,27 +369,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                       const SizedBox(height: 14),
                       FieldLabel('Motivo de Sucateamento'),
                       const SizedBox(height: 6),
-                      DropdownButtonFormField<MotivoSucateamento>(
-                        initialValue: _motivoSucateamento,
-                        decoration:
-                            formInputDecoration(hint: 'Selecione o motivo'),
-                        items: MotivoSucateamento.valores
-                            .map(
-                              (m) => DropdownMenuItem(
-                                value: m,
-                                child: Text(
-                                  m.label,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (v) =>
-                            setState(() => _motivoSucateamento = v),
-                        validator: (v) => v == null
-                            ? 'Selecione o motivo de sucateamento'
-                            : null,
-                      ),
+                      _buildMotivoField(),
                     ],
                     if (_showMotivo) ...[
                       const SizedBox(height: 14),
@@ -471,6 +517,118 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
           ),
         ),
         Switch(value: value, onChanged: onChanged),
+      ],
+    );
+  }
+
+  Widget _buildMotivoField() {
+    if (_loadingMotivos) return _loadingBox();
+    if (_erroMotivos != null) {
+      return _erroRetry(_erroMotivos!, _carregarMotivos);
+    }
+    return DropdownButtonFormField<MotivoSucateamento>(
+      initialValue: _motivoSucateamento,
+      decoration: formInputDecoration(hint: 'Selecione o motivo'),
+      items: _motivos
+          .map(
+            (m) => DropdownMenuItem(
+              value: m,
+              child: Text(m.label, overflow: TextOverflow.ellipsis),
+            ),
+          )
+          .toList(),
+      onChanged: (v) => setState(() => _motivoSucateamento = v),
+      validator: (v) =>
+          v == null ? 'Selecione o motivo de sucateamento' : null,
+    );
+  }
+
+  Widget _buildFornecedorField() {
+    if (_loadingFornecedores) return _loadingBox();
+    if (_erroFornecedores != null) {
+      return _erroRetry(_erroFornecedores!, _carregarFornecedores);
+    }
+    return DropdownButtonFormField<Fornecedor>(
+      initialValue: _selectedFornecedor,
+      isExpanded: true,
+      decoration: formInputDecoration(hint: 'Selecione o fornecedor'),
+      // selectedItemBuilder controla o que aparece NO CAMPO (estado fechado).
+      // Sem isso o Dropdown tentaria renderizar o Column de 2 linhas no header,
+      // que estoura o tamanho do TextField e gera overflow.
+      selectedItemBuilder: (context) => _fornecedores
+          .map(
+            (f) => Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                f.razaoSocial.isNotEmpty ? f.razaoSocial : f.nomeFantasia,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          )
+          .toList(),
+      items: _fornecedores
+          .map(
+            (f) => DropdownMenuItem(
+              value: f,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    f.razaoSocial.isNotEmpty ? f.razaoSocial : '—',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (f.nomeFantasia.isNotEmpty)
+                    Text(
+                      f.nomeFantasia,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: (v) => setState(() => _selectedFornecedor = v),
+    );
+  }
+
+  Widget _loadingBox() {
+    return Container(
+      height: 56,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300, width: 2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+    );
+  }
+
+  Widget _erroRetry(String mensagem, VoidCallback onRetry) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            mensagem,
+            style: const TextStyle(color: Colors.red, fontSize: 12),
+          ),
+        ),
+        TextButton(
+          onPressed: onRetry,
+          child: const Text('Tentar novamente'),
+        ),
       ],
     );
   }

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import '../models/pneu.dart';
 import '../models/pneu_acao.dart';
 import '../models/pneu_movimentacao.dart';
+import '../providers/auth_provider.dart';
+import '../services/sucata_service.dart' as sucata_service;
+import '../utils/app_toast.dart';
 import 'shared/form_helpers.dart';
 
 Future<PneuMovimentacao?> showPneuMovimentacaoSheet(
@@ -39,10 +43,41 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
 
   MotivoSucateamento? _motivoSucateamento;
 
+  // Lista de motivos vinda da API; permanece vazia até _carregarMotivos resolver.
+  List<MotivoSucateamento> _motivos = [];
+  bool _loadingMotivos = false;
+  String? _erroMotivos;
+
   @override
   void initState() {
     super.initState();
     _dataRetornoController.text = formatDate(DateTime.now());
+    if (widget.acao == PneuAcao.sucata) {
+      _carregarMotivos();
+    }
+  }
+
+  Future<void> _carregarMotivos() async {
+    setState(() {
+      _loadingMotivos = true;
+      _erroMotivos = null;
+    });
+    try {
+      final token = context.read<AuthProvider>().token;
+      final motivos = await sucata_service.fetchMotivosSucateamento(token);
+      if (!mounted) return;
+      setState(() {
+        _motivos = motivos;
+        _loadingMotivos = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _erroMotivos = e.toString().replaceFirst('Exception: ', '');
+        _loadingMotivos = false;
+      });
+      showErrorToast(_erroMotivos!);
+    }
   }
 
   @override
@@ -66,6 +101,11 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
   }
 
   void _confirmar() {
+    // Sucateamento exige motivo carregado antes de submeter.
+    if (widget.acao == PneuAcao.sucata && _motivos.isEmpty) {
+      showErrorToast('Aguarde os motivos carregarem');
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     final movimentacao = PneuMovimentacao(
@@ -183,21 +223,7 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                       const SizedBox(height: 14),
                       FieldLabel('Motivo de sucateamento'),
                       const SizedBox(height: 6),
-                      DropdownButtonFormField<MotivoSucateamento>(
-                        initialValue: _motivoSucateamento,
-                        decoration: formInputDecoration(hint: 'Selecione o motivo'),
-                        items: MotivoSucateamento.valores
-                            .map(
-                              (m) => DropdownMenuItem(
-                                value: m,
-                                child: Text(m.label, overflow: TextOverflow.ellipsis),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (v) => setState(() => _motivoSucateamento = v),
-                        validator: (v) =>
-                            v == null ? 'Selecione o motivo de sucateamento' : null,
-                      ),
+                      _buildMotivoField(),
                     ],
                     const SizedBox(height: 14),
                     FieldLabel('Observação'),
@@ -255,6 +281,57 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMotivoField() {
+    if (_loadingMotivos) {
+      return Container(
+        height: 56,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300, width: 2),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (_erroMotivos != null) {
+      return Row(
+        children: [
+          Expanded(
+            child: Text(
+              _erroMotivos!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+          TextButton(
+            onPressed: _carregarMotivos,
+            child: const Text('Tentar novamente'),
+          ),
+        ],
+      );
+    }
+
+    return DropdownButtonFormField<MotivoSucateamento>(
+      initialValue: _motivoSucateamento,
+      decoration: formInputDecoration(hint: 'Selecione o motivo'),
+      items: _motivos
+          .map(
+            (m) => DropdownMenuItem(
+              value: m,
+              child: Text(m.label, overflow: TextOverflow.ellipsis),
+            ),
+          )
+          .toList(),
+      onChanged: (v) => setState(() => _motivoSucateamento = v),
+      validator: (v) =>
+          v == null ? 'Selecione o motivo de sucateamento' : null,
     );
   }
 }

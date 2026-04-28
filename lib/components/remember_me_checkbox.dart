@@ -30,9 +30,11 @@ class RememberMeCheckbox extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            'Lembrar usuário e senha',
-            style: AppTextStyles.checkboxLabel,
+          Expanded(
+            child: Text(
+              'Lembrar usuário e senha',
+              style: AppTextStyles.checkboxLabel,
+            ),
           ),
         ],
       ),

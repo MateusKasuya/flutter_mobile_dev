@@ -1,3 +1,4 @@
+import 'fornecedor.dart';
 import 'pneu_acao.dart';
 import 'pneu_movimentacao.dart';
 
@@ -8,7 +9,7 @@ class PneuMovHorizontal {
   final String data;
   final String? valor;
   final String? motivo;
-  final String? fornecedorRecap;
+  final Fornecedor? fornecedorRecap;
   final MotivoSucateamento? motivoSucateamento;
   final bool proibidoFuturaRecap;
   final String observacao;

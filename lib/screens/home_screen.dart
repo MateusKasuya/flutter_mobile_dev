@@ -75,7 +75,8 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.backgroundScreen,
       body: _isLoading
         ? const Center(child: CircularProgressIndicator())
-        : Padding(
+        : SingleChildScrollView(
+            child: Padding(
             padding: const EdgeInsets.only(bottom: 80),
             child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -102,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+        ),
         ),
       floatingActionButton: SizedBox(
         width: 300,

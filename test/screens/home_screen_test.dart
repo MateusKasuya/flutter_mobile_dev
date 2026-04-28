@@ -69,7 +69,7 @@ void main() {
     expect(
       (gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount)
           .crossAxisCount,
-      2,
+      3,
     );
   });
 
@@ -88,8 +88,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Movimento'), findsOneWidget);
-    expect(find.byIcon(Icons.swap_horiz), findsOneWidget);
+    expect(find.text('Adicionar Movimento'), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsOneWidget);
   });
 
   testWidgets('ao tocar no FAB navega para MovimentoScreen', (tester) async {
@@ -98,7 +98,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Movimento'));
+    await tester.tap(find.text('Adicionar Movimento'));
     await tester.pumpAndSettle();
 
     expect(find.byType(MovimentoScreen), findsOneWidget);

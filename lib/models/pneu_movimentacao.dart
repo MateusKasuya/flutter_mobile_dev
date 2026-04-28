@@ -8,17 +8,22 @@ class MotivoSucateamento {
 
   String get label => '$codigo - $descricao';
 
-  static const List<MotivoSucateamento> valores = [
-    MotivoSucateamento(1, 'Deslocamento de Borracha'),
-    MotivoSucateamento(3, 'Estourado'),
-    MotivoSucateamento(4, 'Não recapável'),
-    MotivoSucateamento(5, 'Sem Condições de uso'),
-    MotivoSucateamento(7, 'Defeito no conserto'),
-    MotivoSucateamento(10, 'Talão quebrado'),
-    MotivoSucateamento(12, 'Bolha interna/externa'),
-    MotivoSucateamento(15, 'Ajuste de estoque'),
-    MotivoSucateamento(18, 'Deslocamento de arame'),
-  ];
+  factory MotivoSucateamento.fromJson(Map<String, dynamic> json) {
+    return MotivoSucateamento(
+      (json['CODSUC'] ?? 0) as int,
+      (json['DESCRICAO'] ?? '') as String,
+    );
+  }
+
+  // Igualdade por código permite ao DropdownButtonFormField reidentificar
+  // a seleção quando a lista é recarregada (instâncias diferentes, mesmo CODSUC).
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MotivoSucateamento && other.codigo == codigo;
+
+  @override
+  int get hashCode => codigo.hashCode;
 }
 
 class PneuMovimentacao {
