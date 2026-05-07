@@ -31,6 +31,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Acima dessa largura, renderizamos o layout de tablet.
+  static const double _tabletBreakpoint = 600;
+
   List<Localizacao> _localizacoes = [];
   bool _isLoading = true;
 
@@ -59,6 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 91,
@@ -67,72 +72,119 @@ class _HomeScreenState extends State<HomeScreen> {
               'assets/logo_horizontal.svg',
               height: 24,
               width: 155.74,
-              alignment: AlignmentGeometry.centerLeft,
         ),
-        centerTitle: false,
-        titleSpacing: 28,
+        centerTitle: isTablet,
+        titleSpacing: isTablet ? 0 : 28,
       ),
       backgroundColor: AppColors.backgroundScreen,
       body: _isLoading
         ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            child: Padding(
-            padding: const EdgeInsets.only(bottom: 80),
-            child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Monitoramento de\nmovimentações da Frota',
-                style: AppTextStyles.body,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 26),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 13),
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 0.785,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: _localizacoes
-                      .map((loc) => _LocalizacaoCard(localizacao: loc))
-                      .toList(),
+        : LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: isTablet ? 0 : 80),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          isTablet
+                              ? 'Monitoramento de movimentações da Frota'
+                              : 'Monitoramento de\nmovimentações da Frota',
+                          style: isTablet
+                              ? AppTextStyles.body.copyWith(fontSize: 24)
+                              : AppTextStyles.body,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 26),
+                        isTablet ? _buildTabletGrid() : _buildPhoneGrid(),
+                        if (isTablet) ...[
+                          const SizedBox(height: 100),
+                          _buildAddButton(),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-        ),
-      floatingActionButton: SizedBox(
-        width: 300,
-        height: 56,
-        child: FloatingActionButton.extended(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MovimentoScreen()),
-            );
-          },
-          icon: SvgPicture.asset('assets/mais-icon.svg'),
-          label: Text('Adicionar Movimento', style: AppTextStyles.labelFloatButton),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(56),
-          ),
+      floatingActionButton: isTablet ? null : _buildAddButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  Widget _buildAddButton() {
+    return SizedBox(
+      width: 300,
+      height: 56,
+      child: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MovimentoScreen()),
+          );
+        },
+        icon: SvgPicture.asset('assets/mais-icon.svg'),
+        label: Text('Adicionar Movimento', style: AppTextStyles.labelFloatButton),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(56),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  Widget _buildPhoneGrid() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 13),
+      child: GridView.count(
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 0.785,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        children: _localizacoes
+            .map((loc) => _LocalizacaoCard(localizacao: loc))
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildTabletGrid() {
+    // Cards 200x214, spacing 16, 3 colunas e 2 linhas:
+    // largura total = 3*200 + 2*16 = 632
+    // altura total  = 2*214 + 1*16 = 444
+    // ratio         = 200 / 214 ≈ 0.9346
+    return SizedBox(
+      width: 632,
+      height: 444,
+      child: GridView.count(
+        crossAxisCount: 3,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 200 / 214,
+        physics: const NeverScrollableScrollPhysics(),
+        children: _localizacoes
+            .map((loc) => _LocalizacaoCard(localizacao: loc, isTablet: true))
+            .toList(),
+      ),
     );
   }
 }
 
 class _LocalizacaoCard extends StatelessWidget {
   final Localizacao localizacao;
+  final bool isTablet;
 
-  const _LocalizacaoCard({required this.localizacao});
+  const _LocalizacaoCard({
+    required this.localizacao,
+    this.isTablet = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -151,18 +203,26 @@ class _LocalizacaoCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (svgPath != null)
-            SvgPicture.asset(svgPath)
+            SvgPicture.asset(
+              svgPath,
+              width: isTablet ? 37 : null,
+              height: isTablet ? 37 : null,
+            )
           else
             const Icon(Icons.help_outline, size: 24),
           const SizedBox(height: 8),
           Text(
             '${localizacao.quantidade}',
-            style: AppTextStyles.bigNumbers,
+            style: isTablet
+                ? AppTextStyles.bigNumbers.copyWith(fontSize: 40)
+                : AppTextStyles.bigNumbers,
           ),
           const SizedBox(height: 4),
           Text(
             localizacao.nome,
-            style: AppTextStyles.labelNumbers,
+            style: isTablet
+                ? AppTextStyles.labelNumbers.copyWith(fontSize: 14)
+                : AppTextStyles.labelNumbers,
             textAlign: TextAlign.center,
           ),
         ],
