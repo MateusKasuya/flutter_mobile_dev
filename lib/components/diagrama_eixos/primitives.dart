@@ -1,0 +1,604 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../models/eixo.dart';
+import '../../models/pneu.dart';
+
+const double chassisGap = 24.0;
+const double chassisWidth = 4.0;
+const double hubSize = 14.0;
+
+// Dimensões do pneu em vista de cima:
+// estreito na direção do eixo (largura da seção) e alto na direção de rolagem.
+const double tireW = 30.0;
+const double tireH = 54.0;
+const double labelH = 16.0; // espaço acima do pneu para o número
+
+// Centro vertical do círculo do pneu a partir do topo do tile completo.
+const double tireCenterFromTop = labelH + tireH / 2;
+
+/// Indicador "↑ Frente" no topo do diagrama.
+class DirecaoIndicator extends StatelessWidget {
+  const DirecaoIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.keyboard_arrow_up, size: 18, color: Colors.grey.shade500),
+        Text(
+          'Frente',
+          style: GoogleFonts.montserrat(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade500,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Duas longarinas verticais (chassi visto de cima).
+class ChassisRails extends StatelessWidget {
+  const ChassisRails({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: chassisWidth,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade500,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: chassisGap),
+        Container(
+          width: chassisWidth,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade500,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Parachoque dianteiro ou traseiro em vista de cima.
+/// Usa LayoutBuilder para escalar com a largura disponível.
+class Parachoque extends StatelessWidget {
+  const Parachoque({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth * 0.54;
+        return SizedBox(
+          width: double.infinity,
+          height: 14,
+          child: Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Corpo do parachoque
+                Container(
+                  width: w,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(
+                      color: Colors.grey.shade500,
+                      width: 0.8,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
+                // Nervura central (profundidade)
+                Container(
+                  width: w * 0.55,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade500,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Pino-rei (king pin) / quinta-roda em vista de cima.
+/// Usado na traseira de cavalos mecânicos e na dianteira de carretas — onde
+/// o engate é feito em vez de um parachoque sólido.
+class PinoRei extends StatelessWidget {
+  const PinoRei({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 14,
+      child: Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Placa de engate (faixa horizontal curta)
+            Container(
+              width: 32,
+              height: 3,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade400,
+                borderRadius: BorderRadius.circular(1.5),
+              ),
+            ),
+            // Pino central (círculo destacado)
+            Container(
+              width: 11,
+              height: 11,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey.shade100,
+                border: Border.all(color: Colors.grey.shade600, width: 1.5),
+              ),
+            ),
+            // Ponto interno do pino
+            Container(
+              width: 3,
+              height: 3,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Linha de um eixo: barra horizontal + 2 hubs nas longarinas + pneus nas pontas
+/// + label central (E1, E2…).
+class EixoRow extends StatelessWidget {
+  final Eixo eixo;
+  final void Function(Pneu pneu)? onPneuTap;
+  final void Function(Pneu pneu)? onPneuDoubleTap;
+  final void Function(String localEixo)? onSlotVazioDoubleTap;
+
+  const EixoRow({
+    super.key,
+    required this.eixo,
+    this.onPneuTap,
+    this.onPneuDoubleTap,
+    this.onSlotVazioDoubleTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // 1. Barra do eixo (fundo)
+        Positioned(
+          top: tireCenterFromTop - 2,
+          left: 0,
+          right: 0,
+          child: Container(height: 4, color: Colors.grey.shade400),
+        ),
+        // 2. Hubs nos cruzamentos com as longarinas
+        Positioned(
+          top: tireCenterFromTop - hubSize / 2,
+          left: 0,
+          right: 0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              HubIndicator(),
+              SizedBox(width: chassisGap + chassisWidth - hubSize),
+              HubIndicator(),
+            ],
+          ),
+        ),
+        // 3. Row de tiles (frente — pneus sobrepõem o eixo)
+        Row(
+          children: [
+            _buildLadoEsquerdo(
+              externo: eixo.esquerdoExterno,
+              interno: eixo.esquerdoInterno,
+              isDuplo: eixo.rodadoDuplo,
+              n: eixo.numero,
+            ),
+            Expanded(
+              child: Align(
+                alignment: Alignment(
+                  0,
+                  (tireCenterFromTop / (labelH + tireH)) * 2 - 1,
+                ),
+                child: EixoLabel(numero: eixo.numero),
+              ),
+            ),
+            _buildLadoDireito(
+              externo: eixo.direitoExterno,
+              interno: eixo.direitoInterno,
+              isDuplo: eixo.rodadoDuplo,
+              n: eixo.numero,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLadoEsquerdo({
+    Pneu? externo,
+    Pneu? interno,
+    required bool isDuplo,
+    required int n,
+  }) {
+    final posExterno = isDuplo ? '${n}EE' : '${n}E';
+    final posInterno = '${n}EI';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        PneuTile(
+          pneu: externo,
+          onTap: onPneuTap,
+          onDoubleTap: onPneuDoubleTap,
+          onEmptyDoubleTap: externo == null
+              ? () => onSlotVazioDoubleTap?.call(posExterno)
+              : null,
+        ),
+        if (isDuplo) ...[
+          const SizedBox(width: 3),
+          PneuTile(
+            pneu: interno,
+            onTap: onPneuTap,
+            onDoubleTap: onPneuDoubleTap,
+            onEmptyDoubleTap: interno == null
+                ? () => onSlotVazioDoubleTap?.call(posInterno)
+                : null,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildLadoDireito({
+    Pneu? externo,
+    Pneu? interno,
+    required bool isDuplo,
+    required int n,
+  }) {
+    final posExterno = isDuplo ? '${n}DE' : '${n}D';
+    final posInterno = '${n}DI';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isDuplo) ...[
+          PneuTile(
+            pneu: interno,
+            onTap: onPneuTap,
+            onDoubleTap: onPneuDoubleTap,
+            onEmptyDoubleTap: interno == null
+                ? () => onSlotVazioDoubleTap?.call(posInterno)
+                : null,
+          ),
+          const SizedBox(width: 3),
+        ],
+        PneuTile(
+          pneu: externo,
+          onTap: onPneuTap,
+          onDoubleTap: onPneuDoubleTap,
+          onEmptyDoubleTap: externo == null
+              ? () => onSlotVazioDoubleTap?.call(posExterno)
+              : null,
+        ),
+      ],
+    );
+  }
+}
+
+/// Cubo (hub) na ponta da barra do eixo, sob a longarina.
+class HubIndicator extends StatelessWidget {
+  const HubIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: hubSize,
+      height: hubSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.grey.shade100,
+        border: Border.all(color: Colors.grey.shade500, width: 2),
+      ),
+    );
+  }
+}
+
+/// Rótulo do eixo (E1, E2…) — fica no centro da barra.
+class EixoLabel extends StatelessWidget {
+  final int numero;
+  const EixoLabel({super.key, required this.numero});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.grey.shade400),
+      ),
+      child: Text(
+        'E$numero',
+        style: GoogleFonts.montserrat(
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          color: Colors.grey.shade700,
+        ),
+      ),
+    );
+  }
+}
+
+/// Pneu em vista de cima: cápsula com sulcos longitudinais e sipes transversais.
+/// Quando [pneu] é null, mostra slot vazio com borda tracejada.
+class PneuTile extends StatelessWidget {
+  final Pneu? pneu;
+  final void Function(Pneu pneu)? onTap;
+  final void Function(Pneu pneu)? onDoubleTap;
+  final VoidCallback? onEmptyDoubleTap;
+
+  const PneuTile({
+    super.key,
+    this.pneu,
+    this.onTap,
+    this.onDoubleTap,
+    this.onEmptyDoubleTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (pneu == null) {
+      final emptySlot = SizedBox(
+        width: tireW,
+        height: labelH + tireH,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            SizedBox(height: labelH),
+            CustomPaint(
+              size: Size(tireW, tireH),
+              painter: EmptyTirePainter(),
+            ),
+          ],
+        ),
+      );
+      if (onEmptyDoubleTap == null) return emptySlot;
+      return GestureDetector(
+        onDoubleTap: onEmptyDoubleTap,
+        child: emptySlot,
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => onTap?.call(pneu!),
+      onDoubleTap: () => onDoubleTap?.call(pneu!),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Número acima do pneu
+          SizedBox(
+            height: labelH,
+            width: tireW,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Text(
+                pneu!.nroPneu,
+                style: GoogleFonts.montserrat(
+                  color: Colors.grey.shade800,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          // Pneu (vista de cima)
+          const CustomPaint(
+            size: Size(tireW, tireH),
+            painter: TirePainter(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Slot de posição de pneu vazia: cápsula com borda tracejada.
+class EmptyTirePainter extends CustomPainter {
+  const EmptyTirePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final radius = w / 2;
+
+    final rrect = RRect.fromLTRBR(0, 0, w, h, Radius.circular(radius));
+
+    // Fill cinza claro
+    canvas.drawRRect(rrect, Paint()..color = const Color(0xFFEEEEEE));
+
+    final paint = Paint()
+      ..color = Colors.grey.shade400
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    final path = Path()..addRRect(rrect);
+
+    const dashLength = 4.0;
+    const gapLength = 3.0;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      var drawing = true;
+      while (distance < metric.length) {
+        final end = (distance + (drawing ? dashLength : gapLength))
+            .clamp(0.0, metric.length);
+        if (drawing) {
+          canvas.drawPath(metric.extractPath(distance, end), paint);
+        }
+        distance = end;
+        drawing = !drawing;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => false;
+}
+
+/// Desenha um pneu realista visto de cima:
+/// - Cápsula escura (borracha)
+/// - Dois sulcos longitudinais principais
+/// - Sipes transversais nos blocos de banda de rodagem
+/// - Ombros (shoulders) definidos nas laterais
+class TirePainter extends CustomPainter {
+  const TirePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final radius = w / 2;
+
+    final outerRRect =
+        RRect.fromLTRBR(0, 0, w, h, Radius.circular(radius));
+
+    // ── 1. Borracha externa (base da cápsula) ──────────────────────
+    canvas.drawRRect(outerRRect, Paint()..color = const Color(0xFF111111));
+
+    // ── 2. Ombros (shoulders) — faixas laterais ligeiramente mais claras
+    final shoulderW = w * 0.16;
+    final shoulderPaint = Paint()..color = const Color(0xFF1F1F1F);
+    // ombro esquerdo
+    canvas.drawRect(
+      Rect.fromLTWH(0, radius, shoulderW, h - radius * 2),
+      shoulderPaint,
+    );
+    // ombro direito
+    canvas.drawRect(
+      Rect.fromLTWH(w - shoulderW, radius, shoulderW, h - radius * 2),
+      shoulderPaint,
+    );
+
+    // ── 3. Área de banda de rodagem central ───────────────────────
+    final treadL = shoulderW;
+    final treadR = w - shoulderW;
+    canvas.drawRect(
+      Rect.fromLTWH(treadL, radius * 0.35, treadR - treadL, h - radius * 0.70),
+      Paint()..color = const Color(0xFF181818),
+    );
+
+    // ── 4. Sulcos longitudinais principais (2 canais de drenagem) ──
+    final groove1X = w * 0.37;
+    final groove2X = w * 0.63;
+    final groovePaint = Paint()
+      ..color = const Color(0xFF060606)
+      ..strokeWidth = 2.8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.butt;
+
+    canvas.drawLine(
+      Offset(groove1X, radius * 0.4),
+      Offset(groove1X, h - radius * 0.4),
+      groovePaint,
+    );
+    canvas.drawLine(
+      Offset(groove2X, radius * 0.4),
+      Offset(groove2X, h - radius * 0.4),
+      groovePaint,
+    );
+
+    // ── 5. Sipes transversais (cortes nos blocos) ──────────────────
+    final sipePaint = Paint()
+      ..color = const Color(0xFF0A0A0A)
+      ..strokeWidth = 0.9
+      ..style = PaintingStyle.stroke;
+
+    const blockCount = 6; // número de blocos por coluna
+    final blockH = (h - radius) / blockCount;
+    for (int i = 1; i < blockCount; i++) {
+      final y = radius * 0.5 + i * blockH;
+      // Sipe no bloco esquerdo
+      canvas.drawLine(
+        Offset(treadL + 1, y),
+        Offset(groove1X - 1, y),
+        sipePaint,
+      );
+      // Sipe no bloco central (offset para criar padrão alternado)
+      canvas.drawLine(
+        Offset(groove1X + 1, y + blockH * 0.35),
+        Offset(groove2X - 1, y + blockH * 0.35),
+        sipePaint,
+      );
+      // Sipe no bloco direito
+      canvas.drawLine(
+        Offset(groove2X + 1, y),
+        Offset(treadR - 1, y),
+        sipePaint,
+      );
+    }
+
+    // ── 6. Mini-sulco de ombro (detalhe de textura nas laterais) ───
+    final shoulderSipePaint = Paint()
+      ..color = const Color(0xFF0D0D0D)
+      ..strokeWidth = 0.7
+      ..style = PaintingStyle.stroke;
+
+    for (int i = 1; i < blockCount * 2; i++) {
+      final y = radius * 0.5 + i * (blockH / 2);
+      if (y > radius * 0.5 && y < h - radius * 0.5) {
+        canvas.drawLine(
+          Offset(2, y),
+          Offset(shoulderW - 1, y),
+          shoulderSipePaint,
+        );
+        canvas.drawLine(
+          Offset(w - shoulderW + 1, y),
+          Offset(w - 2, y),
+          shoulderSipePaint,
+        );
+      }
+    }
+
+    // ── 7. Borda da cápsula (highlight da parede lateral) ──────────
+    canvas.drawRRect(
+      outerRRect,
+      Paint()
+        ..color = const Color(0xFF2C2C2C)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => false;
+}
