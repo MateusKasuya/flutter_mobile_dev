@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../theme/app_text_styles.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -36,10 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF01556F),
-              Color(0xFF028480),
-            ],
+            colors: [Color(0xFF01556F), Color(0xFF028480)],
           ),
         ),
         child: Column(
@@ -47,9 +45,14 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             SvgPicture.asset(
               'assets/logo_frota_branco.svg',
-              height: 114.95,
-              width: 154.04,
-              
+              height: 86.28,
+              width: 108,
+            ),
+            const SizedBox(height: 19),
+            Text(
+              'por transportefacil.com.br',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.splashTagline,
             ),
           ],
         ),

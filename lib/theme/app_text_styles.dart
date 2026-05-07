@@ -53,6 +53,14 @@ class AppTextStyles {
     color: AppColors.textMuted,
   );
 
+  static TextStyle splashTagline = GoogleFonts.montserrat(
+    fontSize: 10,
+    fontWeight: FontWeight.w500,
+    height: 1.0,
+    letterSpacing: 0,
+    color: Colors.white,
+  );
+
   static TextStyle body = GoogleFonts.montserrat(
     fontSize: 20,
     fontWeight: FontWeight.w700,
