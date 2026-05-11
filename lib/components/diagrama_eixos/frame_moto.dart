@@ -12,6 +12,7 @@ import 'primitives.dart';
 /// - Pneus em coluna centralizada (não há distinção esquerdo/direito).
 class FrameMoto extends StatelessWidget {
   final List<Eixo> eixos;
+  final bool isTablet;
   final void Function(Pneu pneu)? onPneuTap;
   final void Function(Pneu pneu)? onPneuDoubleTap;
   final void Function(String localEixo)? onSlotVazioDoubleTap;
@@ -19,6 +20,7 @@ class FrameMoto extends StatelessWidget {
   const FrameMoto({
     super.key,
     required this.eixos,
+    this.isTablet = false,
     this.onPneuTap,
     this.onPneuDoubleTap,
     this.onSlotVazioDoubleTap,
@@ -26,17 +28,12 @@ class FrameMoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const DirecaoIndicator(),
+          DirecaoIndicator(isTablet: isTablet),
           const SizedBox(height: 12),
           Expanded(
             child: Stack(
@@ -45,9 +42,9 @@ class FrameMoto extends StatelessWidget {
                 // Espinha central (1 longarina única, no eixo do veículo)
                 Center(
                   child: Container(
-                    width: 4,
+                    width: chassisWidth,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade500,
+                      color: const Color(0xFF959595),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -100,11 +97,11 @@ class _MotoEixoRow extends StatelessWidget {
         children: [
           // Barra curta do eixo (atrás do pneu, faz o link com a espinha)
           Positioned(
-            top: tireCenterFromTop - 2,
+            top: tireCenterFromTop - 1.5,
             child: Container(
               width: 36,
               height: 3,
-              color: Colors.grey.shade400,
+              color: const Color(0xFFC4C4C4),
             ),
           ),
           PneuTile(

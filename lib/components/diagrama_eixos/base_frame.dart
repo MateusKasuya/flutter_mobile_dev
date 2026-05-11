@@ -42,6 +42,7 @@ class BaseFrame extends StatelessWidget {
   final FrameTerminus front;
   final FrameTerminus rear;
   final AxleLayout axleLayout;
+  final bool isTablet;
   final void Function(Pneu pneu)? onPneuTap;
   final void Function(Pneu pneu)? onPneuDoubleTap;
   final void Function(String localEixo)? onSlotVazioDoubleTap;
@@ -52,6 +53,7 @@ class BaseFrame extends StatelessWidget {
     required this.front,
     required this.rear,
     this.axleLayout = AxleLayout.espacado,
+    this.isTablet = false,
     this.onPneuTap,
     this.onPneuDoubleTap,
     this.onSlotVazioDoubleTap,
@@ -59,23 +61,18 @@ class BaseFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const DirecaoIndicator(),
-          const SizedBox(height: 12),
+          DirecaoIndicator(isTablet: isTablet),
+          SizedBox(height: isTablet ? 12 : 10),
           Expanded(
             child: Stack(
               alignment: Alignment.center,
               children: [
-                const Positioned.fill(child: ChassisRails()),
+                Positioned.fill(child: ChassisRails(isTablet: isTablet)),
                 Column(
                   children: [
                     _terminus(front),
@@ -94,7 +91,7 @@ class BaseFrame extends StatelessWidget {
   Widget _terminus(FrameTerminus type) {
     switch (type) {
       case FrameTerminus.parachoque:
-        return const Parachoque();
+        return Parachoque(isTablet: isTablet);
       case FrameTerminus.pinoRei:
         return const PinoRei();
       case FrameTerminus.nenhum:
@@ -107,6 +104,7 @@ class BaseFrame extends StatelessWidget {
       for (final eixo in eixos)
         EixoRow(
           eixo: eixo,
+          isTablet: isTablet,
           onPneuTap: onPneuTap,
           onPneuDoubleTap: onPneuDoubleTap,
           onSlotVazioDoubleTap: onSlotVazioDoubleTap,

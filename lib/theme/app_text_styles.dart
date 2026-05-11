@@ -37,6 +37,22 @@ class AppTextStyles {
     color: AppColors.textHint,
   );
 
+  static TextStyle inputPlaceholder = GoogleFonts.montserrat(
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textPlaceholder,
+  );
+
+  static TextStyle inputValue = GoogleFonts.montserrat(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textBody,
+  );
+
   static TextStyle checkboxLabel = GoogleFonts.montserrat(
     fontSize: 14,
     fontWeight: FontWeight.w600,
@@ -101,6 +117,14 @@ class AppTextStyles {
     color: AppColors.textBody
   );
 
+  static TextStyle labelBarTablet = GoogleFonts.montserrat(
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textBody,
+  );
+
   static TextStyle labelCardMovements = GoogleFonts.montserrat(
     fontSize: 32,
     fontWeight: FontWeight.w700,
@@ -115,5 +139,21 @@ class AppTextStyles {
     height: 1.0,
     letterSpacing: 0,
     color: Colors.white
+  );
+
+  static TextStyle sublabelForm = GoogleFonts.montserrat(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textBody
+  );
+
+  static TextStyle screenTitleTablet = GoogleFonts.montserrat(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textBody,
   );
 }

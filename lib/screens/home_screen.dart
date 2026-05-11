@@ -66,12 +66,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 91,
+        toolbarHeight: 60,
         backgroundColor: Colors.white,
         title: SvgPicture.asset(
               'assets/logo_horizontal.svg',
-              height: 24,
-              width: 155.74,
+              height: 22,
+              width: 177.17,
         ),
         centerTitle: isTablet,
         titleSpacing: isTablet ? 0 : 28,

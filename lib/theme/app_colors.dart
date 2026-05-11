@@ -11,6 +11,7 @@ class AppColors {
   static const Color textDark = Color(0xFF003156);
   static const Color textMuted = Color(0xFF5F5F5F);
   static const Color textHint = Color(0xFFC4C4C4);
+  static const Color textPlaceholder = Color(0xFF959595);
   static const Color textBody = Color(0XFF363636);
 
   // Fundo

@@ -6,6 +6,9 @@ import '../models/veiculo.dart';
 import '../providers/auth_provider.dart';
 import '../services/frota_service.dart' as frota_service;
 import '../services/ocr_service.dart' as ocr_service;
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../utils/app_toast.dart';
 import '../utils/placa_utils.dart';
 import 'frota_detalhe_screen.dart';
@@ -39,6 +42,9 @@ class FrotaBuscaScreen extends StatefulWidget {
 }
 
 class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
+  // Acima dessa largura, renderizamos o layout de tablet.
+  static const double _tabletBreakpoint = 600;
+
   final _placaController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -88,9 +94,7 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => FrotaDetalheScreen(veiculo: veiculo),
-        ),
+        MaterialPageRoute(builder: (_) => FrotaDetalheScreen(veiculo: veiculo)),
       );
     } catch (e) {
       showErrorToast(e.toString().replaceFirst('Exception: ', ''));
@@ -101,49 +105,136 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Buscar Veículo')),
+      backgroundColor: AppColors.backgroundScreen,
+      appBar: AppBar(
+        title: isTablet
+            ? SvgPicture.asset(
+                'assets/logo_horizontal.svg',
+                height: 22,
+                width: 177.17,
+              )
+            : Text(
+                'Buscar Veículo',
+                style: AppTextStyles.labelBar,
+                textAlign: TextAlign.center,
+              ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        toolbarHeight: 60,
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(26),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _placaController,
-                textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(
-                  labelText: 'Placa do veículo',
-                  hintText: 'Ex: ABC1D23',
-                  prefixIcon: Icon(Icons.directions_car),
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Informe a placa';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+              if (isTablet) ...[
+                const SizedBox(height: 36),
+                Text('Buscar veículo', style: AppTextStyles.screenTitleTablet),
+                const SizedBox(height: 13),
+              ] else
+                const SizedBox(height: 26),
+              Text('Placa do veículo', style: AppTextStyles.sublabelForm),
+              const SizedBox(height: 10),
               SizedBox(
-                height: 48,
+                height: 50,
+                child: TextFormField(
+                  controller: _placaController,
+                  textCapitalization: TextCapitalization.characters,
+                  style: AppTextStyles.inputValue,
+                  decoration: InputDecoration(
+                    hintText: 'ABC1D23',
+                    hintStyle: AppTextStyles.inputPlaceholder,
+                    filled: true,
+                    fillColor: Colors.white,
+                    isDense: true,
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 18, right: 12),
+                      child: SvgPicture.asset(
+                        'assets/frota-icon.svg',
+                        height: 16,
+                        width: 25.64,
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).colorScheme.primary,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                    prefixIconConstraints: const BoxConstraints(
+                      minWidth: 0,
+                      minHeight: 0,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF959595),
+                        width: 2,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF959595),
+                        width: 2,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF959595),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Informe a placa';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(56),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x4D000000),
+                      offset: Offset(0, 4),
+                      blurRadius: 15,
+                    ),
+                  ],
+                ),
                 child: ElevatedButton.icon(
                   onPressed: _isLoading ? null : _buscar,
                   icon: _isLoading
                       ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            valueColor: AlwaysStoppedAnimation(Colors.white),
+                          ),
                         )
-                      : const Icon(Icons.search),
-                  label: Text(_isLoading ? 'Buscando...' : 'Buscar'),
+                      : const Icon(Icons.search, size: 16, weight: 700),
+                  label: Text(
+                    _isLoading ? 'Buscando...' : 'Buscar',
+                    style: AppTextStyles.button,
+                  ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Theme.of(context).colorScheme.primary,
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(56),
+                    ),
                   ),
                 ),
               ),

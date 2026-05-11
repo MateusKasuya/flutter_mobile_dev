@@ -5,37 +5,74 @@ import '../../models/eixo.dart';
 import '../../models/pneu.dart';
 
 const double chassisGap = 24.0;
-const double chassisWidth = 4.0;
-const double hubSize = 14.0;
+const double chassisGapTablet = 58.0;
+const double chassisWidth = 3.0;
+const double chassisWidthTablet = 6.0;
+const double hubSize = 12.0;
+const double hubSizeTablet = 30.0;
 
 // Dimensões do pneu em vista de cima:
 // estreito na direção do eixo (largura da seção) e alto na direção de rolagem.
-const double tireW = 30.0;
-const double tireH = 54.0;
+const double tireW = 28.0;
+const double tireH = 47.0;
+const double tireWTablet = 62.0;
+const double tireHTablet = 105.0;
 const double labelH = 16.0; // espaço acima do pneu para o número
+const double labelToTireGap = 7.0; // espaço entre o número e o pneu
+const double labelHTablet = 24.0;
+const double labelToTireGapTablet = 19.0;
 
 // Centro vertical do círculo do pneu a partir do topo do tile completo.
-const double tireCenterFromTop = labelH + tireH / 2;
+const double tireCenterFromTop = labelH + labelToTireGap + tireH / 2;
+const double tireCenterFromTopTablet =
+    labelHTablet + labelToTireGapTablet + tireHTablet / 2;
 
-/// Indicador "↑ Frente" no topo do diagrama.
+/// Indicador "FRENTE" no topo do diagrama.
 class DirecaoIndicator extends StatelessWidget {
-  const DirecaoIndicator({super.key});
+  final bool isTablet;
+
+  const DirecaoIndicator({super.key, this.isTablet = false});
 
   @override
   Widget build(BuildContext context) {
+    // No tablet, chevron iOS rotacionado (spec do Figma: 11×22, angle 90,
+    // cor #5F5F5F). No mobile, mantém o keyboard_arrow_up original.
+    // Setas dos dois lados deixam o Row naturalmente simétrico, então o
+    // "FRENTE" cai no centro visual (alinhado com o chassi) sem spacer.
+    final arrow = isTablet
+        ? const RotatedBox(
+            quarterTurns: 3,
+            child: Icon(
+              Icons.arrow_forward_ios,
+              size: 22,
+              color: Color(0xFF5F5F5F),
+            ),
+          )
+        : const Icon(
+            Icons.keyboard_arrow_up,
+            size: 18,
+            color: Color(0xFF5F5F5F),
+          );
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(Icons.keyboard_arrow_up, size: 18, color: Colors.grey.shade500),
+        arrow,
+        const SizedBox(width: 4),
         Text(
-          'Frente',
+          'FRENTE',
+          textAlign: TextAlign.center,
           style: GoogleFonts.montserrat(
-            fontSize: 11,
+            fontSize: isTablet ? 16 : 12,
             fontWeight: FontWeight.w600,
-            color: Colors.grey.shade500,
-            letterSpacing: 1.2,
+            color: const Color(0xFF363636),
+            height: 1.0,
+            letterSpacing: 0,
           ),
         ),
+        const SizedBox(width: 4),
+        arrow,
       ],
     );
   }
@@ -43,25 +80,29 @@ class DirecaoIndicator extends StatelessWidget {
 
 /// Duas longarinas verticais (chassi visto de cima).
 class ChassisRails extends StatelessWidget {
-  const ChassisRails({super.key});
+  final bool isTablet;
+
+  const ChassisRails({super.key, this.isTablet = false});
 
   @override
   Widget build(BuildContext context) {
+    final width = isTablet ? chassisWidthTablet : chassisWidth;
+    final gap = isTablet ? chassisGapTablet : chassisGap;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: chassisWidth,
+          width: width,
           decoration: BoxDecoration(
-            color: Colors.grey.shade500,
+            color: const Color(0xFF959595),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        const SizedBox(width: chassisGap),
+        SizedBox(width: gap),
         Container(
-          width: chassisWidth,
+          width: width,
           decoration: BoxDecoration(
-            color: Colors.grey.shade500,
+            color: const Color(0xFF959595),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -71,56 +112,44 @@ class ChassisRails extends StatelessWidget {
 }
 
 /// Parachoque dianteiro ou traseiro em vista de cima.
-/// Usa LayoutBuilder para escalar com a largura disponível.
 class Parachoque extends StatelessWidget {
-  const Parachoque({super.key});
+  final bool isTablet;
+
+  const Parachoque({super.key, this.isTablet = false});
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final w = constraints.maxWidth * 0.54;
-        return SizedBox(
-          width: double.infinity,
-          height: 14,
-          child: Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Corpo do parachoque
-                Container(
-                  width: w,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(5),
-                    border: Border.all(
-                      color: Colors.grey.shade500,
-                      width: 0.8,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                ),
-                // Nervura central (profundidade)
-                Container(
-                  width: w * 0.55,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade500,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ],
+    final outerWidth = isTablet ? 340.0 : 152.0;
+    final outerHeight = isTablet ? 31.0 : 14.0;
+
+    return SizedBox(
+      width: double.infinity,
+      height: outerHeight,
+      child: Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Corpo externo
+            Container(
+              width: outerWidth,
+              height: outerHeight,
+              decoration: BoxDecoration(
+                color: const Color(0xFF959595),
+                borderRadius: BorderRadius.circular(5),
+              ),
             ),
-          ),
-        );
-      },
+            // Barra interna (nervura central)
+            Container(
+              width: isTablet ? 177 : 79,
+              height: isTablet ? 6 : 3,
+              decoration: BoxDecoration(
+                color: const Color(0xFF363636),
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -179,6 +208,7 @@ class PinoRei extends StatelessWidget {
 /// + label central (E1, E2…).
 class EixoRow extends StatelessWidget {
   final Eixo eixo;
+  final bool isTablet;
   final void Function(Pneu pneu)? onPneuTap;
   final void Function(Pneu pneu)? onPneuDoubleTap;
   final void Function(String localEixo)? onSlotVazioDoubleTap;
@@ -186,6 +216,7 @@ class EixoRow extends StatelessWidget {
   const EixoRow({
     super.key,
     required this.eixo,
+    this.isTablet = false,
     this.onPneuTap,
     this.onPneuDoubleTap,
     this.onSlotVazioDoubleTap,
@@ -193,26 +224,35 @@ class EixoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final barHeight = isTablet ? 6.0 : 3.0;
+    final cw = isTablet ? chassisWidthTablet : chassisWidth;
+    final cg = isTablet ? chassisGapTablet : chassisGap;
+    final centerTop =
+        isTablet ? tireCenterFromTopTablet : tireCenterFromTop;
+    final th = isTablet ? tireHTablet : tireH;
+    final lh = isTablet ? labelHTablet : labelH;
     return Stack(
       children: [
         // 1. Barra do eixo (fundo)
         Positioned(
-          top: tireCenterFromTop - 2,
+          top: centerTop - barHeight / 2,
           left: 0,
           right: 0,
-          child: Container(height: 4, color: Colors.grey.shade400),
+          child: Container(height: barHeight, color: const Color(0xFFC4C4C4)),
         ),
         // 2. Hubs nos cruzamentos com as longarinas
         Positioned(
-          top: tireCenterFromTop - hubSize / 2,
+          top: centerTop - (isTablet ? hubSizeTablet : hubSize) / 2,
           left: 0,
           right: 0,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              HubIndicator(),
-              SizedBox(width: chassisGap + chassisWidth - hubSize),
-              HubIndicator(),
+            children: [
+              HubIndicator(isTablet: isTablet),
+              SizedBox(
+                width: cg + cw - (isTablet ? hubSizeTablet : hubSize),
+              ),
+              HubIndicator(isTablet: isTablet),
             ],
           ),
         ),
@@ -229,9 +269,9 @@ class EixoRow extends StatelessWidget {
               child: Align(
                 alignment: Alignment(
                   0,
-                  (tireCenterFromTop / (labelH + tireH)) * 2 - 1,
+                  (centerTop / (lh + th)) * 2 - 1,
                 ),
-                child: EixoLabel(numero: eixo.numero),
+                child: EixoLabel(numero: eixo.numero, isTablet: isTablet),
               ),
             ),
             _buildLadoDireito(
@@ -259,6 +299,7 @@ class EixoRow extends StatelessWidget {
       children: [
         PneuTile(
           pneu: externo,
+          isTablet: isTablet,
           onTap: onPneuTap,
           onDoubleTap: onPneuDoubleTap,
           onEmptyDoubleTap: externo == null
@@ -266,9 +307,10 @@ class EixoRow extends StatelessWidget {
               : null,
         ),
         if (isDuplo) ...[
-          const SizedBox(width: 3),
+          SizedBox(width: isTablet ? 20 : 9),
           PneuTile(
             pneu: interno,
+            isTablet: isTablet,
             onTap: onPneuTap,
             onDoubleTap: onPneuDoubleTap,
             onEmptyDoubleTap: interno == null
@@ -294,16 +336,18 @@ class EixoRow extends StatelessWidget {
         if (isDuplo) ...[
           PneuTile(
             pneu: interno,
+            isTablet: isTablet,
             onTap: onPneuTap,
             onDoubleTap: onPneuDoubleTap,
             onEmptyDoubleTap: interno == null
                 ? () => onSlotVazioDoubleTap?.call(posInterno)
                 : null,
           ),
-          const SizedBox(width: 3),
+          SizedBox(width: isTablet ? 20 : 9),
         ],
         PneuTile(
           pneu: externo,
+          isTablet: isTablet,
           onTap: onPneuTap,
           onDoubleTap: onPneuDoubleTap,
           onEmptyDoubleTap: externo == null
@@ -317,17 +361,20 @@ class EixoRow extends StatelessWidget {
 
 /// Cubo (hub) na ponta da barra do eixo, sob a longarina.
 class HubIndicator extends StatelessWidget {
-  const HubIndicator({super.key});
+  final bool isTablet;
+
+  const HubIndicator({super.key, this.isTablet = false});
 
   @override
   Widget build(BuildContext context) {
+    final size = isTablet ? hubSizeTablet : hubSize;
     return Container(
-      width: hubSize,
-      height: hubSize,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.grey.shade100,
-        border: Border.all(color: Colors.grey.shade500, width: 2),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFF959595), width: 2),
       ),
     );
   }
@@ -336,23 +383,30 @@ class HubIndicator extends StatelessWidget {
 /// Rótulo do eixo (E1, E2…) — fica no centro da barra.
 class EixoLabel extends StatelessWidget {
   final int numero;
-  const EixoLabel({super.key, required this.numero});
+  final bool isTablet;
+
+  const EixoLabel({super.key, required this.numero, this.isTablet = false});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      width: isTablet ? 58 : 26,
+      height: isTablet ? 44 : 20,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.grey.shade400),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(5),
+        border: Border.all(color: const Color(0xFF5F5F5F)),
       ),
       child: Text(
         'E$numero',
+        textAlign: TextAlign.center,
         style: GoogleFonts.montserrat(
-          fontSize: 9,
-          fontWeight: FontWeight.w700,
-          color: Colors.grey.shade700,
+          fontSize: isTablet ? 16 : 10,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF363636),
+          height: 1.0,
+          letterSpacing: 0,
         ),
       ),
     );
@@ -363,6 +417,7 @@ class EixoLabel extends StatelessWidget {
 /// Quando [pneu] é null, mostra slot vazio com borda tracejada.
 class PneuTile extends StatelessWidget {
   final Pneu? pneu;
+  final bool isTablet;
   final void Function(Pneu pneu)? onTap;
   final void Function(Pneu pneu)? onDoubleTap;
   final VoidCallback? onEmptyDoubleTap;
@@ -370,6 +425,7 @@ class PneuTile extends StatelessWidget {
   const PneuTile({
     super.key,
     this.pneu,
+    this.isTablet = false,
     this.onTap,
     this.onDoubleTap,
     this.onEmptyDoubleTap,
@@ -377,17 +433,22 @@ class PneuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tw = isTablet ? tireWTablet : tireW;
+    final th = isTablet ? tireHTablet : tireH;
+    final lh = isTablet ? labelHTablet : labelH;
+    final gap = isTablet ? labelToTireGapTablet : labelToTireGap;
+
     if (pneu == null) {
       final emptySlot = SizedBox(
-        width: tireW,
-        height: labelH + tireH,
+        width: tw,
+        height: lh + gap + th,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
-            SizedBox(height: labelH),
+          children: [
+            SizedBox(height: lh + gap),
             CustomPaint(
-              size: Size(tireW, tireH),
-              painter: EmptyTirePainter(),
+              size: Size(tw, th),
+              painter: const EmptyTirePainter(),
             ),
           ],
         ),
@@ -407,24 +468,28 @@ class PneuTile extends StatelessWidget {
         children: [
           // Número acima do pneu
           SizedBox(
-            height: labelH,
-            width: tireW,
+            height: lh,
+            width: tw,
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Text(
                 pneu!.nroPneu,
+                textAlign: TextAlign.center,
                 style: GoogleFonts.montserrat(
-                  color: Colors.grey.shade800,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF363636),
+                  fontSize: isTablet ? 20 : 10,
+                  fontWeight: FontWeight.w600,
+                  height: 1.0,
+                  letterSpacing: 0,
                 ),
               ),
             ),
           ),
+          SizedBox(height: gap),
           // Pneu (vista de cima)
-          const CustomPaint(
-            size: Size(tireW, tireH),
-            painter: TirePainter(),
+          CustomPaint(
+            size: Size(tw, th),
+            painter: const TirePainter(),
           ),
         ],
       ),
@@ -493,11 +558,11 @@ class TirePainter extends CustomPainter {
         RRect.fromLTRBR(0, 0, w, h, Radius.circular(radius));
 
     // ── 1. Borracha externa (base da cápsula) ──────────────────────
-    canvas.drawRRect(outerRRect, Paint()..color = const Color(0xFF111111));
+    canvas.drawRRect(outerRRect, Paint()..color = const Color(0xFF363636));
 
     // ── 2. Ombros (shoulders) — faixas laterais ligeiramente mais claras
     final shoulderW = w * 0.16;
-    final shoulderPaint = Paint()..color = const Color(0xFF1F1F1F);
+    final shoulderPaint = Paint()..color = const Color(0xFF444444);
     // ombro esquerdo
     canvas.drawRect(
       Rect.fromLTWH(0, radius, shoulderW, h - radius * 2),
@@ -514,14 +579,14 @@ class TirePainter extends CustomPainter {
     final treadR = w - shoulderW;
     canvas.drawRect(
       Rect.fromLTWH(treadL, radius * 0.35, treadR - treadL, h - radius * 0.70),
-      Paint()..color = const Color(0xFF181818),
+      Paint()..color = const Color(0xFF363636),
     );
 
     // ── 4. Sulcos longitudinais principais (2 canais de drenagem) ──
     final groove1X = w * 0.37;
     final groove2X = w * 0.63;
     final groovePaint = Paint()
-      ..color = const Color(0xFF060606)
+      ..color = const Color(0xFF1A1A1A)
       ..strokeWidth = 2.8
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.butt;
@@ -539,7 +604,7 @@ class TirePainter extends CustomPainter {
 
     // ── 5. Sipes transversais (cortes nos blocos) ──────────────────
     final sipePaint = Paint()
-      ..color = const Color(0xFF0A0A0A)
+      ..color = const Color(0xFF222222)
       ..strokeWidth = 0.9
       ..style = PaintingStyle.stroke;
 
@@ -569,7 +634,7 @@ class TirePainter extends CustomPainter {
 
     // ── 6. Mini-sulco de ombro (detalhe de textura nas laterais) ───
     final shoulderSipePaint = Paint()
-      ..color = const Color(0xFF0D0D0D)
+      ..color = const Color(0xFF262626)
       ..strokeWidth = 0.7
       ..style = PaintingStyle.stroke;
 
@@ -593,7 +658,7 @@ class TirePainter extends CustomPainter {
     canvas.drawRRect(
       outerRRect,
       Paint()
-        ..color = const Color(0xFF2C2C2C)
+        ..color = const Color(0xFF515151)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2,
     );

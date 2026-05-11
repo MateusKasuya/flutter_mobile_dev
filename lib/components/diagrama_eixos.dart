@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../models/eixo.dart';
@@ -12,6 +14,7 @@ import 'diagrama_eixos/frame_moto.dart';
 /// lista. Esquemas desconhecidos caem no frame TOCO como fallback.
 class DiagramaEixos extends StatelessWidget {
   final List<Eixo> eixos;
+  final bool isTablet;
   final void Function(Pneu pneu)? onPneuTap;
   final void Function(Pneu pneu)? onPneuDoubleTap;
   final void Function(String localEixo)? onSlotVazioDoubleTap;
@@ -19,6 +22,7 @@ class DiagramaEixos extends StatelessWidget {
   const DiagramaEixos({
     super.key,
     required this.eixos,
+    this.isTablet = false,
     this.onPneuTap,
     this.onPneuDoubleTap,
     this.onSlotVazioDoubleTap,
@@ -30,12 +34,34 @@ class DiagramaEixos extends StatelessWidget {
 
     final esquema =
         EsquemaEixo.fromCodigo(_extrairCodigo(eixos)) ?? EsquemaEixo.toco;
+    final frame = _buildFrame(esquema);
 
+    // Em telas com altura suficiente, ocupa todo o espaço disponível (mantém
+    // o comportamento original). Em telas apertadas, fixa uma altura mínima
+    // baseada no nº de eixos e habilita scroll vertical pra evitar que o
+    // diagrama fique achatado.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 110px de overhead (paddings internos, indicador "Frente",
+        // parachoque/pino-rei) + 130px por eixo (70 do tile + ~60 de respiro,
+        // pra cada eixo ficar com um "slot" parecido com o de telas maiores).
+        final minHeight = 110.0 + eixos.length * 130.0;
+        final height = math.max(constraints.maxHeight, minHeight);
+
+        return SingleChildScrollView(
+          child: SizedBox(height: height, child: frame),
+        );
+      },
+    );
+  }
+
+  Widget _buildFrame(EsquemaEixo esquema) {
     switch (esquema) {
       // Caso especial: chassi único, pneus em coluna centralizada.
       case EsquemaEixo.moto:
         return FrameMoto(
           eixos: eixos,
+          isTablet: isTablet,
           onPneuTap: onPneuTap,
           onPneuDoubleTap: onPneuDoubleTap,
           onSlotVazioDoubleTap: onSlotVazioDoubleTap,
@@ -49,6 +75,7 @@ class DiagramaEixos extends StatelessWidget {
           eixos: eixos,
           front: FrameTerminus.parachoque,
           rear: FrameTerminus.parachoque,
+          isTablet: isTablet,
           onPneuTap: onPneuTap,
           onPneuDoubleTap: onPneuDoubleTap,
           onSlotVazioDoubleTap: onSlotVazioDoubleTap,
@@ -65,6 +92,7 @@ class DiagramaEixos extends StatelessWidget {
           eixos: eixos,
           front: FrameTerminus.parachoque,
           rear: FrameTerminus.pinoRei,
+          isTablet: isTablet,
           onPneuTap: onPneuTap,
           onPneuDoubleTap: onPneuDoubleTap,
           onSlotVazioDoubleTap: onSlotVazioDoubleTap,
@@ -80,6 +108,7 @@ class DiagramaEixos extends StatelessWidget {
           front: FrameTerminus.pinoRei,
           rear: FrameTerminus.parachoque,
           axleLayout: AxleLayout.agrupadoTraseira,
+          isTablet: isTablet,
           onPneuTap: onPneuTap,
           onPneuDoubleTap: onPneuDoubleTap,
           onSlotVazioDoubleTap: onSlotVazioDoubleTap,
@@ -94,6 +123,7 @@ class DiagramaEixos extends StatelessWidget {
           front: FrameTerminus.pinoRei,
           rear: FrameTerminus.parachoque,
           axleLayout: AxleLayout.espalhadoTraseira,
+          isTablet: isTablet,
           onPneuTap: onPneuTap,
           onPneuDoubleTap: onPneuDoubleTap,
           onSlotVazioDoubleTap: onSlotVazioDoubleTap,

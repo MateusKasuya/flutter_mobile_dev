@@ -28,6 +28,9 @@ class PneuListaScreen extends StatefulWidget {
 }
 
 class _PneuListaScreenState extends State<PneuListaScreen> {
+  // Acima dessa largura, renderizamos o layout de tablet.
+  static const double _tabletBreakpoint = 600;
+
   final _searchController = TextEditingController();
   List<Pneu> _pneus = [];
   List<Pneu> _filteredPneus = [];
@@ -124,14 +127,18 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 91,
+        toolbarHeight: 60,
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Text(
           widget.title,
-          style: AppTextStyles.labelBar,
+          style: isTablet
+              ? AppTextStyles.labelBarTablet
+              : AppTextStyles.labelBar,
           textAlign: TextAlign.center,
         ),
       ),

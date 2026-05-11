@@ -9,14 +9,30 @@ import 'pneu_lista_screen.dart';
 class MovimentoScreen extends StatelessWidget {
   const MovimentoScreen({super.key});
 
+  // Acima dessa largura, renderizamos o layout de tablet.
+  static const double _tabletBreakpoint = 600;
+
   @override
   Widget build(BuildContext context) {
+    // MediaQuery.of(context).size.width devolve a largura atual da tela em pixels lógicos.
+    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 91,
+        toolbarHeight: 60,
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: Text('Adicionar Movimento', style: AppTextStyles.labelBar, textAlign: TextAlign.center,),
+        title: isTablet
+            ? SvgPicture.asset(
+                'assets/logo_horizontal.svg',
+                height: 22,
+                width: 177.17,
+              )
+            : Text(
+                'Adicionar Movimento',
+                style: AppTextStyles.labelBar,
+                textAlign: TextAlign.center,
+              ),
       ),
       backgroundColor: AppColors.backgroundScreen,
       body: Center(
@@ -24,10 +40,19 @@ class MovimentoScreen extends StatelessWidget {
           shrinkWrap: true,
           padding: const EdgeInsets.all(30),
           children: <Widget>[
+            if (isTablet) ...[
+              Text(
+                'Adicionar Movimento',
+                style: AppTextStyles.body.copyWith(fontSize: 32),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 30),
+            ],
             _MovimentoCard(
               label: 'Frotas',
               subtitle: 'Movimentações de Frota',
               svgAsset: 'assets/frota-icon.svg',
+              isTablet: isTablet,
               onTap: () {
                 Navigator.push(
                   context,
@@ -42,6 +67,7 @@ class MovimentoScreen extends StatelessWidget {
               label: 'Pneus',
               subtitle: 'Controle de Pneus',
               svgAsset: 'assets/pneu-icon.svg',
+              isTablet: isTablet,
               onTap: () {
                 Navigator.push(
                   context,
@@ -57,6 +83,7 @@ class MovimentoScreen extends StatelessWidget {
               subtitle: 'Registro de Abastecimento',
               svgAsset: 'assets/abastec-icon.svg',
               labelFontSize: 22,
+              isTablet: isTablet,
             ),
           ],
         ),
@@ -72,6 +99,7 @@ class _MovimentoCard extends StatelessWidget {
     required this.svgAsset,
     this.labelFontSize,
     this.onTap,
+    this.isTablet = false,
   });
 
   final String label;
@@ -79,17 +107,19 @@ class _MovimentoCard extends StatelessWidget {
   final String svgAsset;
   final double? labelFontSize;
   final VoidCallback? onTap;
+  final bool isTablet;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Center(
+      child: GestureDetector(
       onTap: onTap,
       child: Container(
       height: 130,
-      width: 320,
+      width: isTablet ? 450 : 320,
       decoration: BoxDecoration(
         color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
             offset: Offset(0, 4),
@@ -128,6 +158,7 @@ class _MovimentoCard extends StatelessWidget {
             SvgPicture.asset('assets/seta-icon.svg'),
           ],
         ),
+      ),
       ),
       ),
     );
