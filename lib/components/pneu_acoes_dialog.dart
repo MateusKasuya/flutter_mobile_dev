@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../models/pneu.dart';
 import '../models/pneu_acao.dart';
 import '../screens/pneu_lista_screen.dart';
 import '../services/pneu_service.dart' as pneu_service;
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 import '../utils/app_toast.dart';
 import 'pneu_entrada_bottom_sheet.dart';
 import 'pneu_horizontal_bottom_sheet.dart';
@@ -37,54 +40,66 @@ void showPneuAcoesDialog(
 }) {
   showDialog<void>(
     context: context,
-    builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Pneu ${pneu.nroPneu}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Selecione uma ação',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildAcoesGrid(context, pneu, onConfirmed: onConfirmed),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(context),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  'Cancelar',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-          ],
+    builder: (context) {
+      final isTablet = MediaQuery.of(context).size.width >= 600;
+      return Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.textHint, width: 1),
         ),
-      ),
-    ),
+        child: SizedBox(
+          width: isTablet ? 390 : 340,
+          height: isTablet ? 340 : 320,
+          child: Stack(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(25, isTablet ? 41 : 32, 25, 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Text(
+                        'Pneu ${pneu.nroPneu}',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.body,
+                      ),
+                    ),
+                    const SizedBox(height: 11),
+                    Center(
+                      child: Text(
+                        'Selecione uma opção',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.labelNumbers.copyWith(
+                          color: AppColors.textPlaceholder,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 23),
+                    _buildAcoesGrid(context, pneu, onConfirmed: onConfirmed),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 20,
+                left: isTablet ? 354 : 304,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => Navigator.pop(context),
+                  child: const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CustomPaint(painter: _CloseIconPainter()),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
   );
 }
 
@@ -107,29 +122,49 @@ Widget _buildAcoesGrid(
   }
 
   VoidCallback tapFor(PneuAcao acao) => () {
-        Navigator.pop(context);
-        _confirmAction(context, pneu, acao, onConfirmed: onConfirmed);
-      };
+    Navigator.pop(context);
+    _confirmAction(context, pneu, acao, onConfirmed: onConfirmed);
+  };
 
   return Column(
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _AcaoCard(acao: acoes[0], onTap: tapFor(acoes[0]), disabled: isDisabled(acoes[0])),
+          _AcaoCard(
+            acao: acoes[0],
+            onTap: tapFor(acoes[0]),
+            disabled: isDisabled(acoes[0]),
+          ),
           const SizedBox(width: 10),
-          _AcaoCard(acao: acoes[1], onTap: tapFor(acoes[1]), disabled: isDisabled(acoes[1])),
+          _AcaoCard(
+            acao: acoes[1],
+            onTap: tapFor(acoes[1]),
+            disabled: isDisabled(acoes[1]),
+          ),
           const SizedBox(width: 10),
-          _AcaoCard(acao: acoes[2], onTap: tapFor(acoes[2]), disabled: isDisabled(acoes[2])),
+          _AcaoCard(
+            acao: acoes[2],
+            onTap: tapFor(acoes[2]),
+            disabled: isDisabled(acoes[2]),
+          ),
         ],
       ),
       const SizedBox(height: 10),
       Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _AcaoCard(acao: acoes[3], onTap: tapFor(acoes[3]), disabled: isDisabled(acoes[3])),
+          _AcaoCard(
+            acao: acoes[3],
+            onTap: tapFor(acoes[3]),
+            disabled: isDisabled(acoes[3]),
+          ),
           const SizedBox(width: 10),
-          _AcaoCard(acao: acoes[4], onTap: tapFor(acoes[4]), disabled: isDisabled(acoes[4])),
+          _AcaoCard(
+            acao: acoes[4],
+            onTap: tapFor(acoes[4]),
+            disabled: isDisabled(acoes[4]),
+          ),
         ],
       ),
     ],
@@ -141,41 +176,75 @@ class _AcaoCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool disabled;
 
-  const _AcaoCard({required this.acao, required this.onTap, this.disabled = false});
+  const _AcaoCard({
+    required this.acao,
+    required this.onTap,
+    this.disabled = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final effectiveColor = disabled ? Colors.grey.shade400 : acao.color;
+    final bgColor = disabled
+        ? effectiveColor.withValues(alpha: 0.08)
+        : (acao.bgColor ?? effectiveColor.withValues(alpha: 0.08));
+    final borderColor = disabled
+        ? effectiveColor.withValues(alpha: 0.35)
+        : (acao.borderColor ?? effectiveColor.withValues(alpha: 0.35));
+    final iconColor = disabled
+        ? effectiveColor
+        : (acao.borderColor ?? effectiveColor);
     return InkWell(
       onTap: disabled ? null : onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        width: 82,
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        width: 90,
+        height: 90,
         decoration: BoxDecoration(
-          color: effectiveColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: effectiveColor.withValues(alpha: 0.35),
-            width: 1.2,
-          ),
+          color: bgColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: 2),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
           children: [
-            Icon(acao.icon, color: effectiveColor, size: 28),
-            const SizedBox(height: 6),
-            SizedBox(
-              width: double.infinity,
+            Positioned(
+              top: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Transform.flip(
+                    flipX: acao.mirrorX,
+                    child: acao.asset != null
+                        ? SvgPicture.asset(
+                            acao.asset!,
+                            width: 24,
+                            height: 24,
+                            colorFilter: ColorFilter.mode(
+                              iconColor,
+                              BlendMode.srcIn,
+                            ),
+                          )
+                        : Icon(acao.icon, color: iconColor, size: 24),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 58,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
+                alignment: Alignment.center,
                 child: Text(
-                  acao.label,
+                  acao.label.toUpperCase(),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11,
+                  style: AppTextStyles.footer.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: effectiveColor,
+                    color: disabled ? Colors.grey.shade400 : AppColors.textBody,
                   ),
                 ),
               ),
@@ -192,7 +261,11 @@ void showSlotVazioAcoesDialog(
   String localEixo, {
   void Function(String localEixo, Pneu pneu)? onConfirmed,
 }) {
-  const acoesInsercao = [PneuAcao.estoque, PneuAcao.conserto, PneuAcao.recapagem];
+  const acoesInsercao = [
+    PneuAcao.estoque,
+    PneuAcao.conserto,
+    PneuAcao.recapagem,
+  ];
 
   showDialog<void>(
     context: context,
@@ -313,7 +386,11 @@ void _confirmAction(
 
   if (origem == null) {
     // Pneu está montado num veículo → formulário de saída do veículo.
-    final movimentacao = await showPneuMovimentacaoSheet(context, pneu, destino);
+    final movimentacao = await showPneuMovimentacaoSheet(
+      context,
+      pneu,
+      destino,
+    );
     if (movimentacao != null) {
       // TODO: enviar para a API quando endpoint estiver disponível
       showSuccessToast('Pneu ${pneu.nroPneu} movido para ${destino.label}');
@@ -328,4 +405,21 @@ void _confirmAction(
       onConfirmed?.call(pneu);
     }
   }
+}
+
+class _CloseIconPainter extends CustomPainter {
+  const _CloseIconPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.textMuted
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

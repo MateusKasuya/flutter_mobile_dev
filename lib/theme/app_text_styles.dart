@@ -156,4 +156,44 @@ class AppTextStyles {
     letterSpacing: 0,
     color: AppColors.textBody,
   );
+
+  static TextStyle fieldLabel = GoogleFonts.montserrat(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textBody,
+  );
+
+  static TextStyle inputText = GoogleFonts.montserrat(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textBody,
+  );
+
+  static TextStyle formInputHint = GoogleFonts.montserrat(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textPlaceholder,
+  );
+
+  static TextStyle buttonSecondary = GoogleFonts.montserrat(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.0,
+    letterSpacing: 0,
+    color: AppColors.textMuted,
+  );
+
+  static TextStyle buttonPrimary = GoogleFonts.montserrat(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.0,
+    letterSpacing: 0,
+    color: Colors.white,
+  );
 }

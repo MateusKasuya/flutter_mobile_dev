@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
 
 /// Adiciona separador de milhar (ponto) em uma string de dígitos.
 String addThousandSeparator(String digits) {
@@ -99,11 +100,19 @@ String normalizeDateStr(String raw) {
   return raw;
 }
 
-InputDecoration formInputDecoration({required String hint, Widget? suffix}) {
+InputDecoration formInputDecoration({
+  required String hint,
+  Widget? suffix,
+  double verticalPadding = 15,
+  Color? borderColor,
+}) {
   const borderRadius = BorderRadius.all(Radius.circular(10));
-  const border = OutlineInputBorder(
+  final border = OutlineInputBorder(
     borderRadius: borderRadius,
-    borderSide: BorderSide(width: 2, color: AppColors.primaryBorder),
+    borderSide: BorderSide(
+      width: 2,
+      color: borderColor ?? AppColors.primaryBorder,
+    ),
   );
   return InputDecoration(
     border: border,
@@ -118,9 +127,11 @@ InputDecoration formInputDecoration({required String hint, Widget? suffix}) {
       borderSide: const BorderSide(width: 2, color: Colors.red),
     ),
     hintText: hint,
-    hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+    hintStyle: AppTextStyles.formInputHint,
     suffixIcon: suffix,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: verticalPadding),
+    filled: true,
+    fillColor: Colors.white,
   );
 }
 
@@ -137,19 +148,18 @@ class ReadOnlyField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FieldLabel(label),
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
         TextFormField(
           initialValue: value.isEmpty ? '—' : value,
           readOnly: true,
           decoration: formInputDecoration(hint: '').copyWith(
-            filled: true,
-            fillColor: Colors.grey.shade100,
+            fillColor: Colors.white,
             enabledBorder: OutlineInputBorder(
               borderRadius: const BorderRadius.all(Radius.circular(10)),
-              borderSide: BorderSide(width: 1.5, color: Colors.grey.shade300),
+              borderSide: BorderSide(width: 1, color: Colors.grey.shade300),
             ),
           ),
-          style: TextStyle(color: Colors.grey.shade600),
+          style: AppTextStyles.inputText,
         ),
       ],
     );
@@ -162,13 +172,6 @@ class FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textDark,
-      ),
-    );
+    return Text(text, style: AppTextStyles.fieldLabel);
   }
 }
