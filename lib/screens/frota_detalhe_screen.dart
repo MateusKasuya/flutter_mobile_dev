@@ -168,7 +168,7 @@ void _showPneuDetailsDialog(BuildContext context, Pneu pneu) {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(33, 41, 33, 24),
-              child: _buildPneuDetailsBody(pneu),
+              child: _buildPneuDetailsBody(pneu, isTablet: true),
             ),
             Positioned(
               top: 20,
@@ -190,7 +190,26 @@ void _showPneuDetailsDialog(BuildContext context, Pneu pneu) {
   );
 }
 
-Widget _buildPneuDetailsBody(Pneu pneu) {
+Widget _buildPneuDetailsBody(Pneu pneu, {bool isTablet = false}) {
+  final TextStyle? labelStyle = isTablet
+      ? AppTextStyles.labelNumbers.copyWith(
+          fontSize: 14,
+          color: AppColors.textPlaceholder,
+        )
+      : null;
+  final TextStyle? valueStyle = isTablet
+      ? AppTextStyles.labelNumbers.copyWith(fontSize: 14)
+      : null;
+  final double labelWidth = isTablet ? 150 : 126;
+
+  _InfoRow row(String label, String value) => _InfoRow(
+        label: label,
+        value: value,
+        labelStyle: labelStyle,
+        valueStyle: valueStyle,
+        labelWidth: labelWidth,
+      );
+
   return Column(
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,23 +218,23 @@ Widget _buildPneuDetailsBody(Pneu pneu) {
       const SizedBox(height: 21),
       Container(height: 2, color: AppColors.primary),
       const SizedBox(height: 22),
-      _InfoRow(label: 'Posição', value: pneu.localEixo),
+      row('Posição', pneu.localEixo),
       const SizedBox(height: 17),
-      _InfoRow(label: 'Marca', value: pneu.marca),
+      row('Marca', pneu.marca),
       const SizedBox(height: 17),
-      _InfoRow(label: 'Modelo', value: pneu.modelo),
+      row('Modelo', pneu.modelo),
       const SizedBox(height: 17),
-      _InfoRow(label: 'Dimensão', value: pneu.dimensao),
+      row('Dimensão', pneu.dimensao),
       const SizedBox(height: 17),
-      _InfoRow(label: 'Tipo', value: pneu.tipo),
+      row('Tipo', pneu.tipo),
       const SizedBox(height: 17),
-      _InfoRow(label: 'Qtd. Vida', value: pneu.vidaPneu),
+      row('Qtd. Vida', pneu.vidaPneu),
       const SizedBox(height: 17),
-      _InfoRow(label: 'KM Rodado', value: pneu.kmRodado),
+      row('KM Rodado', pneu.kmRodado),
       const SizedBox(height: 17),
-      _InfoRow(label: 'KM Ult. Vei.', value: pneu.kmAtuVei),
+      row('KM Ult. Vei.', pneu.kmAtuVei),
       const SizedBox(height: 17),
-      _InfoRow(label: 'D. Ult. Atualização', value: pneu.dataAtzKm),
+      row('D. Ult. Atualização', pneu.dataAtzKm),
       const SizedBox(height: 16),
     ],
   );
