@@ -109,50 +109,133 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
 }
 
 void _showPneuDetails(BuildContext context, Pneu pneu) {
+  final isTablet = MediaQuery.of(context).size.width >= 600;
+
+  if (isTablet) {
+    _showPneuDetailsDialog(context, pneu);
+    return;
+  }
+
   showModalBottomSheet(
     context: context,
+    backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      side: BorderSide(color: AppColors.textHint, width: 1),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
-    builder: (context) => Padding(
-      padding: const EdgeInsets.all(24),
+    builder: (context) => SizedBox(
+      height: 444,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
             child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
+              width: 130,
+              height: 5,
+              margin: const EdgeInsets.only(top: 20),
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
+                color: const Color(0xFF9B9B9B),
+                borderRadius: BorderRadius.circular(5),
               ),
             ),
           ),
-          Text(
-            'Pneu ${pneu.nroPneu}',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(33, 0, 33, 24),
+            child: _buildPneuDetailsBody(pneu),
           ),
-          const Divider(height: 24),
-          _InfoRow(label: 'Posição', value: pneu.localEixo),
-          _InfoRow(label: 'Marca', value: pneu.marca),
-          _InfoRow(label: 'Modelo', value: pneu.modelo),
-          _InfoRow(label: 'Dimensão', value: pneu.dimensao),
-          _InfoRow(label: 'Tipo', value: pneu.tipo),
-          _InfoRow(label: 'Qtd. Vida', value: pneu.vidaPneu),
-          _InfoRow(label: 'KM Rodado', value: pneu.kmRodado),
-          _InfoRow(label: 'KM Ult. Vei.', value: pneu.kmAtuVei),
-          _InfoRow(label: 'D. Ult. Atualização', value: pneu.dataAtzKm),
-          const SizedBox(height: 16),
         ],
       ),
     ),
   );
+}
+
+void _showPneuDetailsDialog(BuildContext context, Pneu pneu) {
+  showDialog<void>(
+    context: context,
+    builder: (context) => Dialog(
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.textHint, width: 1),
+      ),
+      child: SizedBox(
+        width: 430,
+        height: 470,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(33, 41, 33, 24),
+              child: _buildPneuDetailsBody(pneu),
+            ),
+            Positioned(
+              top: 20,
+              left: 394,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.pop(context),
+                child: const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CustomPaint(painter: _CloseIconPainter()),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildPneuDetailsBody(Pneu pneu) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text('Pneu ${pneu.nroPneu}', style: AppTextStyles.body),
+      const SizedBox(height: 21),
+      Container(height: 2, color: AppColors.primary),
+      const SizedBox(height: 22),
+      _InfoRow(label: 'Posição', value: pneu.localEixo),
+      const SizedBox(height: 17),
+      _InfoRow(label: 'Marca', value: pneu.marca),
+      const SizedBox(height: 17),
+      _InfoRow(label: 'Modelo', value: pneu.modelo),
+      const SizedBox(height: 17),
+      _InfoRow(label: 'Dimensão', value: pneu.dimensao),
+      const SizedBox(height: 17),
+      _InfoRow(label: 'Tipo', value: pneu.tipo),
+      const SizedBox(height: 17),
+      _InfoRow(label: 'Qtd. Vida', value: pneu.vidaPneu),
+      const SizedBox(height: 17),
+      _InfoRow(label: 'KM Rodado', value: pneu.kmRodado),
+      const SizedBox(height: 17),
+      _InfoRow(label: 'KM Ult. Vei.', value: pneu.kmAtuVei),
+      const SizedBox(height: 17),
+      _InfoRow(label: 'D. Ult. Atualização', value: pneu.dataAtzKm),
+      const SizedBox(height: 16),
+    ],
+  );
+}
+
+class _CloseIconPainter extends CustomPainter {
+  const _CloseIconPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.textMuted
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 _InfoRow _veiculoInfoRow(String label, String value, {bool isTablet = false}) {
@@ -316,19 +399,17 @@ class _InfoRow extends StatelessWidget {
     required this.value,
     this.labelStyle,
     this.valueStyle,
-    this.labelWidth,
-    this.verticalPadding = 4,
+    this.labelWidth = 126,
+    this.verticalPadding = 0,
   });
 
   @override
   Widget build(BuildContext context) {
     final resolvedLabelStyle = labelStyle ??
-        TextStyle(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-          fontWeight: FontWeight.w500,
+        AppTextStyles.labelNumbers.copyWith(
+          color: AppColors.textPlaceholder,
         );
-    final resolvedValueStyle =
-        valueStyle ?? const TextStyle(fontWeight: FontWeight.w500);
+    final resolvedValueStyle = valueStyle ?? AppTextStyles.labelNumbers;
 
     final labelText = Text(label, style: resolvedLabelStyle);
     final valueText = Text(value, style: resolvedValueStyle);
