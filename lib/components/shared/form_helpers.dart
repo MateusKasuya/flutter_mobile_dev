@@ -148,7 +148,7 @@ class ReadOnlyField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FieldLabel(label),
-        const SizedBox(height: 10),
+        const SizedBox(height: 7),
         TextFormField(
           initialValue: value.isEmpty ? '—' : value,
           readOnly: true,

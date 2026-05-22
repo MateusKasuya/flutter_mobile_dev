@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../models/fornecedor.dart';
@@ -12,6 +13,7 @@ import '../services/fornecedor_service.dart' as fornecedor_service;
 import '../services/pneu_service.dart' as pneu_service;
 import '../services/sucata_service.dart' as sucata_service;
 import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 import '../utils/app_toast.dart';
 import 'shared/form_helpers.dart';
 
@@ -21,12 +23,59 @@ Future<PneuMovHorizontal?> showPneuHorizontalSheet(
   PneuAcao origem,
   PneuAcao destino,
 ) {
+  // Altura fixa por combinação origem→destino. Cada movimentação tem um
+  // conjunto diferente de campos, então o sheet/dialog usa altura exata
+  // em vez de crescer com o conteúdo — bate com as specs de design.
+  final sheetHeight = _sheetHeightFor(origem, destino);
+
+  final mq = MediaQuery.of(context);
+  // Breakpoint padrão do app: ≥600pt = tablet (mesma regra das outras
+  // bottom sheets que viram Dialog no tablet).
+  final isTablet = mq.size.width >= 600;
+
+  if (isTablet) {
+    // Tablet: modal centralizado, largura fixa 460pt (padrão das demais
+    // dialogs do projeto). Mantém o padrão visual do fluxo horizontal:
+    // faixa colorida no topo (destino.bgColor) com Origem→Destino e
+    // o restante do formulário em fundo branco — mesma divisão do mobile.
+    return showDialog<PneuMovHorizontal>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: const EdgeInsets.all(24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: const BorderSide(color: AppColors.textHint, width: 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: SizedBox(
+          width: 460,
+          height: sheetHeight,
+          child: _PneuHorizontalForm(
+            initialPneu: initialPneu,
+            origem: origem,
+            destino: destino,
+            isTablet: true,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Mobile: bottom sheet com faixa de cabeçalho colorida + drag handle.
   return showModalBottomSheet<PneuMovHorizontal>(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.white,
+    constraints: BoxConstraints.tightFor(height: sheetHeight),
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      side: BorderSide(color: AppColors.textHint, width: 1),
     ),
+    // Necessário pra que o background do header (colorido) seja recortado
+    // pelos cantos superiores arredondados em vez de vazar.
+    clipBehavior: Clip.antiAlias,
     builder: (context) => _PneuHorizontalForm(
       initialPneu: initialPneu,
       origem: origem,
@@ -35,15 +84,41 @@ Future<PneuMovHorizontal?> showPneuHorizontalSheet(
   );
 }
 
+/// Altura do bottom sheet por combinação de movimentação (mobile).
+/// Genéricos a todas as combinações (já aplicados no showModalBottomSheet):
+/// background #FFFFFF, border 1px #C4C4C4, top-radius 20.
+/// Específico por movimentação: a altura, vinda do design.
+double _sheetHeightFor(PneuAcao origem, PneuAcao destino) {
+  if (origem == PneuAcao.estoque && destino == PneuAcao.conserto) return 560;
+  if (origem == PneuAcao.estoque && destino == PneuAcao.recapagem) return 520;
+  if (origem == PneuAcao.estoque && destino == PneuAcao.sucata) return 657;
+  if (origem == PneuAcao.estoque && destino == PneuAcao.venda) return 617;
+  if (origem == PneuAcao.conserto && destino == PneuAcao.estoque) return 651;
+  if (origem == PneuAcao.conserto && destino == PneuAcao.recapagem) return 760;
+  if (origem == PneuAcao.conserto && destino == PneuAcao.sucata) return 760;
+  if (origem == PneuAcao.sucata && destino == PneuAcao.venda) return 617;
+  // Recapagem → X: alturas estimadas (sem specs Figma).
+  // Base = equivalente por destino + ~50pt do switch "Proibido futura
+  // recauchutagem", que só aparece quando a origem é recapagem.
+  if (origem == PneuAcao.recapagem && destino == PneuAcao.estoque) return 705;
+  if (origem == PneuAcao.recapagem && destino == PneuAcao.sucata) return 810;
+  if (origem == PneuAcao.recapagem && destino == PneuAcao.venda) return 670;
+  return 560;
+}
+
 class _PneuHorizontalForm extends StatefulWidget {
   final Pneu? initialPneu;
   final PneuAcao origem;
   final PneuAcao destino;
+  // No modo tablet o form vive dentro de um Dialog centralizado — sem drag
+  // handle, sem faixa colorida de header e sem safe-area de teclado.
+  final bool isTablet;
 
   const _PneuHorizontalForm({
     required this.initialPneu,
     required this.origem,
     required this.destino,
+    this.isTablet = false,
   });
 
   @override
@@ -254,110 +329,125 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
 
   @override
   Widget build(BuildContext context) {
-    final origem = widget.origem;
     final destino = widget.destino;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      padding: EdgeInsets.only(
+        // Tablet roda em Dialog centralizado, não precisa subir pro teclado.
+        bottom: widget.isTablet ? 0 : MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Stack(
         children: [
-          // Drag handle
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          // Header: Origem → Destino
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            decoration: BoxDecoration(
-              color: destino.color.withValues(alpha: 0.08),
-              border: Border(
-                bottom: BorderSide(color: destino.color.withValues(alpha: 0.2)),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(origem.icon, color: origem.color, size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  origem.label,
-                  style: TextStyle(
-                    color: origem.color,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header: faixa colorida com destino.bgColor em ambos os modos.
+              // Mobile = 95pt com drag handle (conteúdo a top:55), tablet =
+              // 76pt sem drag handle (conteúdo a top:36, em linha com o
+              // padding-top dos outros dialogs do projeto).
+              if (widget.isTablet)
+                Container(
+                  width: double.infinity,
+                  height: 76,
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  decoration: BoxDecoration(color: destino.bgColor),
+                  alignment: Alignment.centerLeft,
+                  child: _buildHeaderRow(),
+                )
+              else
+                Container(
+                  width: double.infinity,
+                  height: 95,
+                  padding: const EdgeInsets.symmetric(horizontal: 33),
+                  decoration: BoxDecoration(color: destino.bgColor),
+                  child: Stack(
+                    children: [
+                      // Drag handle: 130×5, #9B9B9B, radius 5, centralizado
+                      // horizontalmente e a 22pt do topo do sheet.
+                      Positioned(
+                        top: 22,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Container(
+                            width: 130,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF9B9B9B),
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Conteúdo do header a 55pt do topo (= 22 do handle +
+                      // 5 da altura dele + 28 de gap).
+                      Positioned(
+                        top: 55,
+                        left: 0,
+                        right: 0,
+                        child: _buildHeaderRow(),
+                      ),
+                    ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Icon(
-                    Icons.arrow_forward,
-                    size: 16,
-                    color: Colors.grey.shade500,
+              // Formulário
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    widget.isTablet ? 40 : 33,
+                    widget.isTablet ? 30 : 27,
+                    widget.isTablet ? 40 : 33,
+                    8,
                   ),
-                ),
-                Icon(destino.icon, color: destino.color, size: 20),
-                const SizedBox(width: 6),
-                Text(
-                  destino.label,
-                  style: TextStyle(
-                    color: destino.color,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Formulário
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildPneuPicker(),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 29),
                     FieldLabel(_dataLabel),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 7),
                     TextFormField(
                       controller: _dataController,
                       readOnly: true,
                       onTap: _pickDate,
+                      style: AppTextStyles.inputText,
                       decoration: formInputDecoration(
                         hint: 'DD/MM/AAAA',
-                        suffix: const Icon(Icons.calendar_today, size: 18),
+                        suffix: Icon(
+                          Icons.calendar_today,
+                          size: 18,
+                          color: destino.borderColor ?? destino.color,
+                        ),
+                        borderColor: destino.borderColor ?? destino.color,
                       ),
                     ),
                     if (_showValor) ...[
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 29),
                       FieldLabel(_valorLabel),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 7),
                       TextFormField(
                         controller: _valorController,
                         keyboardType: TextInputType.number,
                         inputFormatters: [BrazilianCurrencyFormatter()],
-                        decoration: formInputDecoration(hint: '0,00'),
+                        style: AppTextStyles.inputText,
+                        decoration: formInputDecoration(
+                          hint: '0,00',
+                          borderColor: destino.borderColor ?? destino.color,
+                        ),
                         validator: (v) =>
                             (v == null || v.isEmpty) ? 'Informe o valor' : null,
                       ),
                     ],
                     if (_showFornecedorRecap) ...[
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 29),
                       FieldLabel('Fornecedor de Recauchutagem'),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 7),
                       _buildFornecedorField(),
                     ],
                     if (_showFlagProibidoRecap) ...[
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 29),
                       _buildSwitch(
                         label: 'Proibido futura recauchutagem',
                         value: _proibidoFuturaRecap,
@@ -366,68 +456,95 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                       ),
                     ],
                     if (_showMotivoSucateamento) ...[
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 29),
                       FieldLabel('Motivo de Sucateamento'),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 7),
                       _buildMotivoField(),
                     ],
                     if (_showMotivo) ...[
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 29),
                       FieldLabel('Motivo'),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 7),
                       TextFormField(
                         controller: _motivoController,
-                        decoration:
-                            formInputDecoration(hint: 'Descreva o motivo'),
+                        style: AppTextStyles.inputText,
+                        decoration: formInputDecoration(
+                          hint: 'Descreva o motivo',
+                          borderColor: destino.borderColor ?? destino.color,
+                        ),
                       ),
                     ],
                     if (_showObservacao) ...[
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 29),
                       FieldLabel('Observação'),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _observacaoController,
-                        maxLines: 3,
-                        decoration: formInputDecoration(
-                            hint: 'Observações (opcional)'),
+                      const SizedBox(height: 7),
+                      SizedBox(
+                        height: 90,
+                        child: TextFormField(
+                          controller: _observacaoController,
+                          maxLines: null,
+                          expands: true,
+                          textAlignVertical: TextAlignVertical.top,
+                          style: AppTextStyles.inputText,
+                          decoration: formInputDecoration(
+                            hint: 'Observações (opcional)',
+                            borderColor: destino.borderColor ?? destino.color,
+                          ),
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 40),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
+                        SizedBox(
+                          width: 144,
+                          height: 56,
                           child: OutlinedButton(
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.orange,
-                              side: const BorderSide(color: Colors.orange),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
+                              foregroundColor: AppColors.textMuted,
+                              side: BorderSide(
+                                width: 2,
+                                color: AppColors.textPlaceholder,
+                              ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(15),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Cancelar',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.buttonSecondary,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
+                        Container(
+                          width: 144,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x66000000),
+                                offset: Offset(0, 2),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
                           child: FilledButton(
                             onPressed: _confirmar,
                             style: FilledButton.styleFrom(
-                              backgroundColor: destino.color,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 14),
+                              backgroundColor: AppColors.primary,
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(15),
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Confirmar',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.buttonPrimary,
                             ),
                           ),
                         ),
@@ -439,8 +556,84 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
               ),
             ),
           ),
+            ],
+          ),
+          // Botão fechar (X) — só no tablet; mobile fecha via swipe-down.
+          // Posição relativa à dialog de 460pt: 460 - 20 - 30 = 410 da esquerda.
+          if (widget.isTablet)
+            Positioned(
+              left: 410,
+              top: 30,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.pop(context),
+                child: const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CustomPaint(
+                    painter: _CloseXPainter(
+                      color: AppColors.textMuted,
+                      strokeWidth: 3,
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
+    );
+  }
+
+  /// Conteúdo "ORIGEM → DESTINO" do header. Reutilizado em mobile (dentro
+  /// da faixa colorida com drag handle) e tablet (inline no Dialog colorido).
+  Widget _buildHeaderRow() {
+    final origem = widget.origem;
+    final destino = widget.destino;
+    return Row(
+      children: [
+        // ORIGEM: Montserrat 12 SemiBold uppercase, cor #363636.
+        Text(
+          origem.label.toUpperCase(),
+          style: AppTextStyles.labelNumbers,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Icon(
+            Icons.arrow_forward,
+            size: 14,
+            color: AppColors.textBody,
+          ),
+        ),
+        // Ícone do destino: 24×24, tingido com borderColor.
+        SizedBox(
+          width: 24,
+          height: 24,
+          child: Transform.flip(
+            flipX: destino.mirrorX,
+            child: destino.asset != null
+                ? SvgPicture.asset(
+                    destino.asset!,
+                    width: 24,
+                    height: 24,
+                    colorFilter: ColorFilter.mode(
+                      destino.borderColor ?? destino.color,
+                      BlendMode.srcIn,
+                    ),
+                  )
+                : Icon(
+                    destino.icon,
+                    color: destino.borderColor ?? destino.color,
+                    size: 24,
+                  ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        // DESTINO: Montserrat 20 Bold uppercase, cor #363636.
+        Text(
+          destino.label.toUpperCase(),
+          style: AppTextStyles.body,
+        ),
+      ],
     );
   }
 
@@ -454,7 +647,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         FieldLabel('Nº do Pneu'),
-        const SizedBox(height: 6),
+        const SizedBox(height: 7),
         InkWell(
           onTap: _selecionarPneu,
           borderRadius: BorderRadius.circular(10),
@@ -462,9 +655,10 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             decoration: BoxDecoration(
+              color: Colors.white,
               border: Border.all(
-                width: 2,
-                color: _pneuError ? Colors.red : AppColors.primaryBorder,
+                width: 1,
+                color: _pneuError ? Colors.red : AppColors.textHint,
               ),
               borderRadius: BorderRadius.circular(10),
             ),
@@ -475,12 +669,9 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                     _selectedPneu != null
                         ? 'Pneu #${_selectedPneu!.nroPneu}'
                         : 'Toque para selecionar',
-                    style: TextStyle(
-                      color: _selectedPneu != null
-                          ? AppColors.textDark
-                          : Colors.grey.shade400,
-                      fontSize: 14,
-                    ),
+                    style: _selectedPneu != null
+                        ? AppTextStyles.inputText
+                        : AppTextStyles.formInputHint,
                   ),
                 ),
                 Icon(Icons.search, size: 18, color: Colors.grey.shade500),
@@ -526,17 +717,54 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     if (_erroMotivos != null) {
       return _erroRetry(_erroMotivos!, _carregarMotivos);
     }
+    final destino = widget.destino;
     return DropdownButtonFormField<MotivoSucateamento>(
       initialValue: _motivoSucateamento,
-      decoration: formInputDecoration(hint: 'Selecione o motivo'),
-      items: _motivos
-          .map(
-            (m) => DropdownMenuItem(
-              value: m,
-              child: Text(m.label, overflow: TextOverflow.ellipsis),
-            ),
-          )
-          .toList(),
+      isExpanded: true,
+      itemHeight: 60,
+      style: AppTextStyles.inputText,
+      dropdownColor: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      menuMaxHeight: 570,
+      decoration: formInputDecoration(
+        hint: 'Selecione o motivo',
+        borderColor: destino.borderColor ?? destino.color,
+      ),
+      items: List.generate(_motivos.length, (i) {
+        final m = _motivos[i];
+        final isLast = i == _motivos.length - 1;
+        return DropdownMenuItem(
+          value: m,
+          // O DropdownButton aplica EdgeInsets.symmetric(horizontal: 16) em
+          // volta de cada item. Pra borda atravessar de ponta a ponta do
+          // menu, uso um Stack com Positioned de offset negativo (-16) que
+          // "escapa" essa margem.
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  m.label,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.inputText
+                      .copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+              if (!isLast)
+                Positioned(
+                  left: -16,
+                  right: -16,
+                  bottom: 0,
+                  child: Container(
+                    height: 1,
+                    color: AppColors.textHint,
+                  ),
+                ),
+            ],
+          ),
+        );
+      }),
       onChanged: (v) => setState(() => _motivoSucateamento = v),
       validator: (v) =>
           v == null ? 'Selecione o motivo de sucateamento' : null,
@@ -548,10 +776,15 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     if (_erroFornecedores != null) {
       return _erroRetry(_erroFornecedores!, _carregarFornecedores);
     }
+    final destino = widget.destino;
     return DropdownButtonFormField<Fornecedor>(
       initialValue: _selectedFornecedor,
       isExpanded: true,
-      decoration: formInputDecoration(hint: 'Selecione o fornecedor'),
+      style: AppTextStyles.inputText,
+      decoration: formInputDecoration(
+        hint: 'Selecione o fornecedor',
+        borderColor: destino.borderColor ?? destino.color,
+      ),
       // selectedItemBuilder controla o que aparece NO CAMPO (estado fechado).
       // Sem isso o Dropdown tentaria renderizar o Column de 2 linhas no header,
       // que estoura o tamanho do TextField e gera overflow.
@@ -632,4 +865,27 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       ],
     );
   }
+}
+
+/// Pinta um "X" com duas linhas diagonais cruzadas — usado no botão de
+/// fechar do modal de tablet, com stroke configurável pra bater com a spec.
+class _CloseXPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+
+  const _CloseXPainter({required this.color, required this.strokeWidth});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(_CloseXPainter old) =>
+      old.color != color || old.strokeWidth != strokeWidth;
 }

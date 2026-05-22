@@ -270,59 +270,74 @@ void showSlotVazioAcoesDialog(
   showDialog<void>(
     context: context,
     builder: (dialogContext) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.textHint, width: 1),
+      ),
+      child: SizedBox(
+        width: 340,
+        height: 210,
+        child: Stack(
           children: [
-            Text(
-              'Posição $localEixo',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Selecione a origem do pneu',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (int i = 0; i < acoesInsercao.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 10),
-                  _AcaoCard(
-                    acao: acoesInsercao[i],
-                    onTap: () {
-                      Navigator.pop(dialogContext);
-                      _navegarParaListaPneus(
-                        context,
-                        localEixo,
-                        acoesInsercao[i],
-                        onConfirmed: onConfirmed,
-                      );
-                    },
+            Padding(
+              padding: const EdgeInsets.fromLTRB(25, 32, 25, 0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      'Posição $localEixo',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.body,
+                    ),
+                  ),
+                  const SizedBox(height: 11),
+                  Center(
+                    child: Text(
+                      'Selecione a origem do pneu',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.labelNumbers.copyWith(
+                        color: AppColors.textPlaceholder,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 23),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (int i = 0; i < acoesInsercao.length; i++) ...[
+                        if (i > 0) const SizedBox(width: 10),
+                        _AcaoCard(
+                          acao: acoesInsercao[i],
+                          onTap: () {
+                            Navigator.pop(dialogContext);
+                            _navegarParaListaPneus(
+                              context,
+                              localEixo,
+                              acoesInsercao[i],
+                              onConfirmed: onConfirmed,
+                            );
+                          },
+                        ),
+                      ],
+                    ],
                   ),
                 ],
-              ],
+              ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text(
-                  'Cancelar',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+            Positioned(
+              top: 20,
+              left: 304,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.pop(dialogContext),
+                child: const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CustomPaint(painter: _CloseIconPainter()),
                 ),
               ),
             ),

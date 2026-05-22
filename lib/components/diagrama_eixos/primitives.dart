@@ -505,22 +505,20 @@ class EmptyTirePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    final radius = w / 2;
 
-    final rrect = RRect.fromLTRBR(0, 0, w, h, Radius.circular(radius));
+    final rrect = RRect.fromLTRBR(0, 0, w, h, const Radius.circular(24));
 
-    // Fill cinza claro
-    canvas.drawRRect(rrect, Paint()..color = const Color(0xFFEEEEEE));
+    canvas.drawRRect(rrect, Paint()..color = const Color(0xFFC4C4C4));
 
     final paint = Paint()
-      ..color = Colors.grey.shade400
+      ..color = const Color(0xFF5F5F5F)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 1;
 
     final path = Path()..addRRect(rrect);
 
-    const dashLength = 4.0;
-    const gapLength = 3.0;
+    const dashLength = 6.0;
+    const gapLength = 6.0;
     for (final metric in path.computeMetrics()) {
       var distance = 0.0;
       var drawing = true;

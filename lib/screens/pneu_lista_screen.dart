@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../components/pneu_acoes_dialog.dart';
 import '../models/pneu.dart';
+import '../models/pneu_acao.dart';
 import '../providers/auth_provider.dart';
 import '../services/pneu_service.dart' as pneu_service;
 import '../theme/app_colors.dart';
@@ -98,28 +100,28 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
   String _situacaoLabel(String situacao) {
     switch (situacao.toUpperCase()) {
       case 'N':
-        return 'Novo';
+        return 'NOVO';
       case 'U':
-        return 'Usado';
+        return 'USADO';
       case 'R':
-        return 'Recapado';
+        return 'RECAPADO';
       case 'S':
-        return 'Sucata';
+        return 'SUCATA';
       default:
-        return situacao;
+        return situacao.toUpperCase();
     }
   }
 
   Color _situacaoColor(String situacao) {
     switch (situacao.toUpperCase()) {
       case 'N':
-        return Colors.green;
+        return const Color(0xFF00AF3E);
       case 'U':
-        return Colors.orange;
+        return const Color(0xFFFF8126);
       case 'R':
-        return Colors.blue;
+        return const Color(0xFF7D00DE);
       case 'S':
-        return Colors.red;
+        return const Color(0xFFF03E26);
       default:
         return AppColors.textMuted;
     }
@@ -134,47 +136,140 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
         toolbarHeight: 60,
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: Text(
-          widget.title,
-          style: isTablet
-              ? AppTextStyles.labelBarTablet
-              : AppTextStyles.labelBar,
-          textAlign: TextAlign.center,
-        ),
+        title: isTablet
+            ? SvgPicture.asset(
+                'assets/logo_horizontal.svg',
+                height: 22,
+                width: 177.17,
+              )
+            : Text(
+                widget.title,
+                style: AppTextStyles.labelBar,
+                textAlign: TextAlign.center,
+              ),
       ),
       backgroundColor: AppColors.backgroundScreen,
-      body: Column(
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Buscar por marca, modelo, placa...',
-                hintStyle: AppTextStyles.inputHint.copyWith(fontSize: 14),
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => _searchController.clear(),
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+          Column(
+            children: [
+              Padding(
+            padding: EdgeInsets.fromLTRB(isTablet ? 47 : 28, isTablet ? 36 : 21, isTablet ? 47 : 28, isTablet ? 40 : 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isTablet) ...[
+                  Text(widget.title, style: AppTextStyles.screenTitleTablet),
+                  const SizedBox(height: 13),
+                ],
+                Text('Buscar pneu', style: AppTextStyles.sublabelForm),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: isTablet ? 740 : double.infinity,
+                  height: 50,
+                  child: TextField(
+                    controller: _searchController,
+                    textAlignVertical: TextAlignVertical.center,
+                    style: AppTextStyles.sublabelForm,
+                    decoration: InputDecoration(
+                      hintText: 'marca, modelo, placa ...',
+                      hintStyle: AppTextStyles.formInputHint,
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 14),
+                        child: SvgPicture.asset(
+                          'assets/busca.svg',
+                          width: 16,
+                          height: 16,
+                        ),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () => _searchController.clear(),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            )
+                          : null,
+                      suffixIconConstraints: const BoxConstraints(
+                        minWidth: 0,
+                        minHeight: 0,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(50),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF959595),
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(50),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF959595),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(50),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF959595),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-          Expanded(child: _buildBody()),
+              Expanded(child: _buildBody()),
+            ],
+          ),
+          if (!_isLoading && _erro == null && _filteredPneus.isEmpty)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Center(child: _buildEmptyState()),
+              ),
+            ),
         ],
       ),
     );
   }
 
+  Widget _buildEmptyState() {
+    final isFilterEmpty = _searchController.text.isNotEmpty;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isFilterEmpty) ...[
+          SvgPicture.asset(
+            'assets/busca_nao_encontrada.svg',
+            width: 52,
+            height: 52,
+          ),
+          const SizedBox(height: 21),
+        ],
+        Text(
+          isFilterEmpty
+              ? 'Nenhum pneu encontrado\npara o filtro'
+              : 'Nenhum pneu cadastrado',
+          style: AppTextStyles.label.copyWith(fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
   Widget _buildBody() {
+    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -199,20 +294,13 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
     }
 
     if (_filteredPneus.isEmpty) {
-      return Center(
-        child: Text(
-          _searchController.text.isNotEmpty
-              ? 'Nenhum pneu encontrado para o filtro'
-              : 'Nenhum pneu cadastrado',
-          style: AppTextStyles.label,
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     return RefreshIndicator(
       onRefresh: _carregarPneus,
       child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: EdgeInsets.fromLTRB(isTablet ? 47 : 28, 0, isTablet ? 47 : 28, 16),
         itemCount: _filteredPneus.length,
         itemBuilder: (context, index) {
           final pneu = _filteredPneus[index];
@@ -220,6 +308,7 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
             pneu: pneu,
             situacaoLabel: _situacaoLabel(pneu.situacao),
             situacaoColor: _situacaoColor(pneu.situacao),
+            isTablet: isTablet,
             onTap: widget.selectionMode
                 ? () => Navigator.pop(context, pneu)
                 : () => showPneuAcoesDialog(context, pneu),
@@ -235,26 +324,55 @@ class _PneuCard extends StatelessWidget {
     required this.pneu,
     required this.situacaoLabel,
     required this.situacaoColor,
+    required this.isTablet,
     required this.onTap,
   });
 
   final Pneu pneu;
   final String situacaoLabel;
   final Color situacaoColor;
+  final bool isTablet;
   final VoidCallback onTap;
+
+  Color _headerColor() {
+    try {
+      final acao = PneuAcao.values.firstWhere(
+        (a) => a.label.toUpperCase() == pneu.localizacao.toUpperCase(),
+      );
+      return acao.borderColor ?? AppColors.textBody;
+    } catch (_) {
+      return AppColors.textBody;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x40000000),
+            offset: Offset(0, 10),
+            blurRadius: 40,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.white,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFC4C4C4), width: 1),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          child: SizedBox(
+            height: isTablet ? 154 : 200,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 15, 0),
+              child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header: nro pneu + situação
@@ -263,82 +381,119 @@ class _PneuCard extends StatelessWidget {
               children: [
                 Text(
                   'Pneu #${pneu.nroPneu}',
-                  style: AppTextStyles.body.copyWith(fontSize: 16),
+                  style: AppTextStyles.body.copyWith(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: _headerColor(),
+                  ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  height: 28,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: situacaoColor.withValues(alpha: 0.15),
+                    color: situacaoColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     situacaoLabel,
                     style: AppTextStyles.labelNumbers.copyWith(
-                      color: situacaoColor,
+                      fontSize: 10,
+                      color: Colors.white,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            // Marca / Modelo
+            const SizedBox(height: 7),
             Text(
-              '${pneu.marca} ${pneu.modelo}',
-              style: AppTextStyles.label.copyWith(fontSize: 14),
+              '${pneu.marca} ${pneu.modelo}'.toUpperCase(),
+              style: AppTextStyles.label.copyWith(
+                fontSize: 12,
+                color: AppColors.textBody,
+              ),
             ),
-            const SizedBox(height: 4),
-            // Dimensão e Tipo
+            const SizedBox(height: 5),
             Text(
-              '${pneu.dimensao} - ${pneu.tipo}',
-              style: AppTextStyles.footer.copyWith(fontSize: 12),
+              '${pneu.dimensao} - ${pneu.tipo}'.toUpperCase(),
+              style: AppTextStyles.label.copyWith(
+                fontSize: 12,
+                color: AppColors.textBody,
+              ),
             ),
-            const Divider(height: 20),
-            // Info row
-            Row(
-              children: [
-                _infoChip(Icons.directions_car, pneu.placa),
-                const SizedBox(width: 16),
-                _infoChip(Icons.tag, 'Frota ${pneu.nroFrota}'),
-                const SizedBox(width: 16),
-                _infoChip(Icons.settings, pneu.localEixo),
+            const SizedBox(height: 17),
+            Divider(height: 2, thickness: 2, color: _headerColor()),
+            const SizedBox(height: 18),
+            if (isTablet)
+              Row(
+                children: [
+                  Expanded(child: _placaChip()),
+                  Expanded(child: _frotaChip()),
+                  Expanded(child: _localizacaoChip()),
+                  Expanded(child: _codEsqEixoChip()),
+                  Expanded(child: _serieChip()),
+                ],
+              )
+            else ...[
+              Row(
+                children: [
+                  Expanded(child: _placaChip()),
+                  Expanded(child: _frotaChip()),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(child: _localizacaoChip()),
+                  Expanded(child: _codEsqEixoChip()),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(child: _serieChip()),
+                  const Expanded(child: SizedBox.shrink()),
+                ],
+              ),
+            ],
               ],
             ),
-            if (pneu.localizacao.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _infoChip(Icons.location_on, pneu.localizacao),
-                ],
-              ),
-            ],
-            if (pneu.nroSerie.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  _infoChip(Icons.qr_code, 'Série: ${pneu.nroSerie}'),
-                ],
-              ),
-            ],
-          ],
+          ),
         ),
         ),
       ),
     );
   }
 
-  Widget _infoChip(IconData icon, String text) {
+  Widget _infoChip(Widget icon, String text) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppColors.textMuted),
-        const SizedBox(width: 4),
+        icon,
+        const SizedBox(width: 10),
         Text(
           text,
-          style: AppTextStyles.footer.copyWith(fontSize: 11),
+          style: AppTextStyles.sublabelForm.copyWith(fontSize: 11),
         ),
       ],
     );
   }
+
+  Widget _svgIcon(String asset, double size) => SvgPicture.asset(
+        asset,
+        width: size,
+        height: size,
+        colorFilter: ColorFilter.mode(_headerColor(), BlendMode.srcIn),
+      );
+
+  Widget _placaChip() => _infoChip(_svgIcon('assets/frota.svg', 12), pneu.placa);
+  Widget _frotaChip() =>
+      _infoChip(_svgIcon('assets/hashtag.svg', 11), 'Frota ${pneu.nroFrota}');
+  Widget _localizacaoChip() =>
+      _infoChip(_svgIcon('assets/localizacao.svg', 14), pneu.localizacao);
+  Widget _codEsqEixoChip() =>
+      _infoChip(_svgIcon('assets/engrenagem.svg', 14), pneu.codEsqEixo);
+  Widget _serieChip() =>
+      _infoChip(_svgIcon('assets/serie.svg', 13), pneu.nroSerie);
 }
