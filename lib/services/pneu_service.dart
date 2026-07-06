@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/pneu.dart';
+import 'api_error.dart';
 
 /// Busca todos os pneus.
 ///
@@ -24,8 +25,7 @@ Future<List<Pneu>> fetchPneus(String token, {http.Client? client}) async {
           .map((e) => Pneu.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
-      final data = jsonDecode(response.body);
-      throw Exception(data['detail']?[0]?['msg'] ?? 'Erro ao buscar pneus');
+      throw apiException(response, 'Erro ao buscar pneus');
     }
   } finally {
     if (createdClient) {

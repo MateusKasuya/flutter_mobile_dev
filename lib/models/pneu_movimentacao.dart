@@ -8,10 +8,12 @@ class MotivoSucateamento {
 
   String get label => '$codigo - $descricao';
 
+  // As chaves seguem o contrato atual da API (camelCase minúsculo),
+  // documentado em /api-frota/swagger/v1/swagger.json.
   factory MotivoSucateamento.fromJson(Map<String, dynamic> json) {
     return MotivoSucateamento(
-      (json['CODSUC'] ?? 0) as int,
-      (json['DESCRICAO'] ?? '') as String,
+      (json['codsuc'] ?? 0) as int,
+      (json['descricao'] ?? '') as String,
     );
   }
 

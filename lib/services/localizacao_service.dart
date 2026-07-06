@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/localizacao.dart';
+import 'api_error.dart';
 
 /// Busca as localizações de pneus com suas quantidades.
 ///
@@ -25,8 +26,7 @@ Future<List<Localizacao>> fetchLocalizacoes(String token,
           .map((e) => Localizacao.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
-      final data = jsonDecode(response.body);
-      throw Exception(data['detail'] ?? 'Erro ao buscar localizações');
+      throw apiException(response, 'Erro ao buscar localizações');
     }
   } finally {
     if (createdClient) {

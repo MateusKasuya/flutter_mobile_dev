@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/pneu_movimentacao.dart';
+import 'api_error.dart';
 
 /// Busca todos os motivos de sucateamento cadastrados.
 ///
@@ -25,9 +26,7 @@ Future<List<MotivoSucateamento>> fetchMotivosSucateamento(String token,
           .map((e) => MotivoSucateamento.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
-      final data = jsonDecode(response.body);
-      throw Exception(data['detail']?[0]?['msg'] ??
-          'Erro ao buscar motivos de sucateamento');
+      throw apiException(response, 'Erro ao buscar motivos de sucateamento');
     }
   } finally {
     if (createdClient) {

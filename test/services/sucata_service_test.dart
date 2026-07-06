@@ -13,8 +13,8 @@ void main() {
         expect(request.headers['Authorization'], 'Bearer token123');
         return http.Response(
           jsonEncode([
-            {'CODSUC': 1, 'DESCRICAO': 'Deslocamento de Borracha'},
-            {'CODSUC': 4, 'DESCRICAO': 'Não recapável'},
+            {'codsuc': 1, 'descricao': 'Deslocamento de Borracha'},
+            {'codsuc': 4, 'descricao': 'Não recapável'},
           ]),
           200,
         );

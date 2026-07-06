@@ -6,14 +6,14 @@ import 'package:http/testing.dart';
 import 'package:frota_facil_mobile/services/frota_service.dart';
 
 Map<String, dynamic> _veiculoJson() => {
-      'PLACA': 'ABC1D23',
-      'NROFROTA': '001',
-      'MARCA': 'Marca Y',
-      'MODELO': 'Modelo X',
-      'ANO': '2020',
-      'ANOMODELO': '2021',
-      'COR': 'Branco',
-      'TIPO': 'Caminhão',
+      'placa': 'ABC1D23',
+      'nrofrota': '001',
+      'marca': 'Marca Y',
+      'modelo': 'Modelo X',
+      'ano': '2020',
+      'anomodelo': '2021',
+      'cor': 'Branco',
+      'tipo': 'Caminhão',
       'pneus': [],
     };
 

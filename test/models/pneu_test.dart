@@ -5,33 +5,34 @@ void main() {
   group('Pneu.fromJson', () {
     test('cria Pneu a partir de JSON válido', () {
       final json = {
-        'NROPNEU': '1',
-        'NROSERIE': 'SR123456',
-        'MARCA': 'Pirelli',
-        'MODELO': 'Modelo A',
-        'DIMENSAO': '295/80R22.5',
-        'TIPO': 'Radial',
-        'SITUACAO': 'Em uso',
-        'LOCALEIXO': 'Dianteiro esquerdo',
-        'CODESQEIXO': '1',
-        'LOCALIZACAO': '1',
-        'NRODOT': '4523',
-        'INDRECAPAGEM': 'N',
-        'VIDAPNEU': '80',
-        'KMRODADO': '50000',
-        'KMACUMULADOR': '40000',
-        'KMATUVEI': '150000',
-        'KMRODADO0': '10000',
-        'KMRODADO1': '10000',
-        'KMRODADO2': '10000',
-        'KMRODADO3': '10000',
-        'KMRODADO4': '10000',
-        'KMRODADO5': '0',
-        'DATACOMPRA': '2023-01-15',
-        'DATAATZKM': '2024-06-01',
-        'CODFIL': '01',
-        'NROFROTA': '001',
-        'PLACA': 'ABC1D23',
+        'nropneu': '1',
+        'nroserie': 'SR123456',
+        'marca': 'Pirelli',
+        'modelo': 'Modelo A',
+        'dimensao': '295/80R22.5',
+        'tipo': 'Radial',
+        'situacao': 'Em uso',
+        'localeixo': 'Dianteiro esquerdo',
+        'codesqeixo': '1',
+        'localizacao': '1',
+        'nrodot': '4523',
+        'indrecapagem': 'N',
+        'vidapneu': '80',
+        'kmrodado': '50000',
+        'kmacumulador': '40000',
+        'kmatuvei': '150000',
+        // O 'O' maiúsculo é o formato real da API (camelCase de KMRODADO0..5).
+        'kmrodadO0': '10000',
+        'kmrodadO1': '10000',
+        'kmrodadO2': '10000',
+        'kmrodadO3': '10000',
+        'kmrodadO4': '10000',
+        'kmrodadO5': '0',
+        'datacompra': '2023-01-15',
+        'dataatzkm': '2024-06-01',
+        'codfil': '01',
+        'nrofrota': '001',
+        'placa': 'ABC1D23',
       };
 
       final pneu = Pneu.fromJson(json);
@@ -43,6 +44,8 @@ void main() {
       expect(pneu.localEixo, 'Dianteiro esquerdo');
       expect(pneu.vidaPneu, '80');
       expect(pneu.kmRodado, '50000');
+      expect(pneu.kmRodado0, '10000');
+      expect(pneu.kmRodado5, '0');
       expect(pneu.placa, 'ABC1D23');
     });
 

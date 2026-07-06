@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/fornecedor.dart';
+import 'api_error.dart';
 
 /// Busca todos os fornecedores cadastrados.
 ///
@@ -25,9 +26,7 @@ Future<List<Fornecedor>> fetchFornecedores(String token,
           .map((e) => Fornecedor.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
-      final data = jsonDecode(response.body);
-      throw Exception(
-          data['detail']?[0]?['msg'] ?? 'Erro ao buscar fornecedores');
+      throw apiException(response, 'Erro ao buscar fornecedores');
     }
   } finally {
     if (createdClient) {

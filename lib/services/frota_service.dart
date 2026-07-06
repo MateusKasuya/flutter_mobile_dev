@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import '../models/veiculo.dart';
+import 'api_error.dart';
 
 /// Busca um veiculo com seus pneus pela placa.
 ///
@@ -29,8 +30,7 @@ Future<Veiculo> fetchVeiculo(String token, String placa,
     } else if (response.statusCode == 404) {
       throw Exception('Veiculo nao encontrado');
     } else {
-      final data = jsonDecode(response.body);
-      throw Exception(data['detail']?[0]?['msg'] ?? 'Erro ao buscar veiculo');
+      throw apiException(response, 'Erro ao buscar veiculo');
     }
   } finally {
     if (createdClient) {

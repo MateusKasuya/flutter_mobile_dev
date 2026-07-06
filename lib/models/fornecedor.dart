@@ -9,11 +9,13 @@ class Fornecedor {
     required this.nomeFantasia,
   });
 
+  // As chaves seguem o contrato atual da API (camelCase minúsculo),
+  // documentado em /api-frota/swagger/v1/swagger.json.
   factory Fornecedor.fromJson(Map<String, dynamic> json) {
     return Fornecedor(
-      cgcCpf: (json['CGCCPFFORNE'] ?? '') as String,
-      razaoSocial: (json['RAZAOSOCIAL'] ?? '') as String,
-      nomeFantasia: (json['NOMEFANTASIA'] ?? '') as String,
+      cgcCpf: (json['cgccpfforne'] ?? '') as String,
+      razaoSocial: (json['razaosocial'] ?? '') as String,
+      nomeFantasia: (json['nomefantasia'] ?? '') as String,
     );
   }
 

@@ -14,14 +14,14 @@ void main() {
         return http.Response(
           jsonEncode([
             {
-              'CGCCPFFORNE': '12.345.678/0001-90',
-              'RAZAOSOCIAL': 'Recapagem Brasil LTDA',
-              'NOMEFANTASIA': 'Recap BR',
+              'cgccpfforne': '12.345.678/0001-90',
+              'razaosocial': 'Recapagem Brasil LTDA',
+              'nomefantasia': 'Recap BR',
             },
             {
-              'CGCCPFFORNE': '98.765.432/0001-10',
-              'RAZAOSOCIAL': 'Pneus do Sul S/A',
-              'NOMEFANTASIA': '',
+              'cgccpfforne': '98.765.432/0001-10',
+              'razaosocial': 'Pneus do Sul S/A',
+              'nomefantasia': '',
             },
           ]),
           200,

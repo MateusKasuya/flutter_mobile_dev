@@ -23,17 +23,20 @@ class Veiculo {
     required this.pneus,
   });
 
+  // As chaves seguem o contrato atual da API (camelCase minúsculo),
+  // documentado em /api-frota/swagger/v1/swagger.json.
   factory Veiculo.fromJson(Map<String, dynamic> json) {
     return Veiculo(
-      placa: (json['PLACA'] ?? '') as String,
-      nroFrota: (json['NROFROTA'] ?? '') as String,
-      marca: (json['MARCA'] ?? '') as String,
-      modelo: (json['MODELO'] ?? '') as String,
-      ano: (json['ANO'] ?? '') as String,
-      anoModelo: (json['ANOMODELO'] ?? '') as String,
-      cor: (json['COR'] ?? '') as String,
-      tipo: (json['TIPO'] ?? '') as String,
-      pneus: (json['pneus'] as List)
+      placa: (json['placa'] ?? '') as String,
+      nroFrota: (json['nrofrota'] ?? '') as String,
+      marca: (json['marca'] ?? '') as String,
+      modelo: (json['modelo'] ?? '') as String,
+      ano: (json['ano'] ?? '') as String,
+      anoModelo: (json['anomodelo'] ?? '') as String,
+      cor: (json['cor'] ?? '') as String,
+      tipo: (json['tipo'] ?? '') as String,
+      // 'pneus' é nullable no contrato da API; veículo sem pneus vira lista vazia.
+      pneus: (json['pneus'] as List? ?? const [])
           .map((e) => Pneu.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
