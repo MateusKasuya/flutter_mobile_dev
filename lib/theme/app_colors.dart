@@ -23,4 +23,5 @@ class AppColors {
 
   // Icon
   static const Color iconColor = Color(0xFF00ACAD);
+  static const Color iconEmpty = Color(0xFFE0E0E0);
 }

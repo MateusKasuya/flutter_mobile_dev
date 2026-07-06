@@ -480,20 +480,41 @@ class _PneuCard extends StatelessWidget {
     );
   }
 
-  Widget _svgIcon(String asset, double size) => SvgPicture.asset(
+  // `isEmpty` é um parâmetro nomeado opcional com valor padrão: quem chama
+  // pode omiti-lo. Quando o dado do chip está vazio, o ícone fica cinza em
+  // vez da cor do header, sinalizando ausência de informação.
+  Widget _svgIcon(String asset, double size, {bool isEmpty = false}) =>
+      SvgPicture.asset(
         asset,
         width: size,
         height: size,
-        colorFilter: ColorFilter.mode(_headerColor(), BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(
+          isEmpty ? AppColors.iconEmpty : _headerColor(),
+          BlendMode.srcIn,
+        ),
       );
 
-  Widget _placaChip() => _infoChip(_svgIcon('assets/frota.svg', 12), pneu.placa);
-  Widget _frotaChip() =>
-      _infoChip(_svgIcon('assets/hashtag.svg', 11), 'Frota ${pneu.nroFrota}');
-  Widget _localizacaoChip() =>
-      _infoChip(_svgIcon('assets/localizacao.svg', 14), pneu.localizacao);
-  Widget _codEsqEixoChip() =>
-      _infoChip(_svgIcon('assets/engrenagem.svg', 14), pneu.codEsqEixo);
-  Widget _serieChip() =>
-      _infoChip(_svgIcon('assets/serie.svg', 13), pneu.nroSerie);
+  Widget _placaChip() => _infoChip(
+        _svgIcon('assets/frota.svg', 12, isEmpty: pneu.placa.trim().isEmpty),
+        pneu.placa,
+      );
+  Widget _frotaChip() => _infoChip(
+        _svgIcon('assets/hashtag.svg', 11,
+            isEmpty: pneu.nroFrota.trim().isEmpty),
+        'Frota ${pneu.nroFrota}',
+      );
+  Widget _localizacaoChip() => _infoChip(
+        _svgIcon('assets/localizacao.svg', 14,
+            isEmpty: pneu.localizacao.trim().isEmpty),
+        pneu.localizacao,
+      );
+  Widget _codEsqEixoChip() => _infoChip(
+        _svgIcon('assets/engrenagem.svg', 14,
+            isEmpty: pneu.codEsqEixo.trim().isEmpty),
+        pneu.codEsqEixo,
+      );
+  Widget _serieChip() => _infoChip(
+        _svgIcon('assets/serie.svg', 13, isEmpty: pneu.nroSerie.trim().isEmpty),
+        pneu.nroSerie,
+      );
 }
