@@ -730,6 +730,23 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
         hint: 'Selecione o motivo',
         borderColor: destino.borderColor ?? destino.color,
       ),
+      // Sem selectedItemBuilder, o DropdownButton reusa o widget do item
+      // (o Stack abaixo, que inclui o divisor de 1px) pra exibir o valor
+      // selecionado no campo fechado — e a linha aparecia dentro do campo.
+      // Aqui renderizamos só o texto no estado fechado.
+      selectedItemBuilder: (context) => _motivos
+          .map(
+            (m) => Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                m.label,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.inputText
+                    .copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          )
+          .toList(),
       items: List.generate(_motivos.length, (i) {
         final m = _motivos[i];
         final isLast = i == _motivos.length - 1;
