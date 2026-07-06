@@ -4,6 +4,8 @@ import 'package:frota_facil_mobile/models/pneu.dart';
 import 'package:frota_facil_mobile/models/veiculo.dart';
 import 'package:frota_facil_mobile/screens/frota_detalhe_screen.dart';
 
+import '../helpers/test_viewport.dart';
+
 const _pneu = Pneu(
   nroPneu: '1',
   nroSerie: 'SR123456',
@@ -37,6 +39,7 @@ const _pneu = Pneu(
 void main() {
   group('FrotaDetalheScreen', () {
     testWidgets('exibe dados do veículo', (tester) async {
+      usePhoneViewport(tester);
       final veiculo = Veiculo(
         placa: 'ABC1D23',
         nroFrota: '001',
@@ -62,6 +65,7 @@ void main() {
     });
 
     testWidgets('exibe número do pneu no diagrama', (tester) async {
+      usePhoneViewport(tester);
       final veiculo = Veiculo(
         placa: 'ABC1D23',
         nroFrota: '001',
@@ -82,6 +86,7 @@ void main() {
     });
 
     testWidgets('veículo sem pneus exibe diagrama vazio', (tester) async {
+      usePhoneViewport(tester);
       final veiculo = Veiculo(
         placa: 'XYZ9K88',
         nroFrota: '002',
@@ -99,7 +104,8 @@ void main() {
       );
 
       expect(find.text('XYZ9K88 - Frota 002'), findsOneWidget);
-      expect(find.text('Frente'), findsNothing);
+      // O indicador do diagrama é renderizado como 'FRENTE' (maiúsculas).
+      expect(find.text('FRENTE'), findsNothing);
     });
   });
 }

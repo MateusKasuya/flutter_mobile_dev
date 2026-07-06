@@ -9,6 +9,8 @@ import 'package:frota_facil_mobile/providers/auth_provider.dart';
 import 'package:frota_facil_mobile/screens/home_screen.dart';
 import 'package:frota_facil_mobile/screens/movimento_screen.dart';
 
+import '../helpers/test_viewport.dart';
+
 void main() {
   Widget buildApp(Future<List<Localizacao>> Function(String) fetchFn) {
     return ChangeNotifierProvider(
@@ -82,7 +84,10 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 
+  // Os dois testes abaixo cobrem o FAB do layout de CELULAR — no tablet o
+  // Scaffold nem tem floatingActionButton (o botão vira parte do corpo).
   testWidgets('FAB Movimento está visível', (tester) async {
+    usePhoneViewport(tester);
     await tester.pumpWidget(
       buildApp((_) async => mockLocalizacoes),
     );
@@ -93,6 +98,7 @@ void main() {
   });
 
   testWidgets('ao tocar no FAB navega para MovimentoScreen', (tester) async {
+    usePhoneViewport(tester);
     await tester.pumpWidget(
       buildApp((_) async => mockLocalizacoes),
     );

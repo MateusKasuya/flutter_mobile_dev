@@ -315,9 +315,16 @@ class _VeiculoCard extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: isTablet ? 13 : 8),
-                  Text(
-                    '${veiculo.placa} - Frota ${veiculo.nroFrota}',
-                    style: AppTextStyles.labelFloatButton,
+                  // Expanded + ellipsis: se placa/frota não couberem na
+                  // largura do header, o texto é truncado em vez de estourar
+                  // o Row (faixas amarelas de overflow).
+                  Expanded(
+                    child: Text(
+                      '${veiculo.placa} - Frota ${veiculo.nroFrota}',
+                      style: AppTextStyles.labelFloatButton,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -430,8 +437,21 @@ class _InfoRow extends StatelessWidget {
         );
     final resolvedValueStyle = valueStyle ?? AppTextStyles.labelNumbers;
 
-    final labelText = Text(label, style: resolvedLabelStyle);
-    final valueText = Text(value, style: resolvedValueStyle);
+    // maxLines 1 + ellipsis: as linhas vivem em cards de altura fixa (spec),
+    // então um texto largo demais deve truncar, não quebrar linha e estourar
+    // a altura do card.
+    final labelText = Text(
+      label,
+      style: resolvedLabelStyle,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+    final valueText = Text(
+      value,
+      style: resolvedValueStyle,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
 
     return Padding(
       padding: EdgeInsets.symmetric(vertical: verticalPadding),

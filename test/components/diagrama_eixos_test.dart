@@ -73,7 +73,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Frente'), findsOneWidget);
+      // O componente renderiza o indicador como 'FRENTE' (maiúsculas).
+      expect(find.text('FRENTE'), findsOneWidget);
     });
 
     testWidgets('exibe labels dos eixos', (tester) async {
@@ -155,7 +156,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Frente'), findsNothing);
+      expect(find.text('FRENTE'), findsNothing);
     });
 
     testWidgets('double tap chama onPneuDoubleTap', (tester) async {

@@ -142,11 +142,18 @@ class _MovimentoCard extends StatelessWidget {
                     children: [
                       SvgPicture.asset(svgAsset),
                       const SizedBox(width: 8),
-                      Text(
-                        label,
-                        style: labelFontSize != null
-                            ? AppTextStyles.labelCardMovements.copyWith(fontSize: labelFontSize)
-                            : AppTextStyles.labelCardMovements,
+                      // Expanded + ellipsis: num Row o Text não quebra linha;
+                      // se o label for mais largo que o card (fixo em
+                      // 320/450), truncamos em vez de estourar pra direita.
+                      Expanded(
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: labelFontSize != null
+                              ? AppTextStyles.labelCardMovements.copyWith(fontSize: labelFontSize)
+                              : AppTextStyles.labelCardMovements,
+                        ),
                       ),
                     ],
                   ),
