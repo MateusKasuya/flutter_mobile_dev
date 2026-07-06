@@ -302,15 +302,16 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                   children: [
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        SizedBox(
-                          width: 160,
+                        // Nº do Pneu ocupa o espaço restante (Expanded);
+                        // gap fixo de 30pt até a Data do envio (largura fixa).
+                        Expanded(
                           child: ReadOnlyField(
                             label: 'Nº do Pneu',
                             value: pneu.nroPneu,
                           ),
                         ),
+                        const SizedBox(width: 30),
                         SizedBox(
                           width: 124,
                           child: ReadOnlyField(
