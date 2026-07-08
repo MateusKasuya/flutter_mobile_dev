@@ -329,7 +329,11 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
 }
 
 class _PneuCard extends StatelessWidget {
-  const _PneuCard({
+  // Sem `const`: o card usa `late final` para cachear a cor do header, e um
+  // construtor const não pode conviver com campos `late final`. Como todos os
+  // parâmetros (pneu, onTap, ...) são valores de runtime, este card nunca seria
+  // instanciado como const de qualquer forma — remover `const` não tem custo.
+  _PneuCard({
     required this.pneu,
     required this.situacaoLabel,
     required this.situacaoColor,
@@ -343,15 +347,19 @@ class _PneuCard extends StatelessWidget {
   final bool isTablet;
   final VoidCallback onTap;
 
-  Color _headerColor() {
-    try {
-      final acao = PneuAcao.values.firstWhere(
-        (a) => a.label.toUpperCase() == pneu.localizacao.toUpperCase(),
-      );
-      return acao.borderColor ?? AppColors.textBody;
-    } catch (_) {
-      return AppColors.textBody;
+  // `late final` = inicialização preguiçosa com cache: o valor só é calculado
+  // na primeira leitura de `_headerColorValue` e fica guardado para as leituras
+  // seguintes. Antes `_headerColor()` era chamado ~7x por card (recalculando
+  // toda vez); agora a cor do header é computada uma única vez por card.
+  late final Color _headerColorValue = _computeHeaderColor();
+
+  Color _computeHeaderColor() {
+    for (final acao in PneuAcao.values) {
+      if (acao.label.toUpperCase() == pneu.localizacao.toUpperCase()) {
+        return acao.borderColor ?? AppColors.textBody;
+      }
     }
+    return AppColors.textBody;
   }
 
   @override
@@ -393,7 +401,7 @@ class _PneuCard extends StatelessWidget {
                   style: AppTextStyles.body.copyWith(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: _headerColor(),
+                    color: _headerColorValue,
                   ),
                 ),
                 Container(
@@ -432,7 +440,7 @@ class _PneuCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 17),
-            Divider(height: 2, thickness: 2, color: _headerColor()),
+            Divider(height: 2, thickness: 2, color: _headerColorValue),
             const SizedBox(height: 18),
             if (isTablet)
               Row(
@@ -498,7 +506,7 @@ class _PneuCard extends StatelessWidget {
         width: size,
         height: size,
         colorFilter: ColorFilter.mode(
-          isEmpty ? AppColors.iconEmpty : _headerColor(),
+          isEmpty ? AppColors.iconEmpty : _headerColorValue,
           BlendMode.srcIn,
         ),
       );
