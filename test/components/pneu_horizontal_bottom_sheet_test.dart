@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:frota_facil_mobile/components/pneu_horizontal_bottom_sheet.dart';
 import 'package:frota_facil_mobile/models/pneu.dart';
 import 'package:frota_facil_mobile/models/pneu_acao.dart';
+import 'package:frota_facil_mobile/models/pneu_mov_horizontal.dart';
+import 'package:frota_facil_mobile/models/pneu_movimentacao.dart';
 import 'package:frota_facil_mobile/providers/auth_provider.dart';
 
 /// Viewport de tablet largo/alto para o modal caber sem overflow no teste.
@@ -60,26 +62,79 @@ Pneu buildPneu({String nroPneu = '12345', String codFil = '1'}) {
   );
 }
 
-Widget buildHost({required http.Client client}) {
+/// Host com um botão que abre a sheet horizontal. Recebe a combinação
+/// origem→destino a testar e um onResult que captura o valor com que a sheet
+/// fecha (espelha o buildHost de pneu_movimentacao_bottom_sheet_test.dart).
+Widget buildHost({
+  required http.Client client,
+  PneuAcao origem = PneuAcao.estoque,
+  PneuAcao destino = PneuAcao.conserto,
+  void Function(PneuMovHorizontal?)? onResult,
+}) {
   return ChangeNotifierProvider(
     create: (_) => AuthProvider()..setToken('tok'),
     child: MaterialApp(
       home: Scaffold(
         body: Builder(
           builder: (context) => ElevatedButton(
-            onPressed: () => showPneuHorizontalSheet(
-              context,
-              buildPneu(),
-              PneuAcao.estoque,
-              PneuAcao.conserto,
-              client: client,
-            ),
+            onPressed: () async {
+              final r = await showPneuHorizontalSheet(
+                context,
+                buildPneu(),
+                origem,
+                destino,
+                client: client,
+              );
+              onResult?.call(r);
+            },
             child: const Text('Abrir'),
           ),
         ),
       ),
     ),
   );
+}
+
+/// MockClient que ROTEIA por método/URL da requisição. O MockClient do
+/// package:http intercepta cada chamada e devolve a Response que retornarmos
+/// aqui — sem rede real. Os GET entregam as listas de apoio (fornecedores /
+/// motivos de sucateamento) conforme o path; o POST de movimentação captura o
+/// corpo enviado em [onPost] e responde sucesso no contrato {sucesso, mensagem}.
+MockClient roteador(void Function(Map<String, dynamic>) onPost) {
+  return MockClient((req) async {
+    if (req.method == 'GET') {
+      // Chaves camelCase minúsculo, iguais às que Fornecedor.fromJson espera.
+      if (req.url.path.contains('getfornecedor')) {
+        return http.Response(
+          jsonEncode([
+            {
+              'cgccpfforne': '11111111111111',
+              'razaosocial': 'FORN A',
+              'nomefantasia': 'A',
+            }
+          ]),
+          200,
+        );
+      }
+      // Chaves que MotivoSucateamento.fromJson espera (codsuc/descricao).
+      if (req.url.path.contains('getsucata')) {
+        return http.Response(
+          jsonEncode([
+            {'codsuc': 7, 'descricao': 'DESGASTE'}
+          ]),
+          200,
+        );
+      }
+      // Demais GET (não esperados nestes fluxos): lista vazia.
+      return http.Response(jsonEncode([]), 200);
+    }
+    // POST /pneu/movimentarpneu — captura o corpo e responde sucesso.
+    onPost(jsonDecode(req.body) as Map<String, dynamic>);
+    return http.Response(
+      jsonEncode({'sucesso': true, 'mensagem': 'OK'}),
+      200,
+    );
+  });
 }
 
 void main() {
@@ -102,5 +157,230 @@ void main() {
 
     expect(find.text('Confirmar'), findsOneWidget);
     expect(find.text('Cancelar'), findsOneWidget);
+  });
+
+  // ── Payload por combinação origem→destino ────────────────────────────────
+  // Cada teste abre a sheet com o pneu pré-selecionado (buildPneu), preenche
+  // só os campos visíveis daquela combinação e confirma o corpo do POST no
+  // contrato camelCase minúsculo. Em todos, kmentrada sai null: o fluxo
+  // horizontal move entre localizações, nunca envolve KM de veículo.
+
+  testWidgets('conserto→estoque envia valor e observação (motivosaida)',
+      (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    PneuMovHorizontal? resultado;
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.conserto,
+        destino: PneuAcao.estoque,
+        onResult: (r) => resultado = r,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+
+    // Valor do Conserto: o formatter monta "1.500,00" a partir dos dígitos.
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '0,00'),
+      '150000',
+    );
+    // Sem campo "motivo" nesta combinação, a observação vira o motivosaida.
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Observações (opcional)'),
+      'devolvido do conserto',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['nropneu'], 12345);
+    expect(sentBody!['codfil'], 1);
+    expect(sentBody!['localizacao'], 'ESTOQUE');
+    expect(sentBody!['valor'], 1500.0);
+    expect(sentBody!['motivosaida'], 'devolvido do conserto');
+    expect(sentBody!['codmotivosucat'], isNull);
+    expect(sentBody!['cgccpfforne'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+    expect(resultado, isNotNull);
+  });
+
+  testWidgets('estoque→recapagem envia motivo e valor zero', (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.estoque,
+        destino: PneuAcao.recapagem,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+
+    // Estoque→Recapagem mostra o campo "Motivo" (texto livre), sem Valor.
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Descreva o motivo'),
+      'programada',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'RECAPAGEM');
+    expect(sentBody!['motivosaida'], 'programada');
+    // Sem campo de valor: o service envia 0.
+    expect(sentBody!['valor'], 0);
+    expect(sentBody!['codmotivosucat'], isNull);
+    expect(sentBody!['cgccpfforne'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+  });
+
+  testWidgets('conserto→recapagem envia fornecedor e valor', (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.conserto,
+        destino: PneuAcao.recapagem,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    // pumpAndSettle aguarda o GET de fornecedores (disparado no initState).
+    await tester.pumpAndSettle();
+
+    // Toca no campo Fornecedor pra abrir o sheet de busca...
+    await tester.ensureVisible(find.text('Selecione o fornecedor'));
+    await tester.tap(find.text('Selecione o fornecedor'));
+    await tester.pumpAndSettle();
+    // ...e escolhe o item da lista.
+    await tester.tap(find.text('FORN A'));
+    await tester.pumpAndSettle();
+
+    // Valor da Recauchutagem.
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '0,00'),
+      '25000',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'RECAPAGEM');
+    expect(sentBody!['cgccpfforne'], '11111111111111');
+    expect(sentBody!['valor'], 250.0);
+    expect(sentBody!['codmotivosucat'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+  });
+
+  testWidgets('estoque→sucata envia codmotivosucat do dropdown',
+      (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.estoque,
+        destino: PneuAcao.sucata,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    // pumpAndSettle aguarda o GET de motivos de sucateamento.
+    await tester.pumpAndSettle();
+
+    // Abre o DropdownButtonFormField (toca no widget, não no hint — o texto do
+    // hint fica dentro da decoração e o tap nele "escapa" o alvo) e seleciona.
+    final dropdown = find.byType(DropdownButtonFormField<MotivoSucateamento>);
+    await tester.ensureVisible(dropdown);
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    // O texto do item é "7 - DESGASTE" (MotivoSucateamento.label). Uso .last
+    // pra pegar a instância no menu suspenso, não a do campo fechado.
+    await tester.tap(find.text('7 - DESGASTE').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'SUCATA');
+    expect(sentBody!['codmotivosucat'], 7);
+    expect(sentBody!['valor'], 0);
+    expect(sentBody!['cgccpfforne'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+  });
+
+  testWidgets('sucata→venda envia valor e motivo com localizacao VENDA',
+      (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.sucata,
+        destino: PneuAcao.venda,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+
+    // Venda mostra Valor da Venda + Motivo (a observação não aparece).
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '0,00'),
+      '99900',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Descreva o motivo'),
+      'venda avulsa',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'VENDA');
+    expect(sentBody!['valor'], 999.0);
+    expect(sentBody!['motivosaida'], 'venda avulsa');
+    expect(sentBody!['codmotivosucat'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
   });
 }
