@@ -60,10 +60,16 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
     final photo = await widget.pickImageFn();
     if (photo == null) return;
 
+    // Depois de um await o widget pode ter sido desmontado (usuario saiu da tela).
+    // Se isso ocorreu, mexer em setState/controller lanca erro; entao abortamos.
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
       final ocrText = await widget.ocrFn(photo.path);
+      // Idem: apos o await do OCR, garantimos que o widget ainda esta montado
+      // antes de escrever no _placaController (que seria disposto no dispose()).
+      if (!mounted) return;
       final placa = extractPlaca(ocrText);
 
       if (placa != null) {
