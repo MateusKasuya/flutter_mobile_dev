@@ -210,7 +210,7 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
     final origem = widget.origem;
     final pneu = widget.pneu;
 
-    return Padding(
+    final content = Padding(
       // Sobe o conteúdo quando o teclado aparece (só no bottom sheet mobile).
       padding: EdgeInsets.only(
         bottom: widget.isTablet
@@ -227,7 +227,8 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
               top: 30,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => Navigator.pop(context),
+                // Desabilita o "X" durante o envio (mesma intenção do Cancelar).
+                onTap: _enviando ? null : () => Navigator.pop(context),
                 child: const SizedBox(
                   width: 20,
                   height: 20,
@@ -243,6 +244,11 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
         ],
       ),
     );
+
+    // Bloqueia fechar a sheet (back/swipe/toque fora) enquanto envia — senão a
+    // requisição continua e o `if (!mounted) return` engole o sucesso, deixando
+    // a UI desatualizada. Navigator.pop explícito (sucesso/X) segue funcionando.
+    return PopScope(canPop: !_enviando, child: content);
   }
 
   Widget _buildContent(BuildContext context, PneuAcao origem, Pneu pneu) {

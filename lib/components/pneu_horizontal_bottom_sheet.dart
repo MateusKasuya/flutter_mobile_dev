@@ -437,7 +437,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
   Widget build(BuildContext context) {
     final destino = widget.destino;
 
-    return Padding(
+    final content = Padding(
       padding: EdgeInsets.only(
         // Tablet roda em Dialog centralizado, não precisa subir pro teclado.
         bottom: widget.isTablet ? 0 : MediaQuery.of(context).viewInsets.bottom,
@@ -688,7 +688,8 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
               top: 30,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => Navigator.pop(context),
+                // Desabilita o "X" durante o envio (mesma intenção do Cancelar).
+                onTap: _enviando ? null : () => Navigator.pop(context),
                 child: const SizedBox(
                   width: 20,
                   height: 20,
@@ -704,6 +705,11 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
         ],
       ),
     );
+
+    // Bloqueia fechar a sheet (back/swipe/toque fora) enquanto envia — senão a
+    // requisição continua e o `if (!mounted) return` engole o sucesso, deixando
+    // a UI desatualizada. Navigator.pop explícito (sucesso/X) segue funcionando.
+    return PopScope(canPop: !_enviando, child: content);
   }
 
   /// Conteúdo "ORIGEM → DESTINO" do header. Reutilizado em mobile (dentro
