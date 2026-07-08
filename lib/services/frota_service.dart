@@ -22,7 +22,7 @@ Future<Veiculo> fetchVeiculo(String token, String placa,
     final response = await c.get(
       url,
       headers: {'Authorization': 'Bearer $token'},
-    );
+    ).timeout(apiTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;

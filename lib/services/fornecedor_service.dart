@@ -18,7 +18,7 @@ Future<List<Fornecedor>> fetchFornecedores(String token,
     final response = await c.get(
       url,
       headers: {'Authorization': 'Bearer $token'},
-    );
+    ).timeout(apiTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as List<dynamic>;

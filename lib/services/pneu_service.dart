@@ -17,7 +17,7 @@ Future<List<Pneu>> fetchPneus(String token, {http.Client? client}) async {
     final response = await c.get(
       url,
       headers: {'Authorization': 'Bearer $token'},
-    );
+    ).timeout(apiTimeout);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as List<dynamic>;
@@ -101,7 +101,7 @@ Future<String> movimentarPneu(
         'cgccpfforne': cgcCpfForne,
         'motivosaida': motivoSaida,
       }),
-    );
+    ).timeout(apiTimeout);
 
     // Tanto o 200 quanto o 422 respondem {"sucesso": bool, "mensagem": str},
     // um formato diferente do {"detail": ...} tratado por apiException — por

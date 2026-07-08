@@ -27,7 +27,7 @@ Future<String> login(
         'cpfusuario': cpfusuario,
         'senhausuario': senhausuario,
       }),
-    );
+    ).timeout(apiTimeout);
 
     if (response.statusCode == 202) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
