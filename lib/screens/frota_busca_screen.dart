@@ -250,7 +250,9 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _scanPlaca,
+        // Desabilita o FAB durante o loading para evitar scan/busca concorrente.
+        // Com onPressed null, o Flutter ja deixa o botao visualmente acinzentado.
+        onPressed: _isLoading ? null : _scanPlaca,
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         child: const Icon(Icons.camera_alt),
