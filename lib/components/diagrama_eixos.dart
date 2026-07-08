@@ -62,7 +62,14 @@ class DiagramaEixos extends StatelessWidget {
         final overhead = isTablet ? 150.0 : 110.0;
         final perEixo = isTablet ? 168.0 : 130.0;
         final minHeight = overhead + eixos.length * perEixo;
-        final height = math.max(constraints.maxHeight, minHeight);
+        // maxHeight pode ser infinito quando o parent não limita a altura
+        // (ex.: dentro de Column/ListView/SingleChildScrollView). Nesse caso
+        // math.max devolveria infinito e o SizedBox abaixo estouraria o layout
+        // ("BoxConstraints has infinite height"). Só usamos maxHeight quando é
+        // finito; senão caímos na altura mínima calculada por eixo.
+        final height = constraints.maxHeight.isFinite
+            ? math.max(constraints.maxHeight, minHeight)
+            : minHeight;
 
         return SingleChildScrollView(
           child: SizedBox(height: height, child: frame),
