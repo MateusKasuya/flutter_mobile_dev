@@ -15,6 +15,7 @@ import '../services/sucata_service.dart' as sucata_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_toast.dart';
+import '../utils/friendly_error.dart';
 import 'shared/form_helpers.dart';
 
 Future<PneuMovHorizontal?> showPneuHorizontalSheet(
@@ -235,7 +236,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _erroMotivos = e.toString().replaceFirst('Exception: ', '');
+        _erroMotivos = friendlyError(e);
         _loadingMotivos = false;
       });
       showErrorToast(_erroMotivos!);
@@ -265,7 +266,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _erroFornecedores = e.toString().replaceFirst('Exception: ', '');
+        _erroFornecedores = friendlyError(e);
         _loadingFornecedores = false;
       });
       showErrorToast(_erroFornecedores!);
@@ -355,6 +356,17 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     }
     if (!_formKey.currentState!.validate()) return;
 
+    // A API espera nropneu/codfil como int, mas o GET os devolve como string
+    // (o model faz default '' quando a API omite). Validamos com tryParse ANTES
+    // de entrar no estado "enviando": int.parse('') lançaria e travaria a
+    // movimentação do pneu.
+    final nroPneu = int.tryParse(_selectedPneu!.nroPneu);
+    final codFil = int.tryParse(_selectedPneu!.codFil);
+    if (nroPneu == null || codFil == null) {
+      showErrorToast('Pneu sem número ou filial válidos para movimentar.');
+      return;
+    }
+
     final mov = PneuMovHorizontal(
       nroPneu: _selectedPneu!.nroPneu,
       origem: widget.origem,
@@ -381,11 +393,11 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       final mensagem = await pneu_service.movimentarPneu(
         token,
         // A API espera números onde o GET devolve strings (nropneu, codfil).
-        nroPneu: int.parse(_selectedPneu!.nroPneu),
+        nroPneu: nroPneu,
         // Data escolhida no form (retorno/venda/envio, conforme o fluxo) =
         // data em que o pneu entra na nova localização.
         dataEntrada: parseDate(_dataController.text) ?? DateTime.now(),
-        codFil: int.parse(_selectedPneu!.codFil),
+        codFil: codFil,
         // O backend identifica a localização de destino pelo nome em
         // maiúsculas — mesmo formato que o GET devolve no campo localizacao.
         localizacao: widget.destino.label.toUpperCase(),
@@ -415,7 +427,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       // Mantém o sheet aberto para o usuário corrigir/tentar de novo
       // sem perder o que já digitou.
       setState(() => _enviando = false);
-      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
+      showErrorToast(friendlyError(e));
     }
   }
 

@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../services/pneu_service.dart' as pneu_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/friendly_error.dart';
 
 class PneuListaScreen extends StatefulWidget {
   final Future<List<Pneu>> Function(String token) fetchFn;
@@ -70,7 +71,7 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _erro = e.toString().replaceFirst('Exception: ', '');
+        _erro = friendlyError(e);
         _isLoading = false;
       });
     }

@@ -12,6 +12,7 @@ import '../services/pneu_service.dart' as pneu_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_toast.dart';
+import '../utils/friendly_error.dart';
 import 'shared/form_helpers.dart';
 
 /// Abre o formulário de montagem do [pneu] na posição [localEixo] do
@@ -139,6 +140,22 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
   Future<void> _confirmar() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // A API espera nropneu/codfil/nrofrota como int, mas o GET os devolve como
+    // string (e o model faz default '' quando a API omite). int.parse('')
+    // lançaria FormatException e travaria a montagem para sempre; validamos com
+    // tryParse ANTES de entrar no estado "enviando" para dar um erro claro.
+    final nroPneu = int.tryParse(widget.pneu.nroPneu);
+    final codFil = int.tryParse(widget.pneu.codFil);
+    final nroFrota = int.tryParse(widget.veiculo.nroFrota);
+    if (nroPneu == null || codFil == null) {
+      showErrorToast('Pneu sem número ou filial válidos para montar.');
+      return;
+    }
+    if (nroFrota == null) {
+      showErrorToast('Veículo sem número de frota válido para montar.');
+      return;
+    }
+
     final entrada = PneuEntradaVeiculo(
       nroPneu: widget.pneu.nroPneu,
       codEsqEixo: widget.codEsqEixo,
@@ -155,18 +172,18 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
         token,
         // A API espera números onde o GET devolve strings
         // (nropneu, codfil, nrofrota).
-        nroPneu: int.parse(widget.pneu.nroPneu),
+        nroPneu: nroPneu,
         // Data em que o pneu entra no veículo = Data do Envio do form
         // (DD/MM/AAAA → DateTime, meia-noite).
         dataEntrada: parseDate(_dataEnvioController.text) ?? DateTime.now(),
-        codFil: int.parse(widget.pneu.codFil),
+        codFil: codFil,
         // Montagem é identificada pelo backend por estes campos preenchidos;
         // localizacao vai nula (o pneu deixa de estar numa localização,
         // igual aos pneus montados que o GET devolve sem localizacao).
         localEixo: widget.localEixo,
         codEsqEixo: widget.codEsqEixo.isEmpty ? null : widget.codEsqEixo,
         placa: widget.veiculo.placa,
-        nroFrota: int.parse(widget.veiculo.nroFrota),
+        nroFrota: nroFrota,
         // KM do veículo no momento da montagem, sem o separador de milhar
         // aplicado pelo form.
         kmEntrada: _kmEntradaController.text.replaceAll('.', ''),
@@ -184,7 +201,7 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
       // Mantém o sheet aberto para o usuário corrigir/tentar de novo
       // sem perder o que já digitou.
       setState(() => _enviando = false);
-      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
+      showErrorToast(friendlyError(e));
     }
   }
 

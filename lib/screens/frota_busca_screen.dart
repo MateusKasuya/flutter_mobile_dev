@@ -10,6 +10,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../utils/app_toast.dart';
+import '../utils/friendly_error.dart';
 import '../utils/placa_utils.dart';
 import 'frota_detalhe_screen.dart';
 
@@ -97,7 +98,7 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
         MaterialPageRoute(builder: (_) => FrotaDetalheScreen(veiculo: veiculo)),
       );
     } catch (e) {
-      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
+      showErrorToast(friendlyError(e));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

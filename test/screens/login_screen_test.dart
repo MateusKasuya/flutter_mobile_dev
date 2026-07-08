@@ -5,6 +5,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frota_facil_mobile/providers/auth_provider.dart';
 import 'package:frota_facil_mobile/screens/login_screen.dart';
 import 'package:frota_facil_mobile/screens/home_screen.dart';
+import 'package:frota_facil_mobile/services/credential_storage.dart';
+
+/// Implementação em memória de [CredentialStorage] para os testes — evita
+/// depender do canal nativo do flutter_secure_storage.
+class FakeCredentialStorage implements CredentialStorage {
+  FakeCredentialStorage([this._password]);
+  String? _password;
+
+  @override
+  Future<String?> readPassword() async => _password;
+
+  @override
+  Future<void> savePassword(String password) async => _password = password;
+
+  @override
+  Future<void> deletePassword() async => _password = null;
+}
 
 void main() {
   // ---------------------------------------------------------------------------
@@ -15,11 +32,16 @@ void main() {
   Widget buildApp(
     Future<String> Function(String, String) loginFn, {
     SharedPreferences? prefs,
+    CredentialStorage? credentialStorage,
   }) {
     return ChangeNotifierProvider(
       create: (_) => AuthProvider(),
       child: MaterialApp(
-        home: LoginScreen(loginFn: loginFn, prefs: prefs),
+        home: LoginScreen(
+          loginFn: loginFn,
+          prefs: prefs,
+          credentialStorage: credentialStorage ?? FakeCredentialStorage(),
+        ),
       ),
     );
   }
@@ -134,13 +156,19 @@ void main() {
     SharedPreferences.setMockInitialValues({
       'remember_me': true,
       'saved_cpf': '070.699.539-25',
-      'saved_password': 'minhasenha',
     });
     final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(buildApp((_, _) async => 'token', prefs: prefs));
+    await tester.pumpWidget(buildApp(
+      (_, _) async => 'token',
+      prefs: prefs,
+      // A senha agora vem do armazenamento seguro (fake em memória), não do
+      // SharedPreferences.
+      credentialStorage: FakeCredentialStorage('minhasenha'),
+    ));
     await tester.pumpAndSettle();
 
     expect(find.text('070.699.539-25'), findsOneWidget);
+    expect(find.text('minhasenha'), findsOneWidget);
   });
 }

@@ -7,6 +7,7 @@ import '../models/localizacao.dart';
 import '../providers/auth_provider.dart';
 import '../services/localizacao_service.dart';
 import '../utils/app_toast.dart';
+import '../utils/friendly_error.dart';
 import 'movimento_screen.dart';
 
 const _localizacaoIcons = <String, String>{
@@ -55,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
+      showErrorToast(friendlyError(e));
     }
   }
 

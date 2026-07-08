@@ -8,9 +8,11 @@ import '../components/password_field.dart';
 import '../components/remember_me_checkbox.dart';
 import '../providers/auth_provider.dart';
 import '../services/auth_service.dart';
+import '../services/credential_storage.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_toast.dart';
+import '../utils/friendly_error.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -21,7 +23,16 @@ class LoginScreen extends StatefulWidget {
   // prefs permite injetar SharedPreferences nos testes.
   final SharedPreferences? prefs;
 
-  const LoginScreen({super.key, this.loginFn = login, this.prefs});
+  // credentialStorage guarda a senha do "lembrar-me" com segurança
+  // (Keystore/Keychain). Injetável para usar uma versão em memória nos testes.
+  final CredentialStorage credentialStorage;
+
+  const LoginScreen({
+    super.key,
+    this.loginFn = login,
+    this.prefs,
+    this.credentialStorage = const SecureCredentialStorage(),
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -44,13 +55,20 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loadSavedCredentials() async {
     final prefs = widget.prefs ?? await SharedPreferences.getInstance();
     final remember = prefs.getBool('remember_me') ?? false;
-    if (remember && mounted) {
-      setState(() {
-        _rememberMe = true;
-        _cpfController.text = prefs.getString('saved_cpf') ?? '';
-        _passwordController.text = prefs.getString('saved_password') ?? '';
-      });
-    }
+    if (!remember) return;
+
+    final cpf = prefs.getString('saved_cpf') ?? '';
+    // A senha vem do armazenamento seguro (Keystore/Keychain), nunca do
+    // SharedPreferences.
+    final senha = await widget.credentialStorage.readPassword() ?? '';
+
+    // Depois dos awaits acima a tela pode já ter sido descartada.
+    if (!mounted) return;
+    setState(() {
+      _rememberMe = true;
+      _cpfController.text = cpf;
+      _passwordController.text = senha;
+    });
   }
 
   @override
@@ -75,11 +93,15 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_rememberMe) {
         await prefs.setBool('remember_me', true);
         await prefs.setString('saved_cpf', _cpfController.text);
-        await prefs.setString('saved_password', _passwordController.text);
+        // Senha vai para o armazenamento seguro, não para o SharedPreferences.
+        await widget.credentialStorage.savePassword(_passwordController.text);
+        // Limpa qualquer senha em texto puro deixada por versões anteriores.
+        await prefs.remove('saved_password');
       } else {
         await prefs.remove('remember_me');
         await prefs.remove('saved_cpf');
         await prefs.remove('saved_password');
+        await widget.credentialStorage.deletePassword();
       }
 
       if (!mounted) return;
@@ -91,11 +113,17 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     } catch (e) {
-      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
+      showErrorToast(friendlyError(e));
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      // O finally roda mesmo após o `if (!mounted) return` do try, então
+      // precisa do próprio guard: sem ele, um setState após dispose lançaria
+      // "setState() called after dispose()" (ex.: se a tela for fechada durante
+      // o await do login).
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
