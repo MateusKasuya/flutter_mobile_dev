@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 
 import '../models/pneu.dart';
 import '../models/pneu_acao.dart';
-import '../models/pneu_entrada_veiculo.dart';
 import '../models/veiculo.dart';
 import '../providers/auth_provider.dart';
 import '../services/pneu_service.dart' as pneu_service;
@@ -19,7 +18,7 @@ import 'shared/form_helpers.dart';
 /// Abre o formulário de montagem do [pneu] na posição [localEixo] do
 /// [veiculo]. O POST /pneu/movimentarpneu acontece no Confirmar do próprio
 /// form; o Future só resolve com valor não-nulo se a API confirmou.
-Future<PneuEntradaVeiculo?> showPneuEntradaSheet(
+Future<bool?> showPneuEntradaSheet(
   BuildContext context,
   Pneu pneu,
   Veiculo veiculo,
@@ -34,7 +33,7 @@ Future<PneuEntradaVeiculo?> showPneuEntradaSheet(
 
   if (isTablet) {
     // Tablet: modal centralizado (showDialog) com tamanho fixo.
-    return showDialog<PneuEntradaVeiculo>(
+    return showDialog<bool>(
       context: context,
       barrierDismissible: true,
       builder: (context) => Dialog(
@@ -64,7 +63,7 @@ Future<PneuEntradaVeiculo?> showPneuEntradaSheet(
 
   // Mobile: bottom sheet com altura fixa de 658pt (spec do Figma — no
   // iPhone X-class, 812 - 658 = top 154pt, mesmo offset do design).
-  return showModalBottomSheet<PneuEntradaVeiculo>(
+  return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: origem.bgColor ?? Colors.white,
@@ -163,15 +162,6 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
       return;
     }
 
-    final entrada = PneuEntradaVeiculo(
-      nroPneu: widget.pneu.nroPneu,
-      codEsqEixo: widget.codEsqEixo,
-      localEixo: widget.localEixo,
-      dataEnvio: _dataEnvioController.text,
-      kmEntradaVeiculo: _kmEntradaController.text,
-      origem: widget.origem,
-    );
-
     setState(() => _enviando = true);
     try {
       final token = context.read<AuthProvider>().token;
@@ -203,7 +193,9 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
             : 'Pneu ${widget.pneu.nroPneu} montado na posição '
                 '${widget.localEixo}',
       );
-      Navigator.pop(context, entrada);
+      // Sinaliza sucesso ao chamador (contrato `pop != null` = confirmado);
+      // cancelar/fechar continuam passando null implícito.
+      Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
       // Mantém o sheet aberto para o usuário corrigir/tentar de novo

@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:frota_facil_mobile/components/pneu_horizontal_bottom_sheet.dart';
 import 'package:frota_facil_mobile/models/pneu.dart';
 import 'package:frota_facil_mobile/models/pneu_acao.dart';
-import 'package:frota_facil_mobile/models/pneu_mov_horizontal.dart';
 import 'package:frota_facil_mobile/models/pneu_movimentacao.dart';
 import 'package:frota_facil_mobile/providers/auth_provider.dart';
 
@@ -69,7 +68,7 @@ Widget buildHost({
   required http.Client client,
   PneuAcao origem = PneuAcao.estoque,
   PneuAcao destino = PneuAcao.conserto,
-  void Function(PneuMovHorizontal?)? onResult,
+  void Function(bool?)? onResult,
 }) {
   return ChangeNotifierProvider(
     create: (_) => AuthProvider()..setToken('tok'),
@@ -173,7 +172,7 @@ void main() {
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
 
-    PneuMovHorizontal? resultado;
+    bool? resultado;
     await tester.pumpWidget(
       buildHost(
         client: mock,

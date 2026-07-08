@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:frota_facil_mobile/components/pneu_entrada_bottom_sheet.dart';
 import 'package:frota_facil_mobile/models/pneu.dart';
 import 'package:frota_facil_mobile/models/pneu_acao.dart';
-import 'package:frota_facil_mobile/models/pneu_entrada_veiculo.dart';
 import 'package:frota_facil_mobile/models/veiculo.dart';
 import 'package:frota_facil_mobile/providers/auth_provider.dart';
 
@@ -85,7 +84,7 @@ Widget buildHost({
   String localEixo = '1DE',
   String codEsqEixo = 'ESQ01',
   PneuAcao origem = PneuAcao.estoque,
-  void Function(PneuEntradaVeiculo?)? onResult,
+  void Function(bool?)? onResult,
 }) {
   return ChangeNotifierProvider(
     create: (_) => AuthProvider()..setToken('tok'),
@@ -128,7 +127,7 @@ void main() {
       );
     });
 
-    PneuEntradaVeiculo? resultado;
+    bool? resultado;
     await tester.pumpWidget(
       buildHost(
         client: mock,

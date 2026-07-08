@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../models/fornecedor.dart';
 import '../models/pneu.dart';
 import '../models/pneu_acao.dart';
-import '../models/pneu_mov_horizontal.dart';
 import '../models/pneu_movimentacao.dart';
 import '../providers/auth_provider.dart';
 import '../screens/pneu_lista_screen.dart';
@@ -19,7 +18,7 @@ import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
 import 'shared/form_helpers.dart';
 
-Future<PneuMovHorizontal?> showPneuHorizontalSheet(
+Future<bool?> showPneuHorizontalSheet(
   BuildContext context,
   Pneu? initialPneu,
   PneuAcao origem,
@@ -41,7 +40,7 @@ Future<PneuMovHorizontal?> showPneuHorizontalSheet(
     // dialogs do projeto). Mantém o padrão visual do fluxo horizontal:
     // faixa colorida no topo (destino.bgColor) com Origem→Destino e
     // o restante do formulário em fundo branco — mesma divisão do mobile.
-    return showDialog<PneuMovHorizontal>(
+    return showDialog<bool>(
       context: context,
       barrierDismissible: true,
       builder: (context) => Dialog(
@@ -68,7 +67,7 @@ Future<PneuMovHorizontal?> showPneuHorizontalSheet(
   }
 
   // Mobile: bottom sheet com faixa de cabeçalho colorida + drag handle.
-  return showModalBottomSheet<PneuMovHorizontal>(
+  return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.white,
@@ -399,20 +398,6 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       return;
     }
 
-    final mov = PneuMovHorizontal(
-      nroPneu: _selectedPneu!.nroPneu,
-      origem: widget.origem,
-      destino: widget.destino,
-      data: _dataController.text,
-      valor: _showValor ? _valorController.text : null,
-      motivo: _showMotivo ? _motivoController.text : null,
-      fornecedorRecap: _showFornecedorRecap ? _selectedFornecedor : null,
-      motivoSucateamento:
-          _showMotivoSucateamento ? _motivoSucateamento : null,
-      proibidoFuturaRecap: _proibidoFuturaRecap,
-      observacao: _showObservacao ? _observacaoController.text : '',
-    );
-
     // Motivo e Observação nunca aparecem juntos (_showObservacao é o
     // inverso de _showMotivo) — o que existir vira o motivosaida da API.
     final motivoTexto = _showMotivo
@@ -454,7 +439,9 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
             : 'Pneu ${_selectedPneu!.nroPneu} movido para '
                 '${widget.destino.label}',
       );
-      Navigator.pop(context, mov);
+      // Sinaliza sucesso ao chamador (contrato `pop != null` = confirmado);
+      // cancelar/fechar continuam passando null implícito.
+      Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
       // Mantém o sheet aberto para o usuário corrigir/tentar de novo

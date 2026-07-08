@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:frota_facil_mobile/components/pneu_movimentacao_bottom_sheet.dart';
 import 'package:frota_facil_mobile/models/pneu.dart';
 import 'package:frota_facil_mobile/models/pneu_acao.dart';
-import 'package:frota_facil_mobile/models/pneu_movimentacao.dart';
 import 'package:frota_facil_mobile/providers/auth_provider.dart';
 
 /// Fixa um viewport de tablet largo e alto o suficiente para o modal caber sem
@@ -73,7 +72,7 @@ Widget buildHost({
   required http.Client client,
   required Pneu pneu,
   PneuAcao acao = PneuAcao.conserto,
-  void Function(PneuMovimentacao?)? onResult,
+  void Function(bool?)? onResult,
 }) {
   return ChangeNotifierProvider(
     create: (_) => AuthProvider()..setToken('tok'),
@@ -113,7 +112,7 @@ void main() {
       );
     });
 
-    PneuMovimentacao? resultado;
+    bool? resultado;
     var resolvido = false;
     await tester.pumpWidget(
       buildHost(

@@ -16,7 +16,7 @@ import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
 import 'shared/form_helpers.dart';
 
-Future<PneuMovimentacao?> showPneuMovimentacaoSheet(
+Future<bool?> showPneuMovimentacaoSheet(
   BuildContext context,
   Pneu pneu,
   PneuAcao acao, {
@@ -30,7 +30,7 @@ Future<PneuMovimentacao?> showPneuMovimentacaoSheet(
     // Tablet: modal centralizado (showDialog) com tamanho fixo por ação.
     // Sucata usa 790pt de altura por ter o campo extra de "Motivo".
     final dialogHeight = acao == PneuAcao.sucata ? 790.0 : 688.0;
-    return showDialog<PneuMovimentacao>(
+    return showDialog<bool>(
       context: context,
       barrierDismissible: true,
       builder: (context) => Dialog(
@@ -63,7 +63,7 @@ Future<PneuMovimentacao?> showPneuMovimentacaoSheet(
   final topGap = mq.padding.top + 60;
   final sheetMaxHeight = mq.size.height - topGap;
 
-  return showModalBottomSheet<PneuMovimentacao>(
+  return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: acao.bgColor ?? Colors.white,
@@ -196,17 +196,6 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
       return;
     }
 
-    final movimentacao = PneuMovimentacao(
-      nroPneu: widget.pneu.nroPneu,
-      dataEnvio: widget.pneu.dataAtzKm,
-      dataRetorno: _dataRetornoController.text,
-      kmEntrada: widget.pneu.kmAtuVei,
-      kmSaida: _kmSaidaController.text,
-      motivoSucateamento: _motivoSucateamento,
-      observacao: _observacaoController.text,
-      acao: widget.acao,
-    );
-
     setState(() => _enviando = true);
     try {
       final token = context.read<AuthProvider>().token;
@@ -237,7 +226,10 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
             ? mensagem
             : 'Pneu ${widget.pneu.nroPneu} movido para ${widget.acao.label}',
       );
-      Navigator.pop(context, movimentacao);
+      // Sinaliza sucesso ao chamador. O `pop != null` (aqui, `true`) é o
+      // contrato: só fecha com valor não-nulo quando a API confirmou. Os pops
+      // de cancelar/fechar passam null implícito e continuam sinalizando "nada".
+      Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
       // Mantém o sheet aberto para o usuário corrigir/tentar de novo

@@ -1,5 +1,3 @@
-import 'pneu_acao.dart';
-
 class MotivoSucateamento {
   final int codigo;
   final String descricao;
@@ -29,26 +27,4 @@ class MotivoSucateamento {
 
   @override
   int get hashCode => codigo.hashCode;
-}
-
-class PneuMovimentacao {
-  final String nroPneu;
-  final String dataEnvio;
-  final String dataRetorno;
-  final String kmEntrada;
-  final String kmSaida;
-  final MotivoSucateamento? motivoSucateamento;
-  final String observacao;
-  final PneuAcao acao;
-
-  const PneuMovimentacao({
-    required this.nroPneu,
-    required this.dataEnvio,
-    required this.dataRetorno,
-    required this.kmEntrada,
-    required this.kmSaida,
-    required this.observacao,
-    required this.acao,
-    this.motivoSucateamento,
-  });
 }
