@@ -50,10 +50,18 @@ class DiagramaEixos extends StatelessWidget {
     // diagrama fique achatado.
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 110px de overhead (paddings internos, indicador "Frente",
-        // parachoque/pino-rei) + 130px por eixo (70 do tile + ~60 de respiro,
-        // pra cada eixo ficar com um "slot" parecido com o de telas maiores).
-        final minHeight = 110.0 + eixos.length * 130.0;
+        // Orçamento de altura mínima, escalado por isTablet porque o tile do
+        // tablet é bem maior que o do mobile:
+        //   tile mobile = labelH(16) + gap(7)  + tireH(47)  ≈ 70px
+        //   tile tablet = labelH(24) + gap(19) + tireH(105) ≈ 148px
+        // Sem escalar, o orçamento de 130/eixo (mobile) não comportava os tiles
+        // de tablet quando a altura disponível é limitada — ex.: celular em
+        // landscape, onde width >= 600 liga isTablet — causando RenderFlex
+        // overflow. overhead cobre paddings, indicador "Frente" e parachoque/
+        // pino-rei; perEixo = tile + respiro.
+        final overhead = isTablet ? 150.0 : 110.0;
+        final perEixo = isTablet ? 168.0 : 130.0;
+        final minHeight = overhead + eixos.length * perEixo;
         final height = math.max(constraints.maxHeight, minHeight);
 
         return SingleChildScrollView(
