@@ -6,6 +6,77 @@ import 'package:http/testing.dart';
 import 'package:frota_facil_mobile/services/pneu_service.dart';
 
 void main() {
+  group('fetchPneus', () {
+    test('faz GET no endpoint e desserializa a lista de pneus', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, 'GET');
+        expect(request.url.path, '/api-frota/pneu/getpneu');
+        expect(request.headers['Authorization'], 'Bearer token123');
+
+        // JSON no contrato da API (camelCase minúsculo). Só preenchemos
+        // alguns campos; os demais caem no `?? ''` de Pneu.fromJson.
+        return http.Response(
+          jsonEncode([
+            {'nropneu': '111', 'marca': 'Michelin'},
+            {'nropneu': '222', 'marca': 'Pirelli'},
+          ]),
+          200,
+        );
+      });
+
+      final pneus = await fetchPneus('token123', client: mockClient);
+
+      expect(pneus.length, 2);
+      expect(pneus.first.nroPneu, '111');
+      expect(pneus.first.marca, 'Michelin');
+    });
+
+    test('retorna lista vazia quando a API devolve []', () async {
+      final mockClient = MockClient((_) async {
+        return http.Response('[]', 200);
+      });
+
+      final pneus = await fetchPneus('token123', client: mockClient);
+
+      expect(pneus, isEmpty);
+    });
+
+    test('lança exceção com a mensagem padrão quando 401 com corpo vazio',
+        () async {
+      final mockClient = MockClient((_) async {
+        return http.Response('', 401);
+      });
+
+      expect(
+        () => fetchPneus('token123', client: mockClient),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Erro ao buscar pneus (HTTP 401)'),
+          ),
+        ),
+      );
+    });
+
+    test('lança exceção com a mensagem padrão quando 500', () async {
+      final mockClient = MockClient((_) async {
+        return http.Response('', 500);
+      });
+
+      expect(
+        () => fetchPneus('token123', client: mockClient),
+        throwsA(
+          isA<Exception>().having(
+            (e) => e.toString(),
+            'message',
+            contains('Erro ao buscar pneus (HTTP 500)'),
+          ),
+        ),
+      );
+    });
+  });
+
   group('movimentarPneu', () {
     test('envia o payload no contrato da API e retorna a mensagem', () async {
       final mockClient = MockClient((request) async {
