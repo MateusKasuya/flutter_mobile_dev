@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import '../models/fornecedor.dart';
@@ -22,8 +23,9 @@ Future<PneuMovHorizontal?> showPneuHorizontalSheet(
   BuildContext context,
   Pneu? initialPneu,
   PneuAcao origem,
-  PneuAcao destino,
-) {
+  PneuAcao destino, {
+  http.Client? client,
+}) {
   // Altura fixa por combinação origem→destino. Cada movimentação tem um
   // conjunto diferente de campos, então o sheet/dialog usa altura exata
   // em vez de crescer com o conteúdo — bate com as specs de design.
@@ -58,6 +60,7 @@ Future<PneuMovHorizontal?> showPneuHorizontalSheet(
             origem: origem,
             destino: destino,
             isTablet: true,
+            client: client,
           ),
         ),
       ),
@@ -81,6 +84,7 @@ Future<PneuMovHorizontal?> showPneuHorizontalSheet(
       initialPneu: initialPneu,
       origem: origem,
       destino: destino,
+      client: client,
     ),
   );
 }
@@ -119,12 +123,15 @@ class _PneuHorizontalForm extends StatefulWidget {
   // No modo tablet o form vive dentro de um Dialog centralizado — sem drag
   // handle, sem faixa colorida de header e sem safe-area de teclado.
   final bool isTablet;
+  // Injetável nos testes (MockClient); em produção os serviços criam o próprio.
+  final http.Client? client;
 
   const _PneuHorizontalForm({
     required this.initialPneu,
     required this.origem,
     required this.destino,
     this.isTablet = false,
+    this.client,
   });
 
   @override
@@ -227,7 +234,10 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     });
     try {
       final token = context.read<AuthProvider>().token;
-      final motivos = await sucata_service.fetchMotivosSucateamento(token);
+      final motivos = await sucata_service.fetchMotivosSucateamento(
+        token,
+        client: widget.client,
+      );
       if (!mounted) return;
       setState(() {
         _motivos = motivos;
@@ -250,7 +260,10 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     });
     try {
       final token = context.read<AuthProvider>().token;
-      final fornecedores = await fornecedor_service.fetchFornecedores(token);
+      final fornecedores = await fornecedor_service.fetchFornecedores(
+        token,
+        client: widget.client,
+      );
       if (!mounted) return;
       // Lista grande: ordena alfabeticamente (case-insensitive) pra facilitar
       // a leitura e a busca no seletor.
@@ -411,6 +424,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
         cgcCpfForne:
             _showFornecedorRecap ? _selectedFornecedor?.cgcCpf : null,
         motivoSaida: motivoTexto.isEmpty ? null : motivoTexto,
+        client: widget.client,
         // O switch "Proibido futura recauchutagem" não é enviado: o backend
         // confirmou que esse endpoint não recebe essa informação.
       );

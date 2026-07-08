@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import '../models/pneu.dart';
@@ -18,8 +19,9 @@ import 'shared/form_helpers.dart';
 Future<PneuMovimentacao?> showPneuMovimentacaoSheet(
   BuildContext context,
   Pneu pneu,
-  PneuAcao acao,
-) {
+  PneuAcao acao, {
+  http.Client? client,
+}) {
   final mq = MediaQuery.of(context);
   // Breakpoint padrão do app: ≥600pt = tablet.
   final isTablet = mq.size.width >= 600;
@@ -47,6 +49,7 @@ Future<PneuMovimentacao?> showPneuMovimentacaoSheet(
             pneu: pneu,
             acao: acao,
             isTablet: true,
+            client: client,
           ),
         ),
       ),
@@ -69,7 +72,8 @@ Future<PneuMovimentacao?> showPneuMovimentacaoSheet(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       side: BorderSide(color: AppColors.textHint, width: 1),
     ),
-    builder: (context) => _PneuMovimentacaoForm(pneu: pneu, acao: acao),
+    builder: (context) =>
+        _PneuMovimentacaoForm(pneu: pneu, acao: acao, client: client),
   );
 }
 
@@ -79,11 +83,14 @@ class _PneuMovimentacaoForm extends StatefulWidget {
   // No modo tablet o form vive dentro de um Dialog centralizado — sem drag
   // handle, sem safe-area de teclado por baixo.
   final bool isTablet;
+  // Injetável nos testes (MockClient); em produção os serviços criam o próprio.
+  final http.Client? client;
 
   const _PneuMovimentacaoForm({
     required this.pneu,
     required this.acao,
     this.isTablet = false,
+    this.client,
   });
 
   @override
@@ -123,7 +130,10 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
     });
     try {
       final token = context.read<AuthProvider>().token;
-      final motivos = await sucata_service.fetchMotivosSucateamento(token);
+      final motivos = await sucata_service.fetchMotivosSucateamento(
+        token,
+        client: widget.client,
+      );
       if (!mounted) return;
       setState(() {
         _motivos = motivos;
@@ -219,6 +229,7 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
         motivoSaida: _observacaoController.text.isEmpty
             ? null
             : _observacaoController.text,
+        client: widget.client,
       );
       if (!mounted) return;
       showSuccessToast(

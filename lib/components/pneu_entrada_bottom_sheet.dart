@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import '../models/pneu.dart';
@@ -24,8 +25,9 @@ Future<PneuEntradaVeiculo?> showPneuEntradaSheet(
   Veiculo veiculo,
   String localEixo,
   String codEsqEixo,
-  PneuAcao origem,
-) {
+  PneuAcao origem, {
+  http.Client? client,
+}) {
   final mq = MediaQuery.of(context);
   // Breakpoint padrão do app: ≥600pt = tablet.
   final isTablet = mq.size.width >= 600;
@@ -53,6 +55,7 @@ Future<PneuEntradaVeiculo?> showPneuEntradaSheet(
             codEsqEixo: codEsqEixo,
             origem: origem,
             isTablet: true,
+            client: client,
           ),
         ),
       ),
@@ -76,6 +79,7 @@ Future<PneuEntradaVeiculo?> showPneuEntradaSheet(
       localEixo: localEixo,
       codEsqEixo: codEsqEixo,
       origem: origem,
+      client: client,
     ),
   );
 }
@@ -89,6 +93,8 @@ class _PneuEntradaForm extends StatefulWidget {
   // No modo tablet o form vive dentro de um Dialog centralizado — sem drag
   // handle, sem safe-area de teclado por baixo.
   final bool isTablet;
+  // Injetável nos testes (MockClient); em produção os serviços criam o próprio.
+  final http.Client? client;
 
   const _PneuEntradaForm({
     required this.pneu,
@@ -97,6 +103,7 @@ class _PneuEntradaForm extends StatefulWidget {
     required this.codEsqEixo,
     required this.origem,
     this.isTablet = false,
+    this.client,
   });
 
   @override
@@ -187,6 +194,7 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
         // KM do veículo no momento da montagem, sem o separador de milhar
         // aplicado pelo form.
         kmEntrada: _kmEntradaController.text.replaceAll('.', ''),
+        client: widget.client,
       );
       if (!mounted) return;
       showSuccessToast(
