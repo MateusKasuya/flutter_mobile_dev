@@ -46,8 +46,12 @@ class Veiculo {
       tipo: (json['tipo'] ?? '') as String,
       codEsqEixo: (json['codesqeixo'] ?? '') as String,
       // 'pneus' é nullable no contrato da API; veículo sem pneus vira lista vazia.
+      // whereType filtra a lista mantendo só elementos que são Map<String, dynamic>,
+      // descartando null/tipos inesperados que a API possa mandar dentro do array
+      // em vez de estourar o parse do veículo inteiro num cast inválido.
       pneus: (json['pneus'] as List? ?? const [])
-          .map((e) => Pneu.fromJson(e as Map<String, dynamic>))
+          .whereType<Map<String, dynamic>>()
+          .map((e) => Pneu.fromJson(e))
           .toList(),
     );
   }
