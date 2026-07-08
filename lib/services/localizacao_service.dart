@@ -1,36 +1,19 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import '../config/api_config.dart';
 import '../models/localizacao.dart';
-import 'api_error.dart';
+import 'http_helpers.dart';
 
 /// Busca as localizações de pneus com suas quantidades.
 ///
 /// Lança uma [Exception] com a mensagem de erro em caso de falha.
 /// [client] permite injetar um cliente HTTP para testes.
 Future<List<Localizacao>> fetchLocalizacoes(String token,
-    {http.Client? client}) async {
-  final createdClient = client == null;
-  final c = client ?? http.Client();
-  try {
-    final url = Uri.http(apiBaseUrl, '/api-frota/pneu/qlocalizacaopneus');
-    final response = await c.get(
-      url,
-      headers: {'Authorization': 'Bearer $token'},
-    ).timeout(apiTimeout);
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as List;
-      return data
-          .map((e) => Localizacao.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } else {
-      throw apiException(response, 'Erro ao buscar localizações');
-    }
-  } finally {
-    if (createdClient) {
-      c.close();
-    }
-  }
+    {http.Client? client}) {
+  return getJsonList<Localizacao>(
+    '/api-frota/pneu/qlocalizacaopneus',
+    token,
+    Localizacao.fromJson,
+    mensagemErro: 'Erro ao buscar localizações',
+    client: client,
+  );
 }
