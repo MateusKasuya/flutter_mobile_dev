@@ -84,6 +84,39 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 
+  testWidgets('ao falhar mostra erro e "Tentar novamente" recarrega os cards',
+      (tester) async {
+    // usePhoneViewport evita que a fonte larga (Ahem) do ambiente de teste
+    // estoure o layout no viewport padrão (800x600 = tablet).
+    usePhoneViewport(tester);
+
+    // fetchFn que falha na 1ª chamada e sucede na 2ª (contador de chamadas),
+    // simulando um erro transitório de rede que o retry resolve.
+    var chamadas = 0;
+    Future<List<Localizacao>> fetchFn(String _) async {
+      chamadas++;
+      if (chamadas == 1) {
+        throw Exception('Erro da API');
+      }
+      return mockLocalizacoes;
+    }
+
+    await tester.pumpWidget(buildApp(fetchFn));
+    await tester.pumpAndSettle();
+
+    // Primeira carga falhou: aparece o estado de erro com o botão de retry.
+    expect(find.text('Tentar novamente'), findsOneWidget);
+    expect(find.text('ESTOQUE'), findsNothing);
+
+    await tester.tap(find.text('Tentar novamente'));
+    await tester.pumpAndSettle();
+
+    // Segunda carga sucedeu: os cards aparecem e o erro some.
+    expect(find.text('Tentar novamente'), findsNothing);
+    expect(find.text('ESTOQUE'), findsOneWidget);
+    expect(find.text('5'), findsOneWidget);
+  });
+
   // Os dois testes abaixo cobrem o FAB do layout de CELULAR — no tablet o
   // Scaffold nem tem floatingActionButton (o botão vira parte do corpo).
   testWidgets('FAB Movimento está visível', (tester) async {

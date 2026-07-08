@@ -38,6 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Localizacao> _localizacoes = [];
   bool _isLoading = true;
+  // Marca que o último _load() falhou, pra mostrarmos a tela de erro + retry.
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -46,6 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _load() async {
+    // Reinicia o estado a cada tentativa: assim o mesmo _load() serve tanto
+    // pro carregamento inicial (initState) quanto pra re-tentativas disparadas
+    // pelo botão "Tentar novamente" ou pelo pull-to-refresh.
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       final token = context.read<AuthProvider>().token;
       final data = await widget.fetchFn(token);
@@ -56,7 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
       showErrorToast(friendlyError(e));
     }
   }
@@ -99,40 +111,77 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppColors.backgroundScreen,
       body: _isLoading
         ? const Center(child: CircularProgressIndicator())
-        : LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: isTablet ? 0 : 80),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          isTablet
-                              ? 'Monitoramento de movimentações da Frota'
-                              : 'Monitoramento de\nmovimentações da Frota',
-                          style: isTablet
-                              ? AppTextStyles.body.copyWith(fontSize: 24)
-                              : AppTextStyles.body,
-                          textAlign: TextAlign.center,
+        : _hasError
+          ? _buildErrorState()
+          // RefreshIndicator adiciona o "puxar pra atualizar": ao arrastar o
+          // conteúdo pra baixo, ele chama onRefresh (aqui _load, que re-busca
+          // as localizações). Exige um filho rolável — o SingleChildScrollView
+          // abaixo cumpre isso; AlwaysScrollableScrollPhysics garante que o
+          // gesto funcione mesmo quando o conteúdo cabe na tela sem rolar.
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints:
+                        BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: isTablet ? 0 : 80),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              isTablet
+                                  ? 'Monitoramento de movimentações da Frota'
+                                  : 'Monitoramento de\nmovimentações da Frota',
+                              style: isTablet
+                                  ? AppTextStyles.body.copyWith(fontSize: 24)
+                                  : AppTextStyles.body,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 26),
+                            isTablet ? _buildTabletGrid() : _buildPhoneGrid(),
+                            if (isTablet) ...[
+                              const SizedBox(height: 100),
+                              _buildAddButton(),
+                            ],
+                          ],
                         ),
-                        const SizedBox(height: 26),
-                        isTablet ? _buildTabletGrid() : _buildPhoneGrid(),
-                        if (isTablet) ...[
-                          const SizedBox(height: 100),
-                          _buildAddButton(),
-                        ],
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
       floatingActionButton: isTablet ? null : _buildAddButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  // Estado de erro: mostrado quando _load() falha. Traz uma mensagem curta e
+  // um botão que reexecuta _load() (que reseta _hasError e volta ao loading).
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Não foi possível carregar as localizações',
+              style: AppTextStyles.body,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _load,
+              child: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
