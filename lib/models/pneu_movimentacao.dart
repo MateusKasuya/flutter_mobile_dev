@@ -12,7 +12,10 @@ class MotivoSucateamento {
   // documentado em /api-frota/swagger/v1/swagger.json.
   factory MotivoSucateamento.fromJson(Map<String, dynamic> json) {
     return MotivoSucateamento(
-      (json['codsuc'] ?? 0) as int,
+      // num.tryParse tolera codsuc vindo como String ou número; a
+      // interpolação normaliza o tipo e .toInt() trunca doubles. Uma linha
+      // malformada vira 0 em vez de quebrar o parsing da lista inteira.
+      (num.tryParse('${json['codsuc']}') ?? 0).toInt(),
       (json['descricao'] ?? '') as String,
     );
   }
