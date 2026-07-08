@@ -40,8 +40,19 @@ List<Eixo> buildEixoLayout(List<Pneu> pneus, [String codEsqEixo = '']) {
     eixoMap[numero]![posicao] = pneu;
   }
 
+  // Código efetivo do esquema. O veículo é a fonte de verdade, mas quando o
+  // codEsqEixo dele vem vazio caímos no código do primeiro pneu que tiver um
+  // preenchido — espelhando o mesmo fallback do widget DiagramaEixos. Sem isso
+  // o esqueleto (aqui) usaria '' e divergiria do frame desenhado pelo widget.
+  final cod = codEsqEixo.isNotEmpty
+      ? codEsqEixo
+      : pneus.map((p) => p.codEsqEixo).firstWhere(
+            (c) => c.isNotEmpty,
+            orElse: () => '',
+          );
+
   // Rodado de cada eixo segundo o esquema do veículo (null se desconhecido).
-  final rodadoEsquema = EsquemaEixo.fromCodigo(codEsqEixo)?.rodadoDuploPorEixo;
+  final rodadoEsquema = EsquemaEixo.fromCodigo(cod)?.rodadoDuploPorEixo;
 
   // Eixos a desenhar: os do esquema ∪ os que têm pneu. A união garante que um
   // pneu num eixo fora do esquema (dado divergente) não desapareça do diagrama.

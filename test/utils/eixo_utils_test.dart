@@ -3,7 +3,7 @@ import 'package:frota_facil_mobile/models/pneu.dart';
 import 'package:frota_facil_mobile/utils/eixo_utils.dart';
 
 /// Helper para criar um Pneu com apenas os campos relevantes para o teste.
-Pneu _makePneu(String nroPneu, String localEixo) {
+Pneu _makePneu(String nroPneu, String localEixo, [String codEsqEixo = '']) {
   return Pneu(
     nroPneu: nroPneu,
     nroSerie: '',
@@ -13,7 +13,7 @@ Pneu _makePneu(String nroPneu, String localEixo) {
     tipo: '',
     situacao: '',
     localEixo: localEixo,
-    codEsqEixo: 'A',
+    codEsqEixo: codEsqEixo,
     localizacao: '',
     nroDot: '',
     indRecapagem: '',
@@ -181,6 +181,33 @@ void main() {
         expect(e.esquerdoExterno, isNull);
         expect(e.direitoExterno, isNull);
       }
+    });
+
+    test(
+        'codEsqEixo vazio cai no código do pneu e monta o chassi completo (B7)',
+        () {
+      // Regressão: veículo sem codEsqEixo (''), mas os pneus carregam o código
+      // de um esquema conhecido (D = 4 eixos). O esqueleto deve ser idêntico ao
+      // de chamar com 'D' explícito — sem isso, o esqueleto usaria '' e
+      // divergiria do frame que o widget desenha (que já aplica esse fallback).
+      final pneus = [_makePneu('500', '1E', 'D')];
+
+      final comVazio = buildEixoLayout(pneus, '');
+      final comExplicito = buildEixoLayout(pneus, 'D');
+
+      // Chassi completo do esquema D: 4 eixos, 1 simples + 3 duplos.
+      expect(comVazio.map((e) => e.numero), [1, 2, 3, 4]);
+      expect(comVazio.map((e) => e.rodadoDuplo), [false, true, true, true]);
+
+      // Deve bater com o resultado de passar o código explicitamente.
+      expect(comVazio.map((e) => e.numero), comExplicito.map((e) => e.numero));
+      expect(
+        comVazio.map((e) => e.rodadoDuplo),
+        comExplicito.map((e) => e.rodadoDuplo),
+      );
+
+      // O pneu montado continua no lugar.
+      expect(comVazio[0].esquerdoExterno?.nroPneu, '500');
     });
 
     test('pneu num eixo além do esquema não desaparece', () {
