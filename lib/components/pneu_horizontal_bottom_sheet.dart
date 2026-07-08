@@ -771,9 +771,15 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
         ),
         const SizedBox(width: 6),
         // DESTINO: Montserrat 20 Bold uppercase, cor #363636.
-        Text(
-          destino.label.toUpperCase(),
-          style: AppTextStyles.body,
+        // Flexible + ellipsis: é o elemento mais largo do header (20px bold);
+        // sem isso, combos longos (ex.: RECAPAGEM) estouram em telas estreitas.
+        Flexible(
+          child: Text(
+            destino.label.toUpperCase(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.body,
+          ),
         ),
       ],
     );

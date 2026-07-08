@@ -355,10 +355,16 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                 const SizedBox(width: 6),
                 Text('—', style: AppTextStyles.body),
                 const SizedBox(width: 6),
-                Text(
-                  'Pneu ${pneu.nroPneu}',
-                  style: AppTextStyles.body.copyWith(
-                    fontWeight: FontWeight.w600,
+                // Flexible + ellipsis: o nº do pneu tem tamanho variável e
+                // estoura o header em telas estreitas / números longos.
+                Flexible(
+                  child: Text(
+                    'Pneu ${pneu.nroPneu}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

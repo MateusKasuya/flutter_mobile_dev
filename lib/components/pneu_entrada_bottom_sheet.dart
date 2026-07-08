@@ -315,10 +315,16 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
               const SizedBox(width: 6),
               Text('—', style: AppTextStyles.body),
               const SizedBox(width: 6),
-              Text(
-                'Posição ${widget.localEixo}',
-                style: AppTextStyles.body.copyWith(
-                  fontWeight: FontWeight.w600,
+              // Flexible + ellipsis: a posição do eixo é de tamanho variável e
+              // pode estourar o header em telas estreitas.
+              Flexible(
+                child: Text(
+                  'Posição ${widget.localEixo}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
