@@ -16,6 +16,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
+import 'shared/close_x_painter.dart';
 import 'shared/form_helpers.dart';
 
 Future<bool?> showPneuHorizontalSheet(
@@ -714,7 +715,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                   width: 20,
                   height: 20,
                   child: CustomPaint(
-                    painter: _CloseXPainter(
+                    painter: CloseXPainter(
                       color: AppColors.textMuted,
                       strokeWidth: 3,
                     ),
@@ -1171,27 +1172,4 @@ class _FornecedorPickerSheetState extends State<_FornecedorPickerSheet> {
       ),
     );
   }
-}
-
-/// Pinta um "X" com duas linhas diagonais cruzadas — usado no botão de
-/// fechar do modal de tablet, com stroke configurável pra bater com a spec.
-class _CloseXPainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-
-  const _CloseXPainter({required this.color, required this.strokeWidth});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
-    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(_CloseXPainter old) =>
-      old.color != color || old.strokeWidth != strokeWidth;
 }

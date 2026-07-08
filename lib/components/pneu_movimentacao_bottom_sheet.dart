@@ -14,6 +14,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
+import 'shared/close_x_painter.dart';
 import 'shared/form_helpers.dart';
 
 Future<bool?> showPneuMovimentacaoSheet(
@@ -271,7 +272,7 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                   width: 20,
                   height: 20,
                   child: CustomPaint(
-                    painter: _CloseXPainter(
+                    painter: CloseXPainter(
                       color: AppColors.textMuted,
                       strokeWidth: 3,
                     ),
@@ -631,30 +632,4 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
           v == null ? 'Selecione o motivo de sucateamento' : null,
     );
   }
-}
-
-/// Pinta um "X" com duas linhas diagonais cruzadas dentro do canvas.
-/// Usado no botão de fechar do modal de tablet — stroke configurável
-/// pra bater com a spec (3px) sem depender da espessura do Material Icon.
-class _CloseXPainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-
-  const _CloseXPainter({required this.color, required this.strokeWidth});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    // Diagonal "\": canto sup-esq → canto inf-dir
-    canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
-    // Diagonal "/": canto sup-dir → canto inf-esq
-    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(_CloseXPainter old) =>
-      old.color != color || old.strokeWidth != strokeWidth;
 }

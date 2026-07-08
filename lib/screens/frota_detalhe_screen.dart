@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../components/diagrama_eixos.dart';
 import '../components/pneu_acoes_dialog.dart';
+import '../components/shared/close_x_painter.dart';
 import '../models/eixo.dart';
 import '../models/pneu.dart';
 import '../models/veiculo.dart';
@@ -188,7 +189,7 @@ void _showPneuDetailsDialog(BuildContext context, Pneu pneu) {
                 child: const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CustomPaint(painter: _CloseIconPainter()),
+                  child: CustomPaint(painter: CloseXPainter()),
                 ),
               ),
             ),
@@ -247,23 +248,6 @@ Widget _buildPneuDetailsBody(Pneu pneu, {bool isTablet = false}) {
       const SizedBox(height: 16),
     ],
   );
-}
-
-class _CloseIconPainter extends CustomPainter {
-  const _CloseIconPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.textMuted
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
-    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 _InfoRow _veiculoInfoRow(String label, String value, {bool isTablet = false}) {

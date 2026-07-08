@@ -11,6 +11,7 @@ import '../theme/app_text_styles.dart';
 import 'pneu_entrada_bottom_sheet.dart';
 import 'pneu_horizontal_bottom_sheet.dart';
 import 'pneu_movimentacao_bottom_sheet.dart';
+import 'shared/close_x_painter.dart';
 
 /// Retorna a [PneuAcao] correspondente à localização do pneu,
 /// ou null quando o pneu está montado num veículo (localização desconhecida).
@@ -91,7 +92,7 @@ void showPneuAcoesDialog(
                   child: const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CustomPaint(painter: _CloseIconPainter()),
+                    child: CustomPaint(painter: CloseXPainter()),
                   ),
                 ),
               ),
@@ -342,7 +343,7 @@ void showSlotVazioAcoesDialog(
                 child: const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CustomPaint(painter: _CloseIconPainter()),
+                  child: CustomPaint(painter: CloseXPainter()),
                 ),
               ),
             ),
@@ -428,21 +429,4 @@ void _confirmAction(
       onConfirmed?.call(pneu);
     }
   }
-}
-
-class _CloseIconPainter extends CustomPainter {
-  const _CloseIconPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.textMuted
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset.zero, Offset(size.width, size.height), paint);
-    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
