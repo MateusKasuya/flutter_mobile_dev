@@ -23,6 +23,14 @@ void main() {
       expect(extractPlaca('ABC1234\nRIO DE JANEIRO\nRJ\nBRASIL'), 'ABC1234');
     });
 
+    test('extrai placa Mercosul com espaço interno do OCR', () {
+      expect(extractPlaca('ABC 1D23'), 'ABC1D23');
+    });
+
+    test('extrai placa antiga com espaço interno do OCR', () {
+      expect(extractPlaca('ABC 1234'), 'ABC1234');
+    });
+
     test('remove hífens antes de validar', () {
       expect(extractPlaca('ABC-1D23'), 'ABC1D23');
     });
