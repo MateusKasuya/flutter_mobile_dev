@@ -45,6 +45,7 @@ void main() {
         'anomodelo': '2021',
         'cor': 'Branco',
         'tipo': 'Caminhão',
+        'codesqeixo': '1',
         'pneus': [_makePneuJson()],
       };
 
@@ -58,6 +59,7 @@ void main() {
       expect(veiculo.anoModelo, '2021');
       expect(veiculo.cor, 'Branco');
       expect(veiculo.tipo, 'Caminhão');
+      expect(veiculo.codEsqEixo, '1');
       expect(veiculo.pneus, hasLength(1));
       expect(veiculo.pneus.first, isA<Pneu>());
       expect(veiculo.pneus.first.marca, 'Pirelli');
@@ -82,12 +84,32 @@ void main() {
       expect(veiculo.pneus, isEmpty);
     });
 
+    // 'codesqeixo' ausente deve cair no default (string vazia).
+    test('usa codEsqEixo vazio quando codesqeixo ausente no JSON', () {
+      final json = {
+        'placa': 'ABC1D23',
+        'nrofrota': '001',
+        'marca': 'Marca Y',
+        'modelo': 'Modelo X',
+        'ano': '2020',
+        'anomodelo': '2021',
+        'cor': 'Branco',
+        'tipo': 'Caminhão',
+        'pneus': [],
+      };
+
+      final veiculo = Veiculo.fromJson(json);
+
+      expect(veiculo.codEsqEixo, '');
+    });
+
     // 'pneus' é nullable no contrato da API.
     test('cria Veiculo com pneus ausente no JSON', () {
       final veiculo = Veiculo.fromJson({'placa': 'XYZ9K88'});
 
       expect(veiculo.placa, 'XYZ9K88');
       expect(veiculo.pneus, isEmpty);
+      expect(veiculo.codEsqEixo, '');
     });
   });
 }
