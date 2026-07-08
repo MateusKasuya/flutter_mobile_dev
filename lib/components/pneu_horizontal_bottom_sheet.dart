@@ -351,14 +351,33 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       setState(() => _pneuError = true);
       return;
     }
-    // Bloqueia submit enquanto dados da API ainda não chegaram.
-    if (_showMotivoSucateamento && _motivos.isEmpty) {
-      showErrorToast('Aguarde os motivos carregarem');
-      return;
+    // Bloqueia o submit conforme o ESTADO do carregamento da API, não apenas
+    // pela lista estar vazia. Uma lista vazia pode significar três coisas bem
+    // diferentes: (1) ainda carregando, (2) deu erro de rede, ou (3) o backend
+    // legitimamente devolveu []. Só (1) e (2) devem travar o envio; uma lista
+    // vazia legítima (ex.: Sucata sem motivos cadastrados) não pode bloquear
+    // para sempre — nesse caso o validator do dropdown já cuida da obrigação.
+    if (_showMotivoSucateamento) {
+      if (_loadingMotivos) {
+        showErrorToast('Aguarde os motivos carregarem');
+        return;
+      }
+      if (_erroMotivos != null) {
+        showErrorToast('Não foi possível carregar os motivos. Tente novamente.');
+        return;
+      }
     }
-    if (_showFornecedorRecap && _fornecedores.isEmpty) {
-      showErrorToast('Aguarde os fornecedores carregarem');
-      return;
+    if (_showFornecedorRecap) {
+      if (_loadingFornecedores) {
+        showErrorToast('Aguarde os fornecedores carregarem');
+        return;
+      }
+      if (_erroFornecedores != null) {
+        showErrorToast(
+          'Não foi possível carregar os fornecedores. Tente novamente.',
+        );
+        return;
+      }
     }
     // Fornecedor de recauchutagem é obrigatório neste fluxo. Como o campo é um
     // seletor customizado (não um TextFormField), a validação é manual, no
