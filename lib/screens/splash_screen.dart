@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/auth_provider.dart';
 import '../theme/app_text_styles.dart';
+import 'home_screen.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,15 +18,26 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToLogin();
+    _decideRotaInicial();
   }
 
-  Future<void> _navigateToLogin() async {
+  Future<void> _decideRotaInicial() async {
+    // Mantém a splash visível por 2s (branding) enquanto decidimos a rota.
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
+
+    // Carrega o token persistido: havendo sessão salva, pula o login e vai
+    // direto pra Home (o botão "Sair" na Home é a saída se a sessão expirou).
+    final auth = context.read<AuthProvider>();
+    await auth.loadToken();
+    if (!mounted) return;
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => LoginScreen()),
+      MaterialPageRoute(
+        builder: (_) =>
+            auth.isAuthenticated ? const HomeScreen() : LoginScreen(),
+      ),
     );
   }
 

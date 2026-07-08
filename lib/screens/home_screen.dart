@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import '../services/localizacao_service.dart';
 import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
+import 'login_screen.dart';
 import 'movimento_screen.dart';
 
 const _localizacaoIcons = <String, String>{
@@ -60,6 +61,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _logout() async {
+    // Captura o Navigator antes do await pra não usar o context depois dele.
+    final navigator = Navigator.of(context);
+    await context.read<AuthProvider>().clearToken();
+    if (!mounted) return;
+    // Remove todas as rotas: não deve dar pra "voltar" à Home depois de sair.
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => LoginScreen()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +88,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         centerTitle: isTablet,
         titleSpacing: isTablet ? 0 : 28,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: AppColors.primary),
+            tooltip: 'Sair',
+            onPressed: _logout,
+          ),
+        ],
       ),
       backgroundColor: AppColors.backgroundScreen,
       body: _isLoading
