@@ -106,6 +106,11 @@ double _sheetHeightFor(PneuAcao origem, PneuAcao destino) {
   return 560;
 }
 
+/// Nome exibível do fornecedor: razão social ou, na falta dela, nome fantasia.
+/// Usado tanto na ordenação/campo quanto no seletor com busca.
+String _nomeFornecedor(Fornecedor f) =>
+    f.razaoSocial.isNotEmpty ? f.razaoSocial : f.nomeFantasia;
+
 class _PneuHorizontalForm extends StatefulWidget {
   final Pneu? initialPneu;
   final PneuAcao origem;
@@ -137,6 +142,11 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
   Fornecedor? _selectedFornecedor;
   bool _proibidoFuturaRecap = false;
   bool _pneuError = false;
+  bool _fornecedorError = false;
+
+  // true enquanto o POST de movimentação está em andamento — desabilita os
+  // botões (evita envio duplicado) e troca o texto do Confirmar por um spinner.
+  bool _enviando = false;
 
   // Dados vindos da API; carregados sob demanda em initState dependendo
   // dos campos visíveis no fluxo origem→destino atual.
@@ -164,7 +174,8 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
 
   bool get _showMotivoSucateamento => widget.destino == PneuAcao.sucata;
 
-  /// Fornecedor só aparece em Conserto → Recauchutagem (placeholder de API futura).
+  /// Fornecedor de recauchutagem só aparece em Conserto → Recauchutagem.
+  /// A lista vem da API (GET /fornecedor/getfornecedor) via [_carregarFornecedores].
   bool get _showFornecedorRecap =>
       widget.origem == PneuAcao.conserto && widget.destino == PneuAcao.recapagem;
 
@@ -240,6 +251,13 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       final token = context.read<AuthProvider>().token;
       final fornecedores = await fornecedor_service.fetchFornecedores(token);
       if (!mounted) return;
+      // Lista grande: ordena alfabeticamente (case-insensitive) pra facilitar
+      // a leitura e a busca no seletor.
+      fornecedores.sort(
+        (a, b) => _nomeFornecedor(a)
+            .toLowerCase()
+            .compareTo(_nomeFornecedor(b).toLowerCase()),
+      );
       setState(() {
         _fornecedores = fornecedores;
         _loadingFornecedores = false;
@@ -291,7 +309,30 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     }
   }
 
-  void _confirmar() {
+  Future<void> _selecionarFornecedor() async {
+    final escolhido = await showModalBottomSheet<Fornecedor>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        side: BorderSide(color: AppColors.textHint, width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      builder: (_) => _FornecedorPickerSheet(
+        fornecedores: _fornecedores,
+        selecionado: _selectedFornecedor,
+      ),
+    );
+    if (escolhido != null) {
+      setState(() {
+        _selectedFornecedor = escolhido;
+        _fornecedorError = false;
+      });
+    }
+  }
+
+  Future<void> _confirmar() async {
     if (_selectedPneu == null) {
       setState(() => _pneuError = true);
       return;
@@ -305,24 +346,77 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
       showErrorToast('Aguarde os fornecedores carregarem');
       return;
     }
+    // Fornecedor de recauchutagem é obrigatório neste fluxo. Como o campo é um
+    // seletor customizado (não um TextFormField), a validação é manual, no
+    // mesmo padrão do seletor de pneu (_pneuError).
+    if (_showFornecedorRecap && _selectedFornecedor == null) {
+      setState(() => _fornecedorError = true);
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
-    Navigator.pop(
-      context,
-      PneuMovHorizontal(
-        nroPneu: _selectedPneu!.nroPneu,
-        origem: widget.origem,
-        destino: widget.destino,
-        data: _dataController.text,
-        valor: _showValor ? _valorController.text : null,
-        motivo: _showMotivo ? _motivoController.text : null,
-        fornecedorRecap: _showFornecedorRecap ? _selectedFornecedor : null,
-        motivoSucateamento:
-            _showMotivoSucateamento ? _motivoSucateamento : null,
-        proibidoFuturaRecap: _proibidoFuturaRecap,
-        observacao: _showObservacao ? _observacaoController.text : '',
-      ),
+    final mov = PneuMovHorizontal(
+      nroPneu: _selectedPneu!.nroPneu,
+      origem: widget.origem,
+      destino: widget.destino,
+      data: _dataController.text,
+      valor: _showValor ? _valorController.text : null,
+      motivo: _showMotivo ? _motivoController.text : null,
+      fornecedorRecap: _showFornecedorRecap ? _selectedFornecedor : null,
+      motivoSucateamento:
+          _showMotivoSucateamento ? _motivoSucateamento : null,
+      proibidoFuturaRecap: _proibidoFuturaRecap,
+      observacao: _showObservacao ? _observacaoController.text : '',
     );
+
+    // Motivo e Observação nunca aparecem juntos (_showObservacao é o
+    // inverso de _showMotivo) — o que existir vira o motivosaida da API.
+    final motivoTexto = _showMotivo
+        ? _motivoController.text
+        : _observacaoController.text;
+
+    setState(() => _enviando = true);
+    try {
+      final token = context.read<AuthProvider>().token;
+      final mensagem = await pneu_service.movimentarPneu(
+        token,
+        // A API espera números onde o GET devolve strings (nropneu, codfil).
+        nroPneu: int.parse(_selectedPneu!.nroPneu),
+        // Data escolhida no form (retorno/venda/envio, conforme o fluxo) =
+        // data em que o pneu entra na nova localização.
+        dataEntrada: parseDate(_dataController.text) ?? DateTime.now(),
+        codFil: int.parse(_selectedPneu!.codFil),
+        // O backend identifica a localização de destino pelo nome em
+        // maiúsculas — mesmo formato que o GET devolve no campo localizacao.
+        localizacao: widget.destino.label.toUpperCase(),
+        // "12.345,67" (máscara do form) → 12345.67; fluxos sem campo de
+        // valor enviam 0.
+        valor: _showValor ? (parseCurrency(_valorController.text) ?? 0) : 0,
+        // kmentrada fica nulo: o pneu está saindo de uma localização,
+        // não de um veículo — não há KM envolvido.
+        codMotivoSucat:
+            _showMotivoSucateamento ? _motivoSucateamento?.codigo : null,
+        cgcCpfForne:
+            _showFornecedorRecap ? _selectedFornecedor?.cgcCpf : null,
+        motivoSaida: motivoTexto.isEmpty ? null : motivoTexto,
+        // O switch "Proibido futura recauchutagem" não é enviado: o backend
+        // confirmou que esse endpoint não recebe essa informação.
+      );
+      if (!mounted) return;
+      showSuccessToast(
+        mensagem.isNotEmpty
+            ? mensagem
+            : 'Pneu ${_selectedPneu!.nroPneu} movido para '
+                '${widget.destino.label}',
+      );
+      Navigator.pop(context, mov);
+    } catch (e) {
+      if (!mounted) return;
+      // Mantém o sheet aberto para o usuário corrigir/tentar de novo
+      // sem perder o que já digitou.
+      setState(() => _enviando = false);
+      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   // ── Build ────────────────────────────────────────────────────────────────
@@ -501,7 +595,11 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                           width: 144,
                           height: 56,
                           child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
+                            // Durante o envio, cancelar fecharia o sheet com a
+                            // requisição ainda em andamento — melhor bloquear.
+                            onPressed: _enviando
+                                ? null
+                                : () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.textMuted,
                               side: BorderSide(
@@ -533,19 +631,31 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                             ],
                           ),
                           child: FilledButton(
-                            onPressed: _confirmar,
+                            onPressed: _enviando ? null : _confirmar,
                             style: FilledButton.styleFrom(
                               backgroundColor: AppColors.primary,
+                              // Mantém a cor cheia enquanto desabilitado no
+                              // envio, para o spinner não ficar sobre cinza.
+                              disabledBackgroundColor: AppColors.primary,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
                             ),
-                            child: Text(
-                              'Confirmar',
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.buttonPrimary,
-                            ),
+                            child: _enviando
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text(
+                                    'Confirmar',
+                                    textAlign: TextAlign.center,
+                                    style: AppTextStyles.buttonPrimary,
+                                  ),
                           ),
                         ),
                       ],
@@ -793,60 +903,56 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     if (_erroFornecedores != null) {
       return _erroRetry(_erroFornecedores!, _carregarFornecedores);
     }
-    final destino = widget.destino;
-    return DropdownButtonFormField<Fornecedor>(
-      initialValue: _selectedFornecedor,
-      isExpanded: true,
-      style: AppTextStyles.inputText,
-      decoration: formInputDecoration(
-        hint: 'Selecione o fornecedor',
-        borderColor: destino.borderColor ?? destino.color,
-      ),
-      // selectedItemBuilder controla o que aparece NO CAMPO (estado fechado).
-      // Sem isso o Dropdown tentaria renderizar o Column de 2 linhas no header,
-      // que estoura o tamanho do TextField e gera overflow.
-      selectedItemBuilder: (context) => _fornecedores
-          .map(
-            (f) => Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                f.razaoSocial.isNotEmpty ? f.razaoSocial : f.nomeFantasia,
-                overflow: TextOverflow.ellipsis,
+    // Campo tocável (mesmo padrão do seletor de pneu) que abre um bottom sheet
+    // com busca — a lista de fornecedores é grande demais pra um dropdown.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: _selecionarFornecedor,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              // Borda na cor do destino (recapagem = roxo #7D00DE), igual aos
+              // demais campos temáticos do form; vermelha quando há erro.
+              border: Border.all(
+                width: 2,
+                color: _fornecedorError
+                    ? Colors.red
+                    : (widget.destino.borderColor ?? widget.destino.color),
               ),
+              borderRadius: BorderRadius.circular(10),
             ),
-          )
-          .toList(),
-      items: _fornecedores
-          .map(
-            (f) => DropdownMenuItem(
-              value: f,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    f.razaoSocial.isNotEmpty ? f.razaoSocial : '—',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedFornecedor != null
+                        ? _nomeFornecedor(_selectedFornecedor!)
+                        : 'Selecione o fornecedor',
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    style: _selectedFornecedor != null
+                        ? AppTextStyles.inputText
+                        : AppTextStyles.formInputHint,
                   ),
-                  if (f.nomeFantasia.isNotEmpty)
-                    Text(
-                      f.nomeFantasia,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
+                ),
+                Icon(Icons.search, size: 18, color: Colors.grey.shade500),
+              ],
             ),
-          )
-          .toList(),
-      onChanged: (v) => setState(() => _selectedFornecedor = v),
+          ),
+        ),
+        if (_fornecedorError) ...[
+          const SizedBox(height: 4),
+          const Text(
+            'Selecione o fornecedor',
+            style: TextStyle(color: Colors.red, fontSize: 12),
+          ),
+        ],
+      ],
     );
   }
 
@@ -880,6 +986,145 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
           child: const Text('Tentar novamente'),
         ),
       ],
+    );
+  }
+}
+
+/// Bottom sheet de seleção de fornecedor com busca. Recebe a lista já
+/// ordenada e filtra por razão social / nome fantasia conforme o usuário
+/// digita — pensado para listas grandes, onde um dropdown seria inviável.
+/// Retorna o [Fornecedor] escolhido via [Navigator.pop] (ou null se fechado).
+class _FornecedorPickerSheet extends StatefulWidget {
+  final List<Fornecedor> fornecedores;
+  final Fornecedor? selecionado;
+
+  const _FornecedorPickerSheet({
+    required this.fornecedores,
+    required this.selecionado,
+  });
+
+  @override
+  State<_FornecedorPickerSheet> createState() => _FornecedorPickerSheetState();
+}
+
+class _FornecedorPickerSheetState extends State<_FornecedorPickerSheet> {
+  final _buscaController = TextEditingController();
+  late List<Fornecedor> _filtrados;
+
+  @override
+  void initState() {
+    super.initState();
+    _filtrados = widget.fornecedores;
+    // Refiltra a lista a cada tecla digitada na busca.
+    _buscaController.addListener(_filtrar);
+  }
+
+  @override
+  void dispose() {
+    _buscaController.dispose();
+    super.dispose();
+  }
+
+  void _filtrar() {
+    final q = _buscaController.text.trim().toLowerCase();
+    setState(() {
+      _filtrados = q.isEmpty
+          ? widget.fornecedores
+          : widget.fornecedores
+              .where((f) =>
+                  f.razaoSocial.toLowerCase().contains(q) ||
+                  f.nomeFantasia.toLowerCase().contains(q))
+              .toList();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    // Ocupa 85% da tela, descontando o teclado quando aberto pra que a busca
+    // e a lista continuem visíveis sem estourar a altura do sheet.
+    final altura = (media.size.height * 0.85 - media.viewInsets.bottom)
+        .clamp(240.0, media.size.height)
+        .toDouble();
+    return Padding(
+      padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+      child: SizedBox(
+        height: altura,
+        child: Column(
+          children: [
+            // Drag handle.
+            Container(
+              width: 130,
+              height: 5,
+              margin: const EdgeInsets.only(top: 12, bottom: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF9B9B9B),
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              child: TextField(
+                controller: _buscaController,
+                autofocus: true,
+                style: AppTextStyles.inputText,
+                decoration: formInputDecoration(
+                  hint: 'Buscar fornecedor',
+                  suffix:
+                      Icon(Icons.search, size: 18, color: Colors.grey.shade500),
+                ),
+              ),
+            ),
+            Expanded(
+              child: _filtrados.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Nenhum fornecedor encontrado',
+                        style: AppTextStyles.formInputHint,
+                      ),
+                    )
+                  : ListView.separated(
+                      itemCount: _filtrados.length,
+                      separatorBuilder: (_, _) => const Divider(
+                        height: 1,
+                        color: AppColors.textHint,
+                      ),
+                      itemBuilder: (context, i) {
+                        final f = _filtrados[i];
+                        final selecionado = f == widget.selecionado;
+                        // Só mostra o nome fantasia como subtítulo quando o
+                        // título é a razão social (senão duplicaria a linha).
+                        final mostrarFantasia =
+                            f.razaoSocial.isNotEmpty && f.nomeFantasia.isNotEmpty;
+                        return ListTile(
+                          title: Text(
+                            _nomeFornecedor(f),
+                            style: AppTextStyles.inputText
+                                .copyWith(fontWeight: FontWeight.w600),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: mostrarFantasia
+                              ? Text(
+                                  f.nomeFantasia,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              : null,
+                          trailing: selecionado
+                              ? const Icon(Icons.check,
+                                  color: AppColors.primary)
+                              : null,
+                          onTap: () => Navigator.pop(context, f),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

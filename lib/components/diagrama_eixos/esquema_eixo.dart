@@ -7,10 +7,10 @@ enum EsquemaEixo {
   moto,        // M — motocicleta
   passeio,     // F — passeio / caminhonete
   bitruck,     // H — bitruck / ônibus
-  truckG,      // G — truck / cavalo
-  truckB,      // B — truck / cavalo 2 eixos
-  truckO,      // O — truck / cavalo 2 eixos (variante)
-  truckD,      // D — truck / cavalo 3 eixos
+  truckG,      // G — truck / cavalo (3 eixos: simples, duplo, simples)
+  truckB,      // B — truck / cavalo (3 eixos: 1 simples + 2 duplos)
+  truckO,      // O — truck / cavalo (3 eixos: 2 simples + 1 duplo)
+  truckD,      // D — truck / cavalo (4 eixos: 1 simples + 3 duplos)
   carretinha,  // N — carretinha
   carreta1J,   // J — carreta 1 eixo
   carreta2E,   // E — carreta 2 eixos
@@ -18,6 +18,50 @@ enum EsquemaEixo {
   carreta3C,   // C — carreta 3 eixos
   carreta3L,   // L — carreta 3 eixos (variante)
   carreta4P;   // P — carreta 4 eixos
+
+  /// Configuração de rodado de cada eixo, do dianteiro (E1) ao traseiro.
+  ///
+  /// `false` = rodado simples (1 pneu por lado); `true` = rodado duplo
+  /// (2 pneus por lado). O tamanho da lista é o número de eixos do chassi.
+  ///
+  /// Serve para desenhar o "esqueleto" do diagrama (eixos com slots vazios)
+  /// de um veículo **sem nenhum pneu**: aí não há como inferir a quantidade
+  /// de eixos pelos pneus (como faz `buildEixoLayout`), então ela vem daqui.
+  /// Tabela fornecida pela operação de frota.
+  List<bool> get rodadoDuploPorEixo {
+    switch (this) {
+      case EsquemaEixo.toco: // A
+        return const [false, true];
+      case EsquemaEixo.moto: // M — 1 pneu central por eixo (ver FrameMoto)
+        return const [false, false];
+      case EsquemaEixo.passeio: // F
+        return const [false, false];
+      case EsquemaEixo.bitruck: // H
+        return const [false, false, true, true];
+      case EsquemaEixo.truckG: // G
+        return const [false, true, false];
+      case EsquemaEixo.truckB: // B
+        return const [false, true, true];
+      case EsquemaEixo.truckO: // O
+        return const [false, false, true];
+      case EsquemaEixo.truckD: // D
+        return const [false, true, true, true];
+      case EsquemaEixo.carretinha: // N
+        return const [false];
+      case EsquemaEixo.carreta1J: // J
+        return const [true];
+      case EsquemaEixo.carreta2E: // E
+        return const [true, true];
+      case EsquemaEixo.carreta2K: // K
+        return const [true, true];
+      case EsquemaEixo.carreta3C: // C
+        return const [true, true, true];
+      case EsquemaEixo.carreta3L: // L
+        return const [true, true, true];
+      case EsquemaEixo.carreta4P: // P
+        return const [true, true, true, true];
+    }
+  }
 
   static EsquemaEixo? fromCodigo(String codigo) {
     switch (codigo.toUpperCase()) {

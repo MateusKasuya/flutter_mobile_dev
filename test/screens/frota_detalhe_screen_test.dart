@@ -49,6 +49,7 @@ void main() {
         anoModelo: '2021',
         cor: 'Branco',
         tipo: 'Caminhão',
+        codEsqEixo: '1',
         pneus: [_pneu],
       );
 
@@ -75,6 +76,7 @@ void main() {
         anoModelo: '',
         cor: 'Branco',
         tipo: 'Caminhão',
+        codEsqEixo: '1',
         pneus: [_pneu],
       );
 
@@ -85,8 +87,11 @@ void main() {
       expect(find.text('1'), findsOneWidget);
     });
 
-    testWidgets('veículo sem pneus exibe diagrama vazio', (tester) async {
+    testWidgets(
+        'veículo sem pneus mas com esquema conhecido desenha o chassi vazio',
+        (tester) async {
       usePhoneViewport(tester);
+      // 'A' (TOCO) → 2 eixos, mesmo sem nenhum pneu montado.
       final veiculo = Veiculo(
         placa: 'XYZ9K88',
         nroFrota: '002',
@@ -96,6 +101,7 @@ void main() {
         anoModelo: '2023',
         cor: 'Preto',
         tipo: 'Van',
+        codEsqEixo: 'A',
         pneus: [],
       );
 
@@ -104,7 +110,63 @@ void main() {
       );
 
       expect(find.text('XYZ9K88 - Frota 002'), findsOneWidget);
-      // O indicador do diagrama é renderizado como 'FRENTE' (maiúsculas).
+      // O diagrama agora é desenhado: indicador 'FRENTE' e os 2 eixos.
+      expect(find.text('FRENTE'), findsOneWidget);
+      expect(find.text('E1'), findsOneWidget);
+      expect(find.text('E2'), findsOneWidget);
+    });
+
+    testWidgets(
+        'veículo com pneu em só um eixo desenha os demais eixos do esquema',
+        (tester) async {
+      usePhoneViewport(tester);
+      // Esquema 'A' (TOCO) = 2 eixos, mas só o eixo 1 tem pneu (_pneu, '1E').
+      final veiculo = Veiculo(
+        placa: 'ABC1D23',
+        nroFrota: '001',
+        marca: 'Marca Y',
+        modelo: 'Modelo X',
+        ano: '2020',
+        anoModelo: '2021',
+        cor: 'Branco',
+        tipo: 'Caminhão',
+        codEsqEixo: 'A',
+        pneus: [_pneu],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(home: FrotaDetalheScreen(veiculo: veiculo)),
+      );
+
+      // O pneu do eixo 1 aparece, e o eixo 2 (sem pneu) também é desenhado.
+      expect(find.text('1'), findsOneWidget); // nº do pneu montado
+      expect(find.text('E1'), findsOneWidget);
+      expect(find.text('E2'), findsOneWidget);
+    });
+
+    testWidgets(
+        'veículo sem pneus e esquema desconhecido não desenha diagrama',
+        (tester) async {
+      usePhoneViewport(tester);
+      // '1' não corresponde a nenhum esquema → sem esqueleto pra desenhar.
+      final veiculo = Veiculo(
+        placa: 'XYZ9K88',
+        nroFrota: '002',
+        marca: 'Marca Z',
+        modelo: 'Modelo W',
+        ano: '2022',
+        anoModelo: '2023',
+        cor: 'Preto',
+        tipo: 'Van',
+        codEsqEixo: '1',
+        pneus: [],
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(home: FrotaDetalheScreen(veiculo: veiculo)),
+      );
+
+      expect(find.text('XYZ9K88 - Frota 002'), findsOneWidget);
       expect(find.text('FRENTE'), findsNothing);
     });
   });

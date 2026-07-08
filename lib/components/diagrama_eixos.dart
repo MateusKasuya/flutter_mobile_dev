@@ -10,10 +10,16 @@ import 'diagrama_eixos/frame_moto.dart';
 
 /// Diagrama de eixos do veículo visto de cima.
 ///
-/// Despacha para o frame correto a partir do `codEsqEixo` do primeiro pneu da
+/// Despacha para o frame correto a partir do `codEsqEixo` do veículo. Quando
+/// esse código não vem preenchido, cai no `codEsqEixo` do primeiro pneu da
 /// lista. Esquemas desconhecidos caem no frame TOCO como fallback.
 class DiagramaEixos extends StatelessWidget {
   final List<Eixo> eixos;
+
+  /// Código do esquema de eixos vindo do veículo (nível externo da API).
+  /// É a fonte de verdade; o código dos pneus só é usado se este vier vazio.
+  final String codEsqEixo;
+
   final bool isTablet;
   final void Function(Pneu pneu)? onPneuTap;
   final void Function(Pneu pneu)? onPneuDoubleTap;
@@ -22,6 +28,7 @@ class DiagramaEixos extends StatelessWidget {
   const DiagramaEixos({
     super.key,
     required this.eixos,
+    this.codEsqEixo = '',
     this.isTablet = false,
     this.onPneuTap,
     this.onPneuDoubleTap,
@@ -32,8 +39,9 @@ class DiagramaEixos extends StatelessWidget {
   Widget build(BuildContext context) {
     if (eixos.isEmpty) return const SizedBox.shrink();
 
-    final esquema =
-        EsquemaEixo.fromCodigo(_extrairCodigo(eixos)) ?? EsquemaEixo.toco;
+    // Prioriza o código do veículo; se vier vazio, tenta extrair de um pneu.
+    final codigo = codEsqEixo.isNotEmpty ? codEsqEixo : _extrairCodigo(eixos);
+    final esquema = EsquemaEixo.fromCodigo(codigo) ?? EsquemaEixo.toco;
     final frame = _buildFrame(esquema);
 
     // Em telas com altura suficiente, ocupa todo o espaço disponível (mantém

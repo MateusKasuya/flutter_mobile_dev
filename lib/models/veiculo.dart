@@ -9,6 +9,14 @@ class Veiculo {
   final String anoModelo;
   final String cor;
   final String tipo;
+
+  /// Código do esquema de eixos do veículo (campo `CODESQEIXO` da API).
+  ///
+  /// Vem no nível do veículo (não só nos pneus), então um veículo sem
+  /// nenhum pneu ainda sabe qual é a configuração de eixos do chassi.
+  /// A letra é interpretada por `EsquemaEixo.fromCodigo`.
+  final String codEsqEixo;
+
   final List<Pneu> pneus;
 
   const Veiculo({
@@ -20,6 +28,7 @@ class Veiculo {
     required this.anoModelo,
     required this.cor,
     required this.tipo,
+    required this.codEsqEixo,
     required this.pneus,
   });
 
@@ -35,6 +44,7 @@ class Veiculo {
       anoModelo: (json['anomodelo'] ?? '') as String,
       cor: (json['cor'] ?? '') as String,
       tipo: (json['tipo'] ?? '') as String,
+      codEsqEixo: (json['codesqeixo'] ?? '') as String,
       // 'pneus' é nullable no contrato da API; veículo sem pneus vira lista vazia.
       pneus: (json['pneus'] as List? ?? const [])
           .map((e) => Pneu.fromJson(e as Map<String, dynamic>))

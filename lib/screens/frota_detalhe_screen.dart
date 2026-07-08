@@ -28,7 +28,12 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
   @override
   void initState() {
     super.initState();
-    _eixos = buildEixoLayout(widget.veiculo.pneus);
+    // Passa o esquema do veículo: o diagrama mostra o chassi inteiro (todos os
+    // eixos, com slots vazios prontos pra receber pneu), preenchendo com os
+    // pneus existentes. Sem pneus, desenha o esqueleto completo; com pneus só
+    // em alguns eixos, completa os que faltam. Esquema desconhecido → só os
+    // eixos que têm pneu (comportamento antigo).
+    _eixos = buildEixoLayout(widget.veiculo.pneus, widget.veiculo.codEsqEixo);
   }
 
   void _onPneuConfirmed(Pneu pneu) {
@@ -38,7 +43,9 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
   }
 
   void _onSlotVazioConfirmed(String localEixo, Pneu pneu) {
-    final eixoNumero = int.parse(localEixo[0]);
+    if (localEixo.isEmpty) return;
+    final eixoNumero = int.tryParse(localEixo[0]);
+    if (eixoNumero == null) return;
     final posicao = localEixo.substring(1);
     setState(() {
       _eixos = _eixos.map((e) {
@@ -86,6 +93,7 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
                   : const EdgeInsets.fromLTRB(45, 30, 45, 0),
               child: DiagramaEixos(
                 eixos: _eixos,
+                codEsqEixo: widget.veiculo.codEsqEixo,
                 isTablet: isTablet,
                 onPneuTap: (pneu) => _showPneuDetails(context, pneu),
                 onPneuDoubleTap: (pneu) => showPneuAcoesDialog(
@@ -97,6 +105,7 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
                     showSlotVazioAcoesDialog(
                       context,
                       localEixo,
+                      widget.veiculo,
                       onConfirmed: _onSlotVazioConfirmed,
                     ),
               ),

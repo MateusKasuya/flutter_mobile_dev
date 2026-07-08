@@ -21,6 +21,17 @@ String formatKm(String raw) {
   return addThousandSeparator(digits);
 }
 
+/// Extrai o valor numérico de uma string de KM, ignorando qualquer separador
+/// (ponto de milhar) ou caractere não-numérico. Serve tanto para o valor cru
+/// da API (`kmatuvei`) quanto para o texto já mascarado do form ("12.345").
+/// Retorna null quando não há nenhum dígito — deixando o chamador decidir se
+/// pula a validação.
+int? parseKm(String raw) {
+  final digits = raw.replaceAll(RegExp(r'[^\d]'), '');
+  if (digits.isEmpty) return null;
+  return int.tryParse(digits);
+}
+
 /// Formatter que aplica separador de milhar ao digitar.
 class ThousandsSeparatorFormatter extends TextInputFormatter {
   @override
@@ -74,11 +85,34 @@ class BrazilianCurrencyFormatter extends TextInputFormatter {
   }
 }
 
+/// Converte um valor formatado pelo [BrazilianCurrencyFormatter]
+/// ("12.345,67") em double (12345.67) — o formato numérico que a API espera.
+/// Retorna null se a string estiver vazia ou inválida.
+double? parseCurrency(String raw) {
+  if (raw.isEmpty) return null;
+  // Remove separador de milhar e troca a vírgula decimal por ponto.
+  final normalizado = raw.replaceAll('.', '').replaceAll(',', '.');
+  return double.tryParse(normalizado);
+}
+
 /// Formata um [DateTime] como DD/MM/AAAA.
 String formatDate(DateTime date) {
   final d = date.day.toString().padLeft(2, '0');
   final m = date.month.toString().padLeft(2, '0');
   return '$d/$m/${date.year}';
+}
+
+/// Converte uma string DD/MM/AAAA (formato dos campos de data do app) em
+/// [DateTime] — o inverso de [formatDate]. Retorna null se o formato for
+/// inválido, deixando o chamador decidir o fallback.
+DateTime? parseDate(String raw) {
+  final parts = raw.split('/');
+  if (parts.length != 3) return null;
+  final dia = int.tryParse(parts[0]);
+  final mes = int.tryParse(parts[1]);
+  final ano = int.tryParse(parts[2]);
+  if (dia == null || mes == null || ano == null) return null;
+  return DateTime(ano, mes, dia);
 }
 
 /// Tenta converter uma string de data de formatos comuns da API para DD/MM/AAAA.
@@ -98,6 +132,18 @@ String normalizeDateStr(String raw) {
   }
 
   return raw;
+}
+
+/// Converte uma data vinda da API em [DateTime] (só ano/mês/dia, sem hora),
+/// aceitando tanto ISO (YYYY-MM-DD, YYYY-MM-DDTHH:MM:SS) quanto DD/MM/AAAA.
+/// Diferente de [normalizeDateStr] (que devolve texto), aqui devolvemos um
+/// [DateTime] pra permitir comparação entre datas. Retorna null se o formato
+/// não for reconhecido — deixando o chamador decidir se ignora a validação.
+DateTime? parseApiDate(String raw) {
+  if (raw.isEmpty) return null;
+  final iso = DateTime.tryParse(raw);
+  if (iso != null) return DateTime(iso.year, iso.month, iso.day);
+  return parseDate(raw);
 }
 
 InputDecoration formInputDecoration({

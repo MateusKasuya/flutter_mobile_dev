@@ -3,11 +3,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../models/pneu.dart';
 import '../models/pneu_acao.dart';
+import '../models/veiculo.dart';
 import '../screens/pneu_lista_screen.dart';
 import '../services/pneu_service.dart' as pneu_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/app_toast.dart';
 import 'pneu_entrada_bottom_sheet.dart';
 import 'pneu_horizontal_bottom_sheet.dart';
 import 'pneu_movimentacao_bottom_sheet.dart';
@@ -256,9 +256,13 @@ class _AcaoCard extends StatelessWidget {
   }
 }
 
+/// Dialog de escolha da origem (estoque/conserto/recapagem) para montar um
+/// pneu na posição [localEixo] do [veiculo] — que precisa chegar até aqui
+/// porque o POST de montagem exige placa e nº de frota.
 void showSlotVazioAcoesDialog(
   BuildContext context,
-  String localEixo, {
+  String localEixo,
+  Veiculo veiculo, {
   void Function(String localEixo, Pneu pneu)? onConfirmed,
 }) {
   const acoesInsercao = [
@@ -317,6 +321,7 @@ void showSlotVazioAcoesDialog(
                             _navegarParaListaPneus(
                               context,
                               localEixo,
+                              veiculo,
                               acoesInsercao[i],
                               onConfirmed: onConfirmed,
                             );
@@ -351,6 +356,7 @@ void showSlotVazioAcoesDialog(
 void _navegarParaListaPneus(
   BuildContext context,
   String localEixo,
+  Veiculo veiculo,
   PneuAcao acao, {
   void Function(String localEixo, Pneu pneu)? onConfirmed,
 }) async {
@@ -374,18 +380,17 @@ void _navegarParaListaPneus(
 
   if (selectedPneu != null) {
     if (!context.mounted) return;
+    // O POST /pneu/movimentarpneu (e os toasts de sucesso/erro) acontece
+    // dentro do próprio sheet; ele só retorna não-nulo se a API confirmou.
     final entrada = await showPneuEntradaSheet(
       context,
       selectedPneu,
+      veiculo,
       localEixo,
       selectedPneu.codEsqEixo,
       acao,
     );
     if (entrada != null) {
-      // TODO: chamar API quando endpoint estiver disponível
-      showSuccessToast(
-        'Pneu ${selectedPneu.nroPneu} inserido na posição $localEixo',
-      );
       onConfirmed?.call(localEixo, selectedPneu);
     }
   }
@@ -401,22 +406,22 @@ void _confirmAction(
 
   if (origem == null) {
     // Pneu está montado num veículo → formulário de saída do veículo.
+    // O POST /pneu/movimentarpneu (e os toasts de sucesso/erro) acontece
+    // dentro do próprio sheet; ele só retorna não-nulo se a API confirmou.
     final movimentacao = await showPneuMovimentacaoSheet(
       context,
       pneu,
       destino,
     );
     if (movimentacao != null) {
-      // TODO: enviar para a API quando endpoint estiver disponível
-      showSuccessToast('Pneu ${pneu.nroPneu} movido para ${destino.label}');
       onConfirmed?.call(pneu);
     }
   } else {
     // Pneu em estoque/conserto/recauchutagem/sucata → movimentação horizontal.
+    // O POST /pneu/movimentarpneu (e os toasts de sucesso/erro) acontece
+    // dentro do próprio sheet; ele só retorna não-nulo se a API confirmou.
     final mov = await showPneuHorizontalSheet(context, pneu, origem, destino);
     if (mov != null) {
-      // TODO: enviar para a API quando endpoint estiver disponível
-      showSuccessToast('Pneu ${pneu.nroPneu} movido para ${destino.label}');
       onConfirmed?.call(pneu);
     }
   }

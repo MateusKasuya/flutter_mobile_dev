@@ -16,6 +16,7 @@ Veiculo _makeVeiculo() => const Veiculo(
       anoModelo: '2021',
       cor: 'Branco',
       tipo: 'Caminhão',
+      codEsqEixo: '1',
       pneus: [],
     );
 

@@ -19,8 +19,9 @@ class Fornecedor {
     );
   }
 
-  // Necessário para o DropdownButtonFormField reconhecer o item selecionado
-  // após reload da lista (compara por identidade do CNPJ/CPF, não da instância).
+  // Compara por identidade do CNPJ/CPF (não da instância) para reconhecer o
+  // fornecedor selecionado ao destacá-lo na lista de busca, mesmo que a
+  // instância venha de um reload da API.
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

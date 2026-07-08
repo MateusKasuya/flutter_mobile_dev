@@ -7,6 +7,7 @@ import '../models/pneu.dart';
 import '../models/pneu_acao.dart';
 import '../models/pneu_movimentacao.dart';
 import '../providers/auth_provider.dart';
+import '../services/pneu_service.dart' as pneu_service;
 import '../services/sucata_service.dart' as sucata_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -101,6 +102,10 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
   bool _loadingMotivos = false;
   String? _erroMotivos;
 
+  // true enquanto o POST de movimentação está em andamento — desabilita os
+  // botões (evita envio duplicado) e troca o texto do Confirmar por um spinner.
+  bool _enviando = false;
+
   @override
   void initState() {
     super.initState();
@@ -142,10 +147,18 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
   }
 
   Future<void> _pickDate() async {
+    // A data de retorno não pode ser anterior à data de envio: quando ela é
+    // conhecida, usamos como piso (firstDate) do calendário pra impedir a
+    // seleção inválida na origem (o validator abaixo é a rede de segurança).
+    final envio = parseApiDate(widget.pneu.dataAtzKm);
+    final firstDate = envio ?? DateTime(2000);
+    final agora = DateTime.now();
+    // initialDate precisa ser >= firstDate, senão o showDatePicker lança.
+    final initialDate = agora.isBefore(firstDate) ? firstDate : agora;
     final picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
+      initialDate: initialDate,
+      firstDate: firstDate,
       lastDate: DateTime(2100),
     );
     if (picked != null) {
@@ -153,7 +166,7 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
     }
   }
 
-  void _confirmar() {
+  Future<void> _confirmar() async {
     // Sucateamento exige motivo carregado antes de submeter.
     if (widget.acao == PneuAcao.sucata && _motivos.isEmpty) {
       showErrorToast('Aguarde os motivos carregarem');
@@ -172,7 +185,43 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
       acao: widget.acao,
     );
 
-    Navigator.pop(context, movimentacao);
+    setState(() => _enviando = true);
+    try {
+      final token = context.read<AuthProvider>().token;
+      final mensagem = await pneu_service.movimentarPneu(
+        token,
+        // A API espera números onde o GET devolve strings (nropneu, codfil).
+        nroPneu: int.parse(widget.pneu.nroPneu),
+        // Data em que o pneu entra na nova localização = data do retorno
+        // escolhida no form (DD/MM/AAAA → DateTime, meia-noite).
+        dataEntrada: parseDate(_dataRetornoController.text) ?? DateTime.now(),
+        codFil: int.parse(widget.pneu.codFil),
+        // O backend identifica a localização de destino pelo nome em
+        // maiúsculas (ESTOQUE, CONSERTO, RECAPAGEM, SUCATA, VENDA) —
+        // mesmo formato que o GET devolve no campo localizacao.
+        localizacao: widget.acao.label.toUpperCase(),
+        // KM do veículo no momento da saída = KM com que o pneu "entra"
+        // no destino. Remove o separador de milhar aplicado pelo form.
+        kmEntrada: _kmSaidaController.text.replaceAll('.', ''),
+        codMotivoSucat: _motivoSucateamento?.codigo,
+        motivoSaida: _observacaoController.text.isEmpty
+            ? null
+            : _observacaoController.text,
+      );
+      if (!mounted) return;
+      showSuccessToast(
+        mensagem.isNotEmpty
+            ? mensagem
+            : 'Pneu ${widget.pneu.nroPneu} movido para ${widget.acao.label}',
+      );
+      Navigator.pop(context, movimentacao);
+    } catch (e) {
+      if (!mounted) return;
+      // Mantém o sheet aberto para o usuário corrigir/tentar de novo
+      // sem perder o que já digitou.
+      setState(() => _enviando = false);
+      showErrorToast(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   @override
@@ -338,6 +387,20 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                         ),
                         borderColor: acao.borderColor,
                       ),
+                      // Data de retorno >= data de envio. Se qualquer uma das
+                      // datas não for parseável, pulamos a checagem (não faz
+                      // sentido travar o usuário por causa de dado ruim da API).
+                      validator: (_) {
+                        final retorno = parseDate(_dataRetornoController.text);
+                        final envio = parseApiDate(widget.pneu.dataAtzKm);
+                        if (retorno != null &&
+                            envio != null &&
+                            retorno.isBefore(envio)) {
+                          return 'Data de retorno não pode ser anterior à de '
+                              'envio (${normalizeDateStr(widget.pneu.dataAtzKm)})';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 14),
                     ReadOnlyField(label: 'KM de entrada', value: formatKm(pneu.kmAtuVei)),
@@ -356,8 +419,22 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                         hint: 'Informe o KM atual',
                         borderColor: acao.borderColor,
                       ),
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Informe o KM de saída' : null,
+                      validator: (v) {
+                        if (v == null || v.isEmpty) {
+                          return 'Informe o KM de saída';
+                        }
+                        // O hodômetro só anda pra frente: o KM de saída não
+                        // pode ser menor que o KM de entrada do veículo.
+                        final saida = parseKm(v);
+                        final entrada = parseKm(widget.pneu.kmAtuVei);
+                        if (saida != null &&
+                            entrada != null &&
+                            saida < entrada) {
+                          return 'KM de saída não pode ser menor que o de '
+                              'entrada (${formatKm(widget.pneu.kmAtuVei)})';
+                        }
+                        return null;
+                      },
                     ),
                     if (acao == PneuAcao.sucata) ...[
                       const SizedBox(height: 14),
@@ -387,7 +464,11 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                           width: 144,
                           height: 56,
                           child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
+                            // Durante o envio, cancelar fecharia o sheet com a
+                            // requisição ainda em andamento — melhor bloquear.
+                            onPressed: _enviando
+                                ? null
+                                : () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
                               side: const BorderSide(
                                 color: AppColors.textPlaceholder,
@@ -420,20 +501,32 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                               ],
                             ),
                             child: FilledButton(
-                              onPressed: _confirmar,
+                              onPressed: _enviando ? null : _confirmar,
                               style: FilledButton.styleFrom(
                                 backgroundColor: AppColors.primary,
+                                // Mantém a cor cheia enquanto desabilitado no
+                                // envio, para o spinner não ficar sobre cinza.
+                                disabledBackgroundColor: AppColors.primary,
                                 elevation: 0,
                                 padding: EdgeInsets.zero,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                               ),
-                              child: Text(
-                                'Confirmar',
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.buttonPrimary,
-                              ),
+                              child: _enviando
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Text(
+                                      'Confirmar',
+                                      textAlign: TextAlign.center,
+                                      style: AppTextStyles.buttonPrimary,
+                                    ),
                             ),
                           ),
                         ),
