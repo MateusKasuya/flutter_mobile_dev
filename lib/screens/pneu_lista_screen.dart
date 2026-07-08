@@ -312,7 +312,15 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
             isTablet: isTablet,
             onTap: widget.selectionMode
                 ? () => Navigator.pop(context, pneu)
-                : () => showPneuAcoesDialog(context, pneu),
+                : () => showPneuAcoesDialog(
+                    context,
+                    pneu,
+                    // Recarrega a lista após uma movimentação confirmada —
+                    // senão o card continua mostrando a localização/situação
+                    // antiga e o usuário poderia tentar mover o mesmo pneu de
+                    // novo (mirror do frota_detalhe_screen).
+                    onConfirmed: (_) => _carregarPneus(),
+                  ),
           );
         },
       ),

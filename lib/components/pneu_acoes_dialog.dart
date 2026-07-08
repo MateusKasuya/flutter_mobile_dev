@@ -387,7 +387,10 @@ void _navegarParaListaPneus(
       selectedPneu,
       veiculo,
       localEixo,
-      selectedPneu.codEsqEixo,
+      // O esquema de eixos é do VEÍCULO (fonte de verdade), não do pneu de
+      // estoque — o codEsqEixo do pneu em estoque costuma vir vazio e faria a
+      // montagem enviar codesqeixo nulo.
+      veiculo.codEsqEixo,
       acao,
     );
     if (entrada != null) {
