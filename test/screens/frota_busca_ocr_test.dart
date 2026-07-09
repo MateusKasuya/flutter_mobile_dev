@@ -16,7 +16,7 @@ Widget _buildTestWidget({
     create: (_) => AuthProvider(),
     child: MaterialApp(
       home: FrotaBuscaScreen(
-        fetchFn: (_, __) async => throw Exception('não deve buscar'),
+        fetchFn: (_, _) async => throw Exception('não deve buscar'),
         pickImageFn: pickImageFn,
         ocrFn: ocrFn,
       ),
