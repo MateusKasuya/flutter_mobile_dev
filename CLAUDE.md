@@ -12,6 +12,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Common Commands
 
 ```bash
+# Rodar testes (NÃO há CI — execução sempre manual, via script):
+#   ./testar.sh          → analyze + unit/widget (rápido, sem device)
+#   ./testar.sh device   → + integration tests (sobe emulador se necessário)
+#   ./testar.sh homolog  → E2E contra homologação (pede credenciais na hora)
+#   ./testar.sh tudo     → tudo acima
+./testar.sh
+
 # Run the app (choose a connected device/emulator)
 flutter run
 
