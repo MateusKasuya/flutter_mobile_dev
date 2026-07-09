@@ -9,6 +9,7 @@ import '../providers/auth_provider.dart';
 import '../services/pneu_service.dart' as pneu_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/breakpoints.dart';
 import '../utils/friendly_error.dart';
 
 class PneuListaScreen extends StatefulWidget {
@@ -31,9 +32,6 @@ class PneuListaScreen extends StatefulWidget {
 }
 
 class _PneuListaScreenState extends State<PneuListaScreen> {
-  // Acima dessa largura, renderizamos o layout de tablet.
-  static const double _tabletBreakpoint = 600;
-
   final _searchController = TextEditingController();
   List<Pneu> _pneus = [];
   List<Pneu> _filteredPneus = [];
@@ -130,7 +128,7 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+    final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
 
     return Scaffold(
       appBar: AppBar(
@@ -207,21 +205,21 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(50),
                         borderSide: const BorderSide(
-                          color: Color(0xFF959595),
+                          color: AppColors.textPlaceholder,
                           width: 2,
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(50),
                         borderSide: const BorderSide(
-                          color: Color(0xFF959595),
+                          color: AppColors.textPlaceholder,
                           width: 2,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(50),
                         borderSide: const BorderSide(
-                          color: Color(0xFF959595),
+                          color: AppColors.textPlaceholder,
                           width: 2,
                         ),
                       ),
@@ -270,7 +268,7 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
   }
 
   Widget _buildBody() {
-    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+    final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -381,7 +379,7 @@ class _PneuCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFC4C4C4), width: 1),
+          side: const BorderSide(color: AppColors.textHint, width: 1),
         ),
         child: InkWell(
           onTap: onTap,

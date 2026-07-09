@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frota_facil_mobile/theme/app_colors.dart';
 import 'package:frota_facil_mobile/theme/app_text_styles.dart';
+import 'package:frota_facil_mobile/theme/breakpoints.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/localizacao.dart';
@@ -33,9 +34,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Acima dessa largura, renderizamos o layout de tablet.
-  static const double _tabletBreakpoint = 600;
-
   List<Localizacao> _localizacoes = [];
   bool _isLoading = true;
   // Marca que o último _load() falhou, pra mostrarmos a tela de erro + retry.
@@ -87,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+    final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
 
     return Scaffold(
       appBar: AppBar(
@@ -265,7 +263,7 @@ class _LocalizacaoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           width: 1,
-          color: const Color(0xFFC4C4C4),
+          color: AppColors.textHint,
         ),
       ),
       child: Column(

@@ -8,6 +8,7 @@ import '../screens/pneu_lista_screen.dart';
 import '../services/pneu_service.dart' as pneu_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/breakpoints.dart';
 import 'pneu_entrada_bottom_sheet.dart';
 import 'pneu_horizontal_bottom_sheet.dart';
 import 'pneu_movimentacao_bottom_sheet.dart';
@@ -42,7 +43,7 @@ void showPneuAcoesDialog(
   showDialog<void>(
     context: context,
     builder: (context) {
-      final isTablet = MediaQuery.of(context).size.width >= 600;
+      final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
       return Dialog(
         backgroundColor: Colors.white,
         insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),

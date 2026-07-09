@@ -12,6 +12,7 @@ import '../services/pneu_service.dart' as pneu_service;
 import '../services/sucata_service.dart' as sucata_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/breakpoints.dart';
 import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
 import 'shared/close_x_painter.dart';
@@ -25,7 +26,7 @@ Future<bool?> showPneuMovimentacaoSheet(
 }) {
   final mq = MediaQuery.of(context);
   // Breakpoint padrão do app: ≥600pt = tablet.
-  final isTablet = mq.size.width >= 600;
+  final isTablet = mq.size.width >= kTabletBreakpoint;
 
   if (isTablet) {
     // Tablet: modal centralizado (showDialog) com tamanho fixo por ação.
@@ -302,7 +303,7 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
               height: 5,
               margin: const EdgeInsets.only(top: 20),
               decoration: BoxDecoration(
-                color: const Color(0xFF9B9B9B),
+                color: AppColors.textSubtle,
                 borderRadius: BorderRadius.circular(5),
               ),
             ),

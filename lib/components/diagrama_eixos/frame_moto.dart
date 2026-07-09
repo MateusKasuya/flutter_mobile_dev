@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/eixo.dart';
 import '../../models/pneu.dart';
+import '../../theme/app_colors.dart';
 import 'primitives.dart';
 
 /// Frame da MOTO (esquema M).
@@ -44,7 +45,7 @@ class FrameMoto extends StatelessWidget {
                   child: Container(
                     width: chassisWidth,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF959595),
+                      color: AppColors.textPlaceholder,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -101,7 +102,7 @@ class _MotoEixoRow extends StatelessWidget {
             child: Container(
               width: 36,
               height: 3,
-              color: const Color(0xFFC4C4C4),
+              color: AppColors.textHint,
             ),
           ),
           PneuTile(

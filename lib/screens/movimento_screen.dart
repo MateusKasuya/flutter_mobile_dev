@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frota_facil_mobile/theme/app_colors.dart';
 import 'package:frota_facil_mobile/theme/app_text_styles.dart';
+import 'package:frota_facil_mobile/theme/breakpoints.dart';
 
 import 'frota_busca_screen.dart';
 import 'pneu_lista_screen.dart';
@@ -9,13 +10,10 @@ import 'pneu_lista_screen.dart';
 class MovimentoScreen extends StatelessWidget {
   const MovimentoScreen({super.key});
 
-  // Acima dessa largura, renderizamos o layout de tablet.
-  static const double _tabletBreakpoint = 600;
-
   @override
   Widget build(BuildContext context) {
     // MediaQuery.of(context).size.width devolve a largura atual da tela em pixels lógicos.
-    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+    final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
 
     return Scaffold(
       appBar: AppBar(

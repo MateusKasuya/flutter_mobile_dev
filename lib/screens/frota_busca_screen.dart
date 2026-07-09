@@ -8,6 +8,7 @@ import '../services/frota_service.dart' as frota_service;
 import '../services/ocr_service.dart' as ocr_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/breakpoints.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
@@ -43,9 +44,6 @@ class FrotaBuscaScreen extends StatefulWidget {
 }
 
 class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
-  // Acima dessa largura, renderizamos o layout de tablet.
-  static const double _tabletBreakpoint = 600;
-
   final _placaController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -112,7 +110,7 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+    final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundScreen,
@@ -179,21 +177,21 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(
-                        color: Color(0xFF959595),
+                        color: AppColors.textPlaceholder,
                         width: 2,
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(
-                        color: Color(0xFF959595),
+                        color: AppColors.textPlaceholder,
                         width: 2,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(
-                        color: Color(0xFF959595),
+                        color: AppColors.textPlaceholder,
                         width: 2,
                       ),
                     ),

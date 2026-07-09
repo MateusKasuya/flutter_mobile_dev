@@ -11,6 +11,7 @@ import '../services/auth_service.dart';
 import '../services/credential_storage.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/breakpoints.dart';
 import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
 import 'home_screen.dart';
@@ -127,9 +128,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Acima dessa largura, renderizamos o layout de tablet (card centralizado).
-  static const double _tabletBreakpoint = 600;
-
   @override
   Widget build(BuildContext context) {
     return LoadingOverlay(
@@ -140,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: AppColors.gradientEnd,
         body: LayoutBuilder(
           builder: (context, constraints) {
-            final isTablet = constraints.maxWidth >= _tabletBreakpoint;
+            final isTablet = constraints.maxWidth >= kTabletBreakpoint;
             return isTablet
                 ? _buildTabletLayout()
                 : _buildPhoneLayout(constraints);

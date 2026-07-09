@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/eixo.dart';
 import '../../models/pneu.dart';
+import '../../theme/app_colors.dart';
 
 const double chassisGap = 24.0;
 const double chassisGapTablet = 58.0;
@@ -94,7 +95,7 @@ class ChassisRails extends StatelessWidget {
         Container(
           width: width,
           decoration: BoxDecoration(
-            color: const Color(0xFF959595),
+            color: AppColors.textPlaceholder,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -102,7 +103,7 @@ class ChassisRails extends StatelessWidget {
         Container(
           width: width,
           decoration: BoxDecoration(
-            color: const Color(0xFF959595),
+            color: AppColors.textPlaceholder,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -134,7 +135,7 @@ class Parachoque extends StatelessWidget {
               width: outerWidth,
               height: outerHeight,
               decoration: BoxDecoration(
-                color: const Color(0xFF959595),
+                color: AppColors.textPlaceholder,
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
@@ -238,7 +239,7 @@ class EixoRow extends StatelessWidget {
           top: centerTop - barHeight / 2,
           left: 0,
           right: 0,
-          child: Container(height: barHeight, color: const Color(0xFFC4C4C4)),
+          child: Container(height: barHeight, color: AppColors.textHint),
         ),
         // 2. Hubs nos cruzamentos com as longarinas
         Positioned(
@@ -374,7 +375,7 @@ class HubIndicator extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.white,
-        border: Border.all(color: const Color(0xFF959595), width: 2),
+        border: Border.all(color: AppColors.textPlaceholder, width: 2),
       ),
     );
   }
@@ -508,7 +509,7 @@ class EmptyTirePainter extends CustomPainter {
 
     final rrect = RRect.fromLTRBR(0, 0, w, h, const Radius.circular(24));
 
-    canvas.drawRRect(rrect, Paint()..color = const Color(0xFFC4C4C4));
+    canvas.drawRRect(rrect, Paint()..color = AppColors.textHint);
 
     final paint = Paint()
       ..color = const Color(0xFF5F5F5F)

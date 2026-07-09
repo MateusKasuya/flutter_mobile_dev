@@ -9,6 +9,7 @@ import '../models/pneu.dart';
 import '../models/veiculo.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/breakpoints.dart';
 import '../utils/eixo_utils.dart';
 
 class FrotaDetalheScreen extends StatefulWidget {
@@ -21,9 +22,6 @@ class FrotaDetalheScreen extends StatefulWidget {
 }
 
 class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
-  // Acima dessa largura, renderizamos o layout de tablet.
-  static const double _tabletBreakpoint = 600;
-
   late List<Eixo> _eixos;
 
   @override
@@ -58,7 +56,7 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isTablet = MediaQuery.of(context).size.width >= _tabletBreakpoint;
+    final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundScreen,
@@ -119,7 +117,7 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
 }
 
 void _showPneuDetails(BuildContext context, Pneu pneu) {
-  final isTablet = MediaQuery.of(context).size.width >= 600;
+  final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
 
   if (isTablet) {
     _showPneuDetailsDialog(context, pneu);
@@ -145,7 +143,7 @@ void _showPneuDetails(BuildContext context, Pneu pneu) {
               height: 5,
               margin: const EdgeInsets.only(top: 20),
               decoration: BoxDecoration(
-                color: const Color(0xFF9B9B9B),
+                color: AppColors.textSubtle,
                 borderRadius: BorderRadius.circular(5),
               ),
             ),

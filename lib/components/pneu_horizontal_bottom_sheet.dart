@@ -14,6 +14,7 @@ import '../services/pneu_service.dart' as pneu_service;
 import '../services/sucata_service.dart' as sucata_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/breakpoints.dart';
 import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
 import 'shared/close_x_painter.dart';
@@ -34,7 +35,7 @@ Future<bool?> showPneuHorizontalSheet(
   final mq = MediaQuery.of(context);
   // Breakpoint padrão do app: ≥600pt = tablet (mesma regra das outras
   // bottom sheets que viram Dialog no tablet).
-  final isTablet = mq.size.width >= 600;
+  final isTablet = mq.size.width >= kTabletBreakpoint;
 
   if (isTablet) {
     // Tablet: modal centralizado, largura fixa 460pt (padrão das demais
@@ -500,7 +501,7 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                             width: 130,
                             height: 5,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF9B9B9B),
+                              color: AppColors.textSubtle,
                               borderRadius: BorderRadius.circular(5),
                             ),
                           ),
@@ -1103,7 +1104,7 @@ class _FornecedorPickerSheetState extends State<_FornecedorPickerSheet> {
               height: 5,
               margin: const EdgeInsets.only(top: 12, bottom: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFF9B9B9B),
+                color: AppColors.textSubtle,
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
