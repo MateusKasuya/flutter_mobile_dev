@@ -382,4 +382,213 @@ void main() {
     expect(sentBody!['codmotivosucat'], isNull);
     expect(sentBody!['kmentrada'], isNull);
   });
+
+  testWidgets('estoque→venda envia valor e motivo com localizacao VENDA',
+      (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.estoque,
+        destino: PneuAcao.venda,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+
+    // Venda mostra Valor da Venda + Motivo (observação não aparece).
+    await tester.enterText(find.widgetWithText(TextFormField, '0,00'), '50000');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Descreva o motivo'),
+      'venda balcao',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'VENDA');
+    expect(sentBody!['valor'], 500.0);
+    expect(sentBody!['motivosaida'], 'venda balcao');
+    expect(sentBody!['codmotivosucat'], isNull);
+    expect(sentBody!['cgccpfforne'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+  });
+
+  testWidgets('conserto→sucata envia valor do conserto e codmotivosucat',
+      (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.conserto,
+        destino: PneuAcao.sucata,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle(); // aguarda o GET de motivos de sucateamento
+
+    // Valor do Conserto (origem conserto) + motivo de sucateamento (dropdown).
+    await tester.enterText(find.widgetWithText(TextFormField, '0,00'), '30000');
+    final dropdown = find.byType(DropdownButtonFormField<MotivoSucateamento>);
+    await tester.ensureVisible(dropdown);
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('7 - DESGASTE').last);
+    await tester.pumpAndSettle();
+    // Sem campo "motivo" nesta combinação: a observação vira o motivosaida.
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Observações (opcional)'),
+      'sucateado pos conserto',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'SUCATA');
+    expect(sentBody!['valor'], 300.0);
+    expect(sentBody!['codmotivosucat'], 7);
+    expect(sentBody!['motivosaida'], 'sucateado pos conserto');
+    expect(sentBody!['cgccpfforne'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+  });
+
+  testWidgets('recapagem→estoque envia valor da recauchutagem e observação',
+      (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.recapagem,
+        destino: PneuAcao.estoque,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+
+    // Valor da Recauchutagem (origem recapagem). O switch "Proibido futura
+    // recauchutagem" aparece mas é UI-only — o backend não recebe essa flag.
+    await tester.enterText(find.widgetWithText(TextFormField, '0,00'), '12000');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Observações (opcional)'),
+      'retorno da recap',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'ESTOQUE');
+    expect(sentBody!['valor'], 120.0);
+    expect(sentBody!['motivosaida'], 'retorno da recap');
+    expect(sentBody!['codmotivosucat'], isNull);
+    expect(sentBody!['cgccpfforne'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+  });
+
+  testWidgets('recapagem→sucata envia valor e codmotivosucat', (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.recapagem,
+        destino: PneuAcao.sucata,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle(); // aguarda o GET de motivos de sucateamento
+
+    await tester.enterText(find.widgetWithText(TextFormField, '0,00'), '8000');
+    final dropdown = find.byType(DropdownButtonFormField<MotivoSucateamento>);
+    await tester.ensureVisible(dropdown);
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('7 - DESGASTE').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'SUCATA');
+    expect(sentBody!['valor'], 80.0);
+    expect(sentBody!['codmotivosucat'], 7);
+    // Observação deixada em branco → motivosaida nulo.
+    expect(sentBody!['motivosaida'], isNull);
+    expect(sentBody!['cgccpfforne'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+  });
+
+  testWidgets('recapagem→venda envia valor e motivo com localizacao VENDA',
+      (tester) async {
+    useLargeViewport(tester);
+    ignoreOverflowErrors();
+
+    Map<String, dynamic>? sentBody;
+    final mock = roteador((body) => sentBody = body);
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        origem: PneuAcao.recapagem,
+        destino: PneuAcao.venda,
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+
+    // valorLabel prioriza a origem: recapagem→venda mostra "Valor da
+    // Recauchutagem" (mesmo com destino Venda), e o campo Motivo da venda.
+    await tester.enterText(find.widgetWithText(TextFormField, '0,00'), '45000');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Descreva o motivo'),
+      'vendido usado',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(sentBody, isNotNull);
+    expect(sentBody!['localizacao'], 'VENDA');
+    expect(sentBody!['valor'], 450.0);
+    expect(sentBody!['motivosaida'], 'vendido usado');
+    expect(sentBody!['codmotivosucat'], isNull);
+    expect(sentBody!['cgccpfforne'], isNull);
+    expect(sentBody!['kmentrada'], isNull);
+  });
 }
