@@ -276,9 +276,15 @@ class _VeiculoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final borderRadius = BorderRadius.circular(16);
 
-    return SizedBox(
+    // Altura MÍNIMA em vez de fixa: com escala de fonte 1.0 o card mede o
+    // spec (210 no celular / 124 no tablet), mas se o usuário ampliar a
+    // fonte do sistema (acessibilidade) o conteúdo cresce e o card
+    // acompanha — com altura fixa, a Column interna estourava 20px na
+    // escala 1.3 (achado da matriz responsiva). O crescimento é absorvido
+    // pelo DiagramaEixos logo abaixo, que é Expanded.
+    return Container(
       width: isTablet ? 740 : null,
-      height: isTablet ? 124 : 210,
+      constraints: BoxConstraints(minHeight: isTablet ? 124 : 210),
       child: Card(
         elevation: 0,
         color: Colors.white,
@@ -288,6 +294,9 @@ class _VeiculoCard extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
+          // min: a coluna mede o próprio conteúdo (o minHeight acima garante
+          // o tamanho do spec quando o conteúdo é menor que ele).
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: double.infinity,
@@ -320,81 +329,79 @@ class _VeiculoCard extends StatelessWidget {
                 ],
               ),
             ),
-            Expanded(
-              child: Container(
-                decoration: isTablet
-                    ? const BoxDecoration(
-                        border: Border(
-                          top: BorderSide(
-                            color: AppColors.textHint,
-                            width: 1,
-                          ),
+            Container(
+              decoration: isTablet
+                  ? const BoxDecoration(
+                      border: Border(
+                        top: BorderSide(
+                          color: AppColors.textHint,
+                          width: 1,
                         ),
-                      )
-                    : null,
-                padding: isTablet
-                    ? const EdgeInsets.fromLTRB(14, 17, 16, 11)
-                    : const EdgeInsets.fromLTRB(20, 17, 20, 11),
-                child: isTablet
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 331,
-                                child: _veiculoInfoRow(
-                                  'Marca', veiculo.marca, isTablet: true),
-                              ),
-                              SizedBox(
-                                width: 247,
-                                child: _veiculoInfoRow(
-                                  'Ano',
-                                  veiculo.anoModelo.isEmpty
-                                      ? veiculo.ano
-                                      : '${veiculo.ano}/${veiculo.anoModelo}',
-                                  isTablet: true,
-                                ),
-                              ),
-                              Expanded(
-                                child: _veiculoInfoRow(
-                                  'Tipo', veiculo.tipo, isTablet: true),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 15),
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 331,
-                                child: _veiculoInfoRow(
-                                  'Modelo', veiculo.modelo, isTablet: true),
-                              ),
-                              SizedBox(
-                                width: 247,
-                                child: _veiculoInfoRow(
-                                  'Cor', veiculo.cor, isTablet: true),
-                              ),
-                              const Expanded(child: SizedBox()),
-                            ],
-                          ),
-                        ],
-                      )
-                    : Column(
-                        children: [
-                          _veiculoInfoRow('Marca', veiculo.marca),
-                          _veiculoInfoRow('Modelo', veiculo.modelo),
-                          _veiculoInfoRow(
-                            'Ano',
-                            veiculo.anoModelo.isEmpty
-                                ? veiculo.ano
-                                : '${veiculo.ano}/${veiculo.anoModelo}',
-                          ),
-                          _veiculoInfoRow('Cor', veiculo.cor),
-                          _veiculoInfoRow('Tipo', veiculo.tipo),
-                        ],
                       ),
-              ),
+                    )
+                  : null,
+              padding: isTablet
+                  ? const EdgeInsets.fromLTRB(14, 17, 16, 11)
+                  : const EdgeInsets.fromLTRB(20, 17, 20, 11),
+              child: isTablet
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 331,
+                              child: _veiculoInfoRow(
+                                'Marca', veiculo.marca, isTablet: true),
+                            ),
+                            SizedBox(
+                              width: 247,
+                              child: _veiculoInfoRow(
+                                'Ano',
+                                veiculo.anoModelo.isEmpty
+                                    ? veiculo.ano
+                                    : '${veiculo.ano}/${veiculo.anoModelo}',
+                                isTablet: true,
+                              ),
+                            ),
+                            Expanded(
+                              child: _veiculoInfoRow(
+                                'Tipo', veiculo.tipo, isTablet: true),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 331,
+                              child: _veiculoInfoRow(
+                                'Modelo', veiculo.modelo, isTablet: true),
+                            ),
+                            SizedBox(
+                              width: 247,
+                              child: _veiculoInfoRow(
+                                'Cor', veiculo.cor, isTablet: true),
+                            ),
+                            const Expanded(child: SizedBox()),
+                          ],
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        _veiculoInfoRow('Marca', veiculo.marca),
+                        _veiculoInfoRow('Modelo', veiculo.modelo),
+                        _veiculoInfoRow(
+                          'Ano',
+                          veiculo.anoModelo.isEmpty
+                              ? veiculo.ano
+                              : '${veiculo.ano}/${veiculo.anoModelo}',
+                        ),
+                        _veiculoInfoRow('Cor', veiculo.cor),
+                        _veiculoInfoRow('Tipo', veiculo.tipo),
+                      ],
+                    ),
             ),
           ],
         ),
