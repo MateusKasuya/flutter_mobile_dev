@@ -17,13 +17,15 @@ import 'shared/close_x_painter.dart';
 /// Retorna a [PneuAcao] correspondente à localização do pneu,
 /// ou null quando o pneu está montado num veículo (localização desconhecida).
 PneuAcao? _origemFromLocalizacao(String localizacao) {
-  try {
-    return PneuAcao.values.firstWhere(
-      (a) => a.label.toUpperCase() == localizacao.toUpperCase(),
-    );
-  } catch (_) {
-    return null;
+  // Aqui "não encontrado" é um caso legítimo (pneu montado num veículo tem
+  // localização desconhecida), não um erro. firstWhere lançaria StateError
+  // quando nada casa — usar exceção como fluxo normal é caro e obscuro; um
+  // loop que retorna null no fim expressa a intenção diretamente.
+  final alvo = localizacao.toUpperCase();
+  for (final acao in PneuAcao.values) {
+    if (acao.label.toUpperCase() == alvo) return acao;
   }
+  return null;
 }
 
 /// Retorna true para pares origem→destino proibidos pelas regras de negócio.
