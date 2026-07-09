@@ -137,5 +137,34 @@ void main() {
       ocrCompleter.complete('texto sem placa nenhuma');
       await tester.pumpAndSettle();
     });
+
+    testWidgets('desmontar durante o OCR não escreve no controller disposto',
+        (tester) async {
+      // OCR pendente: o Future não resolve até chamarmos complete(). Isso
+      // segura _scanPlaca logo após o await do OCR — exatamente antes do
+      // `if (!mounted) return` que protege a escrita no controller.
+      final ocrCompleter = Completer<String>();
+
+      await tester.pumpWidget(_buildTestWidget(
+        pickImageFn: () async => XFile('/fake/path.jpg'),
+        ocrFn: (_) => ocrCompleter.future,
+      ));
+
+      await tester.tap(find.byIcon(Icons.camera_alt));
+      await tester.pump(); // processa o pickImage; OCR fica pendente
+
+      // Usuário sai da tela: troca toda a árvore, disparando o dispose() do
+      // FrotaBuscaScreen (e do _placaController junto).
+      await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+
+      // O OCR resolve com uma placa válida DEPOIS do dispose. Sem o guard
+      // `if (!mounted)`, _scanPlaca tentaria _placaController.text = placa e
+      // lançaria "A TextEditingController was used after being disposed".
+      ocrCompleter.complete('ABC1D23');
+      await tester.pumpAndSettle();
+
+      // O guard barrou a escrita: nenhuma exceção capturada.
+      expect(tester.takeException(), isNull);
+    });
   });
 }
