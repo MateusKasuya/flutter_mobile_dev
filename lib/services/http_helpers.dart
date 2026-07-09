@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
 import 'api_error.dart';
+import 'auth_http_client.dart';
 
 /// Helper genérico para os endpoints de GET que devolvem uma lista de objetos.
 ///
@@ -27,26 +28,22 @@ Future<List<T>> getJsonList<T>(
   required String mensagemErro,
   http.Client? client,
 }) async {
-  final createdClient = client == null;
-  final c = client ?? http.Client();
-  try {
-    final url = Uri.http(apiBaseUrl, path);
-    final response = await c.get(
-      url,
-      headers: {'Authorization': 'Bearer $token'},
-    ).timeout(apiTimeout);
+  // Sem client injetado, usa o [apiClient] compartilhado (singleton de longa
+  // vida que trata o 401 global). Ele NÃO é fechado aqui — fechá-lo quebraria
+  // as próximas requisições; clientes injetados nos testes pertencem ao teste.
+  final c = client ?? apiClient;
+  final url = Uri.http(apiBaseUrl, path);
+  final response = await c.get(
+    url,
+    headers: {'Authorization': 'Bearer $token'},
+  ).timeout(apiTimeout);
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as List;
-      return data
-          .map((e) => fromJson(e as Map<String, dynamic>))
-          .toList();
-    } else {
-      throw apiException(response, mensagemErro);
-    }
-  } finally {
-    if (createdClient) {
-      c.close();
-    }
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body) as List;
+    return data
+        .map((e) => fromJson(e as Map<String, dynamic>))
+        .toList();
+  } else {
+    throw apiException(response, mensagemErro);
   }
 }
