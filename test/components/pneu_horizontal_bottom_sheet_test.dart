@@ -19,16 +19,6 @@ void useLargeViewport(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
-/// Ignora overflow de layout (fonte de teste mais larga que a Montserrat real).
-void ignoreOverflowErrors() {
-  final original = FlutterError.onError;
-  FlutterError.onError = (details) {
-    if (details.exceptionAsString().contains('overflowed')) return;
-    original?.call(details);
-  };
-  addTearDown(() => FlutterError.onError = original);
-}
-
 Pneu buildPneu({String nroPneu = '12345', String codFil = '1'}) {
   return Pneu(
     nroPneu: nroPneu,
@@ -144,7 +134,6 @@ void main() {
   testWidgets('sheet horizontal (estoque→conserto) abre e mostra os botões',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     // Responde [] a qualquer GET (fornecedores/motivos, se carregados).
     final mock = MockClient((req) async => http.Response(jsonEncode([]), 200));
@@ -167,7 +156,6 @@ void main() {
   testWidgets('conserto→estoque envia valor e observação (motivosaida)',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -215,7 +203,6 @@ void main() {
 
   testWidgets('estoque→recapagem envia motivo e valor zero', (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -254,7 +241,6 @@ void main() {
 
   testWidgets('conserto→recapagem envia fornecedor e valor', (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -301,7 +287,6 @@ void main() {
   testWidgets('estoque→sucata envia codmotivosucat do dropdown',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -344,7 +329,6 @@ void main() {
   testWidgets('sucata→venda envia valor e motivo com localizacao VENDA',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -386,7 +370,6 @@ void main() {
   testWidgets('estoque→venda envia valor e motivo com localizacao VENDA',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -426,7 +409,6 @@ void main() {
   testWidgets('conserto→sucata envia valor do conserto e codmotivosucat',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -473,7 +455,6 @@ void main() {
   testWidgets('recapagem→estoque envia valor da recauchutagem e observação',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -513,7 +494,6 @@ void main() {
 
   testWidgets('recapagem→sucata envia valor e codmotivosucat', (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);
@@ -554,7 +534,6 @@ void main() {
   testWidgets('recapagem→venda envia valor e motivo com localizacao VENDA',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mock = roteador((body) => sentBody = body);

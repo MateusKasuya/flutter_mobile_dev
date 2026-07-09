@@ -20,18 +20,6 @@ void useLargeViewport(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
-/// Ignora erros de overflow de layout durante o teste. O flutter_test usa uma
-/// fonte de teste mais larga que a Montserrat real, então layouts desenhados
-/// justos (o header do form) "estouram" só no teste — não é bug do app.
-void ignoreOverflowErrors() {
-  final original = FlutterError.onError;
-  FlutterError.onError = (details) {
-    if (details.exceptionAsString().contains('overflowed')) return;
-    original?.call(details);
-  };
-  addTearDown(() => FlutterError.onError = original);
-}
-
 /// Constrói um [Pneu] mínimo para os testes (a maioria dos 27 campos não
 /// importa para o fluxo de movimentação).
 Pneu buildPneu({String nroPneu = '12345', String codFil = '1'}) {
@@ -101,7 +89,6 @@ void main() {
   testWidgets('movimentação para conserto envia o payload no contrato da API',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? sentBody;
     final mockClient = MockClient((request) async {
@@ -153,7 +140,6 @@ void main() {
   testWidgets('codFil vazio bloqueia o envio (guard do M4) e mantém a sheet',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     var chamou = false;
     final mockClient = MockClient((request) async {

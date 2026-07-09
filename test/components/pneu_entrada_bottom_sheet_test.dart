@@ -19,17 +19,6 @@ void useLargeViewport(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
-/// Ignora overflow de layout (a fonte de teste é mais larga que a Montserrat
-/// real, então layouts justos "estouram" só no teste — não é bug do app).
-void ignoreOverflowErrors() {
-  final original = FlutterError.onError;
-  FlutterError.onError = (details) {
-    if (details.exceptionAsString().contains('overflowed')) return;
-    original?.call(details);
-  };
-  addTearDown(() => FlutterError.onError = original);
-}
-
 Pneu buildPneu({String nroPneu = '12345', String codFil = '1'}) {
   return Pneu(
     nroPneu: nroPneu,
@@ -116,7 +105,6 @@ void main() {
   testWidgets('montagem envia o payload de montagem no contrato da API',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     Map<String, dynamic>? body;
     final mock = MockClient((req) async {
@@ -166,7 +154,6 @@ void main() {
   testWidgets('nroFrota vazio bloqueia a montagem (guard do M4)',
       (tester) async {
     useLargeViewport(tester);
-    ignoreOverflowErrors();
 
     var chamou = false;
     final mock = MockClient((req) async {
