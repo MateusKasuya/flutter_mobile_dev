@@ -13,6 +13,7 @@ import 'package:frota_facil_mobile/screens/frota_busca_screen.dart';
 import 'package:frota_facil_mobile/screens/frota_detalhe_screen.dart';
 import 'package:frota_facil_mobile/screens/home_screen.dart';
 import 'package:frota_facil_mobile/screens/login_screen.dart';
+import 'package:frota_facil_mobile/screens/pneu_lista_screen.dart';
 import 'package:frota_facil_mobile/services/credential_storage.dart';
 import 'package:frota_facil_mobile/theme/app_theme.dart';
 
@@ -55,6 +56,37 @@ const _pneu = Pneu(
   codFil: '01',
   nroFrota: '001',
   placa: 'ABC1D23',
+);
+
+/// Pneu parado em ESTOQUE — origem de uma movimentação horizontal.
+const _pneuEstoque = Pneu(
+  nroPneu: '7777',
+  nroSerie: 'SR777777',
+  marca: 'Pirelli',
+  modelo: 'Modelo B',
+  dimensao: '295/80R22.5',
+  tipo: 'Radial',
+  situacao: 'BOM',
+  localEixo: '',
+  codEsqEixo: '',
+  localizacao: 'ESTOQUE',
+  nroDot: '4523',
+  indRecapagem: 'N',
+  vidaPneu: '80',
+  kmRodado: '50000',
+  kmAcumulador: '40000',
+  kmAtuVei: '150000',
+  kmRodado0: '10000',
+  kmRodado1: '10000',
+  kmRodado2: '10000',
+  kmRodado3: '10000',
+  kmRodado4: '10000',
+  kmRodado5: '0',
+  dataCompra: '2023-01-15',
+  dataAtzKm: '2024-06-01',
+  codFil: '01',
+  nroFrota: '',
+  placa: '',
 );
 
 const _veiculo = Veiculo(
@@ -164,6 +196,43 @@ void main() {
     for (final acao in ['ESTOQUE', 'CONSERTO', 'RECAPAGEM', 'SUCATA', 'VENDA']) {
       expect(find.text(acao), findsOneWidget);
     }
+  });
+
+  testWidgets(
+      'movimentação horizontal: abre o formulário estoque→conserto e cancela',
+      (tester) async {
+    // Exercita a SHEET de movimentação no aparelho — a parte que os vídeos
+    // do Test Lab não mostravam. Estoque→Conserto de propósito: é o destino
+    // que não busca nada da API ao abrir (sucata/venda/recapagem buscam
+    // motivos/fornecedores). Cancela em vez de confirmar: o POST real de
+    // movimentação acontece dentro da sheet e mutaria dados de verdade —
+    // toda a lógica de envio (payloads, combinações origem→destino) já é
+    // coberta pelos widget tests das sheets.
+    await tester.pumpWidget(
+      _wrap(PneuListaScreen(fetchFn: (_) async => [_pneuEstoque])),
+    );
+    await tester.pumpAndSettle();
+
+    // Card do pneu na lista → diálogo de ações.
+    await tester.tap(find.text('Pneu #7777'));
+    await tester.pumpAndSettle();
+    expect(find.text('Selecione uma opção'), findsOneWidget);
+
+    // ESTOQUE (posição atual) vem desabilitado; CONSERTO abre a sheet.
+    await tester.tap(find.text('CONSERTO'));
+    await tester.pumpAndSettle();
+
+    // Formulário da movimentação horizontal na tela.
+    expect(find.text('Confirmar'), findsOneWidget);
+    expect(find.text('Cancelar'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Cancelar'));
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+
+    // Sheet fechou sem enviar nada; a lista continua na tela.
+    expect(find.text('Confirmar'), findsNothing);
+    expect(find.byType(PneuListaScreen), findsOneWidget);
   });
 
   testWidgets('lembrar-me persiste credenciais nos storages reais do aparelho',
