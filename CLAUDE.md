@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**frota_facil_mobile** — Flutter mobile application for fleet management ("frota fácil" = easy fleet in Portuguese). Currently in initial setup phase.
+**frota_facil_mobile** — app Flutter (Android/iOS) de gestão de pneus de frota, do ecossistema Transporte Fácil. Login por CPF/senha, painel de pneus por localização, busca de veículo por placa (digitada ou lida por OCR na câmera), diagrama de eixos interativo e registro de movimentações de pneus (montagem, estoque, conserto, recapagem, sucata, venda) contra a API `api-frota`.
 
-- Flutter SDK: ^3.10.8 (Dart SDK constraint)
-- Linting: `flutter_lints` (standard Flutter lint rules via `analysis_options.yaml`)
+- Flutter SDK: `^3.10.8` (Dart SDK constraint)
+- Linting: `flutter_lints` (via `analysis_options.yaml`)
+- API: default homologação `fretefacilweb.ccmcloud.com.br:8624`, trocável por build com `--dart-define=API_BASE_URL=host:porta` (resolvido em tempo de compilação, em `lib/config/api_config.dart`)
 
 ## Common Commands
 
@@ -16,7 +17,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 #   ./testar.sh          → analyze + unit/widget (rápido, sem device)
 #   ./testar.sh device   → + integration tests (sobe emulador se necessário)
 #   ./testar.sh homolog  → E2E contra homologação (pede credenciais na hora)
-#   ./testar.sh tudo     → tudo acima
+#   ./testar.sh testlab  → integration tests no Firebase Test Lab
+#   ./testar.sh tudo     → rápido + device + homolog
 ./testar.sh
 
 # Run the app (choose a connected device/emulator)
@@ -31,9 +33,6 @@ flutter test test/path/to/test_file.dart
 # Analyze code
 flutter analyze
 
-# Format code
-dart format lib/
-
 # Build APK
 flutter build apk
 
@@ -41,19 +40,24 @@ flutter build apk
 flutter build ios
 ```
 
+**NÃO rodar `dart format` amplo** (ex.: `dart format lib/`): o repositório está no estilo do formatter antigo e o atual reestilizaria metade dos arquivos, poluindo o diff. Formate apenas o que editar, seguindo o estilo local.
+
 ## Architecture
 
-The project is in early stages with only `lib/main.dart` containing a bare-bones `MaterialApp`. As features are added, organize code under `lib/` following a feature-first or layer-first structure consistent with what gets established during development.
+Layer-first dentro de `lib/`: `config/` (base URL da API), `models/`, `services/` (HTTP; `AuthHttpClient` intercepta 401 globalmente e derruba para o login), `providers/` (`AuthProvider` via package `provider`), `screens/`, `components/`, `theme/` (breakpoint único de 600px para tablet), `utils/`.
 
-## Documentation Vault
+- Navegação imperativa com `Navigator.push` — sem rotas nomeadas.
+- Estado: `provider` só para autenticação; o resto é estado local por tela.
+- Testabilidade por injeção manual: telas/serviços recebem `fetchFn`/`client`/etc. com default de produção — novos códigos devem seguir o padrão.
+- OCR de placa é nativo (ML Kit no Android, Vision no iOS) via `MethodChannel` — não há pacote Dart de OCR.
 
-Project evolution and learning are documented in `docs/` as an Obsidian vault.
+Detalhes completos em `docs/documentacao-tecnica.md`.
 
-- Open `docs/` as the vault root in Obsidian.
-- **`docs/Home.md`** — main index (MOC).
-- **`docs/Decisões/`** — Architecture Decision Records (ADRs). Create one for every significant tech/architecture choice.
-- **`docs/Dev Log/`** — chronological session notes. Use the template at `docs/Templates/Dev Log.md`.
-- **`docs/Aprendizados/`** — topic-based learning notes (Flutter, Dart, patterns, tools).
-- **`docs/Problemas & Soluções/`** — documented bugs and how they were solved.
-- **`docs/Roadmap/Backlog.md`** — feature backlog and milestones.
-- **`docs/Templates/`** — note templates for each section.
+## Documentation
+
+A documentação vive em `docs/` como Markdown puro (sem Obsidian: nada de wikilinks, frontmatter, dev logs, tasks ou ADRs):
+
+- **`docs/documentacao-tecnica.md`** — arquitetura, API, modelos, telas, testes, plataformas e dívidas conhecidas.
+- **`docs/documentacao-produto.md`** — visão de produto, conceitos do domínio, funcionalidades, fluxos e regras de negócio.
+
+Ao mudar comportamento relevante (endpoint, regra de negócio, fluxo de tela, estratégia de teste), atualize o documento correspondente no mesmo PR/commit.
