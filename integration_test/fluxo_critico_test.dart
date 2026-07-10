@@ -189,6 +189,13 @@ void main() {
     await tester.enterText(find.byType(TextField).last, 'senha-secreta');
     await tester.tap(find.byType(Checkbox));
     await tester.pump();
+    // Confirma que o tap marcou mesmo o checkbox — se falhar aqui, o
+    // problema é de interação, não de storage.
+    expect(
+      tester.widget<Checkbox>(find.byType(Checkbox)).value,
+      isTrue,
+      reason: 'o tap não marcou o checkbox de lembrar-me',
+    );
 
     await tester.tap(find.text('Entrar'));
     // O login navega para a HomeScreen com fetchFn DEFAULT, que dispara um
@@ -197,12 +204,53 @@ void main() {
     // navegação com _aguardar em vez de pumpAndSettle.
     await _aguardar(tester, find.byType(HomeScreen));
 
-    // "Reabre o app": monta uma LoginScreen nova, de novo com os storages
-    // reais — os campos devem vir preenchidos do disco/Keystore.
+    // Diagnóstico por camada, antes de testar a UI: confere cada storage
+    // diretamente, para uma falha apontar o culpado exato (na 1ª rodada do
+    // Test Lab os campos não reapareceram e o erro não dizia por quê).
+    final prefs = await SharedPreferences.getInstance();
+    expect(
+      prefs.getBool('remember_me'),
+      isTrue,
+      reason: 'remember_me não foi gravado no SharedPreferences',
+    );
+    expect(
+      prefs.getString('saved_cpf'),
+      '070.699.539-25',
+      reason: 'saved_cpf não foi gravado no SharedPreferences',
+    );
+    final senhaLida = await const SecureCredentialStorage()
+        .readPassword()
+        .timeout(
+          const Duration(seconds: 20),
+          onTimeout: () => '<TIMEOUT: readPassword não respondeu em 20s>',
+        );
+    expect(
+      senhaLida,
+      'senha-secreta',
+      reason: 'leitura do Keystore (flutter_secure_storage) não devolveu '
+          'a senha gravada',
+    );
+
+    // "Reabre o app": primeiro DERRUBA a árvore atual de verdade. Sem isso,
+    // o pumpWidget seguinte tem a mesma estrutura de tipos (Provider >
+    // MaterialApp) e o Flutter REAPROVEITA o Navigator antigo — que ainda
+    // está com a HomeScreen empilhada pelo login — em vez de montar um
+    // LoginScreen novo ("home:" só vale para a rota inicial). Foi a causa
+    // de falha em aparelhos do Firebase Test Lab enquanto passava por
+    // coincidência de timing no emulador.
+    await tester.pumpWidget(const SizedBox.shrink());
+
+    // Agora sim: LoginScreen novo, com os storages reais — os campos devem
+    // vir preenchidos do disco/Keystore. Espera longa: em aparelho real a
+    // primeira leitura do Keystore pode demorar.
     await tester.pumpWidget(
       _wrap(LoginScreen(loginFn: (_, _) async => 'token-e2e')),
     );
-    await _aguardar(tester, find.text('070.699.539-25'));
+    await _aguardar(
+      tester,
+      find.text('070.699.539-25'),
+      timeout: const Duration(seconds: 30),
+    );
 
     expect(find.text('070.699.539-25'), findsOneWidget);
     expect(find.text('senha-secreta'), findsOneWidget);
