@@ -35,7 +35,9 @@ String _formatDataEntrada(DateTime data) {
 ///
 /// O endpoint é único para todos os tipos de movimentação — o backend decide
 /// o que fazer pelos campos preenchidos:
-/// - montagem no veículo: [localEixo], [codEsqEixo], [placa] e [nroFrota];
+/// - montagem no veículo: [localEixo], [codEsqEixo], [placa] e [nroFrota],
+///   mais [localizacao] com a origem do pneu em maiúsculas (a API exige o
+///   campo em toda movimentação);
 /// - movimentação para uma localização (estoque, conserto, recapagem,
 ///   sucata, venda): [localizacao] com o nome dela em maiúsculas;
 /// - sucateamento: [codMotivoSucat] com o código do motivo.

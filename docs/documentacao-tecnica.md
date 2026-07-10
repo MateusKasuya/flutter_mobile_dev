@@ -139,8 +139,8 @@ Todos os endpoints usam `Uri.http` (HTTP em texto claro — ver §15) e, exceto 
 
 O backend decide o tipo de movimentação pelos campos preenchidos (os demais vão `null`):
 
-- **Montagem no veículo:** `localeixo`, `codesqeixo`, `placa`, `nrofrota`.
-- **Movimentação para localização** (estoque/conserto/recapagem/sucata/venda): `localizacao` com o nome em MAIÚSCULAS.
+- **Montagem no veículo:** `localeixo`, `codesqeixo`, `placa`, `nrofrota`, mais `localizacao` com a **origem** do pneu em MAIÚSCULAS (a API rejeita a montagem sem o campo — "LOCALIZACAO é obrigatória").
+- **Movimentação para localização** (estoque/conserto/recapagem/sucata/venda): `localizacao` com o nome do **destino** em MAIÚSCULAS.
 - **Sucateamento:** adicionalmente `codmotivosucat`.
 - Campos comuns: `nropneu`, `dataentrada`, `codfil`, `valor` (default 0); opcionais `kmentrada`, `cgccpfforne` (fornecedor), `motivosaida`.
 
