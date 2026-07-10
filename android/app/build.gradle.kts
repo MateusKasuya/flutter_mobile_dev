@@ -28,6 +28,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Runner de instrumentação: é quem executa os integration tests
+        // DENTRO do aparelho quando rodamos via gradlew connectedAndroidTest
+        // ou no Firebase Test Lab (em vez do flutter test -d <device>).
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -45,4 +49,11 @@ flutter {
 
 dependencies {
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    // androidTestImplementation: entram só no APK de TESTE (androidTest/),
+    // nunca no app que vai para o usuário. As versões precisam bater com as
+    // que o pacote integration_test do Flutter pinna no classpath do app
+    // (runner 1.2.0) — o Gradle exige resolução consistente entre os dois.
+    androidTestImplementation("androidx.test:runner:1.2.0")
+    androidTestImplementation("androidx.test:rules:1.2.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.2.0")
 }
