@@ -89,6 +89,9 @@ void main() {
         expect(body['nropneu'], 12345);
         expect(body['dataentrada'], '2026-07-03T00:00:00');
         expect(body['valor'], 0);
+        // A grafia exótica da chave ('localizacaO_ORIGEM') é literal do
+        // contrato do backend — o teste fixa exatamente essa forma.
+        expect(body['localizacaO_ORIGEM'], 'FROTA');
         expect(body['localizacao'], 'CONSERTO');
         expect(body['codfil'], 1);
         expect(body['kmentrada'], '120000');
@@ -116,6 +119,7 @@ void main() {
         nroPneu: 12345,
         dataEntrada: DateTime(2026, 7, 3),
         codFil: 1,
+        localizacaoOrigem: 'FROTA',
         localizacao: 'CONSERTO',
         kmEntrada: '120000',
         motivoSaida: 'Desgaste irregular',
@@ -128,6 +132,7 @@ void main() {
     test('envia os campos de sucateamento quando informados', () async {
       final mockClient = MockClient((request) async {
         final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['localizacaO_ORIGEM'], 'CONSERTO');
         expect(body['localizacao'], 'SUCATA');
         expect(body['codmotivosucat'], 4);
         return http.Response(
@@ -141,6 +146,7 @@ void main() {
         nroPneu: 12345,
         dataEntrada: DateTime(2026, 7, 3),
         codFil: 1,
+        localizacaoOrigem: 'CONSERTO',
         localizacao: 'SUCATA',
         codMotivoSucat: 4,
         client: mockClient,
@@ -150,8 +156,9 @@ void main() {
     test('envia os campos de montagem quando informados', () async {
       final mockClient = MockClient((request) async {
         final body = jsonDecode(request.body) as Map<String, dynamic>;
-        // Montagem: campos do veículo preenchidos + localizacao de ORIGEM
-        // do pneu (a API exige o campo em toda movimentação).
+        // Montagem: campos do veículo preenchidos + origem do pneu, que
+        // também segue em localizacao (exigência antiga da API).
+        expect(body['localizacaO_ORIGEM'], 'ESTOQUE');
         expect(body['localizacao'], 'ESTOQUE');
         expect(body['localeixo'], '1DE');
         expect(body['codesqeixo'], 'ESQ01');
@@ -172,6 +179,7 @@ void main() {
         nroPneu: 12345,
         dataEntrada: DateTime(2026, 7, 3),
         codFil: 1,
+        localizacaoOrigem: 'ESTOQUE',
         localizacao: 'ESTOQUE',
         localEixo: '1DE',
         codEsqEixo: 'ESQ01',
@@ -190,6 +198,7 @@ void main() {
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         // Horizontal: sem veículo envolvido (kmentrada e campos de
         // montagem nulos), com custo/preço e fornecedor.
+        expect(body['localizacaO_ORIGEM'], 'CONSERTO');
         expect(body['localizacao'], 'RECAPAGEM');
         expect(body['valor'], 12345.67);
         expect(body['cgccpfforne'], '12345678000199');
@@ -206,6 +215,7 @@ void main() {
         nroPneu: 12345,
         dataEntrada: DateTime(2026, 7, 3),
         codFil: 1,
+        localizacaoOrigem: 'CONSERTO',
         localizacao: 'RECAPAGEM',
         valor: 12345.67,
         cgcCpfForne: '12345678000199',

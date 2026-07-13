@@ -417,8 +417,9 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
         // data em que o pneu entra na nova localização.
         dataEntrada: parseDate(_dataController.text) ?? DateTime.now(),
         codFil: codFil,
-        // O backend identifica a localização de destino pelo nome em
-        // maiúsculas — mesmo formato que o GET devolve no campo localizacao.
+        // Origem e destino do movimento, pelos nomes em maiúsculas — mesmo
+        // formato que o GET devolve no campo localizacao.
+        localizacaoOrigem: widget.origem.label.toUpperCase(),
         localizacao: widget.destino.label.toUpperCase(),
         // "12.345,67" (máscara do form) → 12345.67; fluxos sem campo de
         // valor enviam 0.

@@ -176,9 +176,12 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
         // (DD/MM/AAAA → DateTime, meia-noite).
         dataEntrada: parseDate(_dataEnvioController.text) ?? DateTime.now(),
         codFil: codFil,
-        // A API exige localizacao também na montagem ("LOCALIZACAO é
-        // obrigatória."): vai a localização de ORIGEM do pneu, em maiúsculas
-        // (ESTOQUE/CONSERTO/RECAPAGEM), de onde ele sai para o veículo.
+        // Localização de ORIGEM do pneu em maiúsculas (ESTOQUE/CONSERTO/
+        // RECAPAGEM), de onde ele sai para o veículo.
+        localizacaoOrigem: widget.origem.label.toUpperCase(),
+        // A API exigia a origem também aqui ("LOCALIZACAO é obrigatória.")
+        // antes de existir LOCALIZACAO_ORIGEM — segue enviada até o backend
+        // confirmar que a montagem dispensa o campo.
         localizacao: widget.origem.label.toUpperCase(),
         // Montagem é identificada pelo backend pelos campos do veículo
         // preenchidos (localeixo/placa/nrofrota).

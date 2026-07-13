@@ -35,11 +35,14 @@ String _formatDataEntrada(DateTime data) {
 ///
 /// O endpoint é único para todos os tipos de movimentação — o backend decide
 /// o que fazer pelos campos preenchidos:
+/// - toda movimentação envia [localizacaoOrigem] com a localização ATUAL do
+///   pneu em maiúsculas ('FROTA' quando ele está montado num veículo);
 /// - montagem no veículo: [localEixo], [codEsqEixo], [placa] e [nroFrota],
-///   mais [localizacao] com a origem do pneu em maiúsculas (a API exige o
-///   campo em toda movimentação);
+///   mais [localizacao] com a origem do pneu em maiúsculas (exigência da API
+///   anterior ao campo LOCALIZACAO_ORIGEM — "LOCALIZACAO é obrigatória" —,
+///   mantida até o backend confirmar que a montagem dispensa o campo);
 /// - movimentação para uma localização (estoque, conserto, recapagem,
-///   sucata, venda): [localizacao] com o nome dela em maiúsculas;
+///   sucata, venda): [localizacao] com o nome do destino em maiúsculas;
 /// - sucateamento: [codMotivoSucat] com o código do motivo.
 ///
 /// Retorna a mensagem de sucesso da API. Em caso de falha lança uma
@@ -51,6 +54,7 @@ Future<String> movimentarPneu(
   required DateTime dataEntrada,
   required int codFil,
   double valor = 0,
+  String? localizacaoOrigem,
   String? localizacao,
   String? kmEntrada,
   String? localEixo,
@@ -79,6 +83,10 @@ Future<String> movimentarPneu(
       'nropneu': nroPneu,
       'dataentrada': _formatDataEntrada(dataEntrada),
       'valor': valor,
+      // A grafia 'localizacaO_ORIGEM' é literal do contrato: é como o
+      // serializer do backend expõe a propriedade LOCALIZACAO_ORIGEM no
+      // swagger, e enviamos idêntico para casar com o schema.
+      'localizacaO_ORIGEM': localizacaoOrigem,
       'localizacao': localizacao,
       'codfil': codFil,
       'kmentrada': kmEntrada,

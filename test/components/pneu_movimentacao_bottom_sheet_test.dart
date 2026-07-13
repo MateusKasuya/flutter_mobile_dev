@@ -129,6 +129,8 @@ void main() {
     expect(sentBody, isNotNull);
     expect(sentBody!['nropneu'], 12345);
     expect(sentBody!['codfil'], 1);
+    // Sheet de pneu montado num veículo: a origem é sempre FROTA.
+    expect(sentBody!['localizacaO_ORIGEM'], 'FROTA');
     expect(sentBody!['localizacao'], 'CONSERTO');
     expect(sentBody!['kmentrada'], '150000');
     expect(sentBody!['codmotivosucat'], isNull);

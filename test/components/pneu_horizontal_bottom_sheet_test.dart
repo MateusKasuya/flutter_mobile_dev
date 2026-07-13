@@ -192,6 +192,7 @@ void main() {
     expect(sentBody, isNotNull);
     expect(sentBody!['nropneu'], 12345);
     expect(sentBody!['codfil'], 1);
+    expect(sentBody!['localizacaO_ORIGEM'], 'CONSERTO');
     expect(sentBody!['localizacao'], 'ESTOQUE');
     expect(sentBody!['valor'], 1500.0);
     expect(sentBody!['motivosaida'], 'devolvido do conserto');
@@ -230,6 +231,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'ESTOQUE');
     expect(sentBody!['localizacao'], 'RECAPAGEM');
     expect(sentBody!['motivosaida'], 'programada');
     // Sem campo de valor: o service envia 0.
@@ -277,6 +279,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'CONSERTO');
     expect(sentBody!['localizacao'], 'RECAPAGEM');
     expect(sentBody!['cgccpfforne'], '11111111111111');
     expect(sentBody!['valor'], 250.0);
@@ -319,6 +322,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'ESTOQUE');
     expect(sentBody!['localizacao'], 'SUCATA');
     expect(sentBody!['codmotivosucat'], 7);
     expect(sentBody!['valor'], 0);
@@ -360,6 +364,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'SUCATA');
     expect(sentBody!['localizacao'], 'VENDA');
     expect(sentBody!['valor'], 999.0);
     expect(sentBody!['motivosaida'], 'venda avulsa');
@@ -398,6 +403,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'ESTOQUE');
     expect(sentBody!['localizacao'], 'VENDA');
     expect(sentBody!['valor'], 500.0);
     expect(sentBody!['motivosaida'], 'venda balcao');
@@ -444,6 +450,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'CONSERTO');
     expect(sentBody!['localizacao'], 'SUCATA');
     expect(sentBody!['valor'], 300.0);
     expect(sentBody!['codmotivosucat'], 7);
@@ -484,6 +491,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'RECAPAGEM');
     expect(sentBody!['localizacao'], 'ESTOQUE');
     expect(sentBody!['valor'], 120.0);
     expect(sentBody!['motivosaida'], 'retorno da recap');
@@ -522,6 +530,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'RECAPAGEM');
     expect(sentBody!['localizacao'], 'SUCATA');
     expect(sentBody!['valor'], 80.0);
     expect(sentBody!['codmotivosucat'], 7);
@@ -563,6 +572,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentBody, isNotNull);
+    expect(sentBody!['localizacaO_ORIGEM'], 'RECAPAGEM');
     expect(sentBody!['localizacao'], 'VENDA');
     expect(sentBody!['valor'], 450.0);
     expect(sentBody!['motivosaida'], 'vendido usado');

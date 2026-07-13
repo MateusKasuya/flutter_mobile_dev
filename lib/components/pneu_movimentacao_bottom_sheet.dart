@@ -209,6 +209,9 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
         // escolhida no form (DD/MM/AAAA → DateTime, meia-noite).
         dataEntrada: parseDate(_dataRetornoController.text) ?? DateTime.now(),
         codFil: codFil,
+        // Este sheet só abre para pneu montado num veículo (decisão do
+        // pneu_acoes_dialog), então a origem é sempre FROTA.
+        localizacaoOrigem: 'FROTA',
         // O backend identifica a localização de destino pelo nome em
         // maiúsculas (ESTOQUE, CONSERTO, RECAPAGEM, SUCATA, VENDA) —
         // mesmo formato que o GET devolve no campo localizacao.

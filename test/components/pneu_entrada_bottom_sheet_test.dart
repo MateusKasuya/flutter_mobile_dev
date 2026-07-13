@@ -146,8 +146,9 @@ void main() {
     expect(body!['placa'], 'ABC1D23');
     expect(body!['nrofrota'], 77);
     expect(body!['kmentrada'], '100000');
-    // Montagem também envia a localização de ORIGEM do pneu, em maiúsculas
-    // (a API exige o campo em toda movimentação).
+    // Montagem envia a origem do pneu em localizacaO_ORIGEM e, por exigência
+    // antiga da API ("LOCALIZACAO é obrigatória."), também em localizacao.
+    expect(body!['localizacaO_ORIGEM'], 'ESTOQUE');
     expect(body!['localizacao'], 'ESTOQUE');
     expect(resultado, isNotNull);
   });
