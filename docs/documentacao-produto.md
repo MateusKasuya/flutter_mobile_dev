@@ -53,8 +53,9 @@ Três áreas: **Frotas** (movimentações a partir do veículo), **Pneus** (cont
 
 ### 3.5 Pneus — lista geral
 
-- Lista de todos os pneus da frota com **busca** por nº do pneu, marca, modelo, placa, frota, série, situação, tipo ou localização.
-- Cada card mostra situação (com cor: NOVO verde, USADO laranja, RECAPADO roxo, SUCATA vermelho), marca/modelo, dimensão e onde o pneu está (placa/frota ou localização).
+- Lista dos pneus **que não estão montados em veículo** (estoque, conserto, recapagem, sucata, venda), com **busca** por nº do pneu, marca, modelo, placa, frota, série, situação, tipo ou localização.
+- Pneu montado em veículo **não aparece nesta lista**: a movimentação dele é feita somente pela tela **Frotas** (§3.4), a partir do diagrama de eixos.
+- Cada card mostra situação (com cor: NOVO verde, USADO laranja, RECAPADO roxo, SUCATA vermelho), marca/modelo, dimensão e a localização.
 - Tocar num pneu abre as mesmas ações de movimentação.
 
 ### 3.6 Movimentações de pneu
@@ -118,6 +119,8 @@ O app confirma cada operação com a mensagem retornada pelo sistema e impede fe
 | **Venda** | ✖ | ✖ | ✖ | ✖ | ✖ | — |
 
 Em resumo: **venda é terminal**; **sucata só pode ser vendida**; pneu em conserto ou recapagem não vai direto para venda (precisa voltar antes). O app desabilita visualmente as opções proibidas e a localização atual.
+
+As movimentações da linha **Veículo (montado)** — desmontagem e montagem — acontecem **somente pela tela Frotas** (diagrama de eixos); a lista geral de Pneus não exibe pneus montados.
 
 ### Campos e validações por movimentação
 

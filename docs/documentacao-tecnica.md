@@ -177,7 +177,7 @@ Situação do pneu (campo `situacao`): `N` NOVO `#00AF3E` · `U` USADO `#FF8126`
 - **`movimento_screen.dart`** — menu com 3 cards: **Frotas** → `FrotaBuscaScreen`, **Pneus** → `PneuListaScreen`, **Abastecimento** → sem `onTap` (placeholder de feature futura).
 - **`frota_busca_screen.dart`** — campo de placa (maiúsculas forçadas) + "Buscar" + FAB de câmera. O fluxo de câmera: `image_picker` (câmera traseira, qualidade 85) → OCR nativo → `extractPlaca` → preenche o campo e mostra toast. Buscar → `fetchVeiculo` → `FrotaDetalheScreen`.
 - **`frota_detalhe_screen.dart`** — card do veículo (placa, frota, marca/modelo/ano/cor/tipo) + `DiagramaEixos` interativo. Toque no pneu = detalhes (bottom sheet no celular, dialog no tablet); **duplo toque no pneu** = ações de movimentação (remove o pneu do slot ao confirmar); **duplo toque em slot vazio** = montagem (insere o pneu ao confirmar).
-- **`pneu_lista_screen.dart`** — lista de todos os pneus com **filtro client-side** (nº, marca, modelo, placa, frota, série, situação, tipo, localização). Cards com badge de situação e chips. Toque: abre ações; em `selectionMode` (usado pela montagem), devolve o pneu por `Navigator.pop(context, pneu)`.
+- **`pneu_lista_screen.dart`** — lista de pneus com **filtro client-side** (nº, marca, modelo, placa, frota, série, situação, tipo, localização). **Pneus com localização FROTA são descartados após o fetch**: pneu montado só é movimentado pela tela de Frotas; o filtro é da tela (vale para qualquer `fetchFn` injetado). Cards com badge de situação e chips. Toque: abre ações; em `selectionMode` (usado pela montagem), devolve o pneu por `Navigator.pop(context, pneu)`.
 
 ## 10. Diagrama de eixos
 

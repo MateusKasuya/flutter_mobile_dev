@@ -59,7 +59,13 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
 
     try {
       final token = context.read<AuthProvider>().token;
-      final pneus = await widget.fetchFn(token);
+      // Pneus montados num veículo (localização FROTA) ficam fora desta
+      // tela: a movimentação deles é exclusiva da tela de Frotas (toque
+      // duplo no diagrama de eixos). O filtro é da tela — e não do service —
+      // para valer em qualquer fetchFn injetado.
+      final pneus = (await widget.fetchFn(token))
+          .where((p) => p.localizacao.toUpperCase() != 'FROTA')
+          .toList();
       if (!mounted) return;
       setState(() {
         _pneus = pneus;
@@ -259,7 +265,9 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
         Text(
           isFilterEmpty
               ? 'Nenhum pneu encontrado\npara o filtro'
-              : 'Nenhum pneu cadastrado',
+              // "disponível", não "cadastrado": pode haver pneus cadastrados
+              // mas todos montados em frota (e portanto fora desta lista).
+              : 'Nenhum pneu disponível',
           style: AppTextStyles.label.copyWith(fontSize: 18),
           textAlign: TextAlign.center,
         ),
