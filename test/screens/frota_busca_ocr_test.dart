@@ -5,18 +5,39 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import 'package:frota_facil_mobile/models/veiculo.dart';
 import 'package:frota_facil_mobile/providers/auth_provider.dart';
 import 'package:frota_facil_mobile/screens/frota_busca_screen.dart';
+
+import '../helpers/test_viewport.dart';
+
+Veiculo _makeVeiculo() => const Veiculo(
+      placa: 'ABC1D23',
+      nroFrota: '001',
+      marca: 'Marca Y',
+      modelo: 'Modelo X',
+      ano: '2020',
+      anoModelo: '2021',
+      cor: 'Branco',
+      tipo: 'Caminhão',
+      codEsqEixo: '1',
+      pneus: [],
+    );
 
 Widget _buildTestWidget({
   required Future<XFile?> Function() pickImageFn,
   required Future<String> Function(String) ocrFn,
+  // Default proposital: se um teste NÃO espera busca, um fetchFn que lança
+  // deixa a chamada acidental explodir em vez de passar despercebida.
+  Future<Veiculo> Function(String, String)? fetchFn,
 }) {
   return ChangeNotifierProvider(
-    create: (_) => AuthProvider(),
+    // A busca automática lê o token do provider, então precisamos de um.
+    create: (_) => AuthProvider()..setToken('tok'),
     child: MaterialApp(
       home: FrotaBuscaScreen(
-        fetchFn: (_, _) async => throw Exception('não deve buscar'),
+        fetchFn:
+            fetchFn ?? (_, _) async => throw Exception('busca não esperada'),
         pickImageFn: pickImageFn,
         ocrFn: ocrFn,
       ),
@@ -26,43 +47,60 @@ Widget _buildTestWidget({
 
 void main() {
   group('OCR scan placa', () {
-    testWidgets('preenche campo quando placa Mercosul é detectada',
+    testWidgets('preenche campo e dispara busca quando placa Mercosul é detectada',
         (tester) async {
+      // A busca navega para a FrotaDetalheScreen, cujo layout de tablet não
+      // cabe no viewport padrão de teste (800x600) — força o de celular.
+      usePhoneViewport(tester);
+      String? placaBuscada;
       await tester.pumpWidget(_buildTestWidget(
         pickImageFn: () async => XFile('/fake/path.jpg'),
         ocrFn: (_) async => 'BRASIL\nABC1D23\nSAO PAULO SP',
+        fetchFn: (_, placa) async {
+          placaBuscada = placa;
+          return _makeVeiculo();
+        },
       ));
 
       await tester.tap(find.byIcon(Icons.camera_alt));
       await tester.pumpAndSettle();
 
-      final controller = tester
-          .widget<TextFormField>(find.byType(TextFormField))
-          .controller;
-      expect(controller?.text, equals('ABC1D23'));
+      // Buscou com a placa lida e navegou para o detalhe (header mostra a
+      // placa concatenada com a frota).
+      expect(placaBuscada, equals('ABC1D23'));
+      expect(find.text('ABC1D23 - Frota 001'), findsOneWidget);
     });
 
-    testWidgets('preenche campo quando placa antiga é detectada',
+    testWidgets('preenche campo e dispara busca quando placa antiga é detectada',
         (tester) async {
+      usePhoneViewport(tester);
+      String? placaBuscada;
       await tester.pumpWidget(_buildTestWidget(
         pickImageFn: () async => XFile('/fake/path.jpg'),
         ocrFn: (_) async => 'ABC1234',
+        fetchFn: (_, placa) async {
+          placaBuscada = placa;
+          return _makeVeiculo();
+        },
       ));
 
       await tester.tap(find.byIcon(Icons.camera_alt));
       await tester.pumpAndSettle();
 
-      final controller = tester
-          .widget<TextFormField>(find.byType(TextFormField))
-          .controller;
-      expect(controller?.text, equals('ABC1234'));
+      expect(placaBuscada, equals('ABC1234'));
+      expect(find.text('ABC1D23 - Frota 001'), findsOneWidget);
     });
 
-    testWidgets('não preenche campo quando câmera é cancelada',
+    testWidgets('não preenche campo nem busca quando câmera é cancelada',
         (tester) async {
+      var buscou = false;
       await tester.pumpWidget(_buildTestWidget(
         pickImageFn: () async => null,
         ocrFn: (_) async => 'ABC1D23',
+        fetchFn: (_, _) async {
+          buscou = true;
+          return _makeVeiculo();
+        },
       ));
 
       await tester.tap(find.byIcon(Icons.camera_alt));
@@ -72,13 +110,19 @@ void main() {
           .widget<TextFormField>(find.byType(TextFormField))
           .controller;
       expect(controller?.text, isEmpty);
+      expect(buscou, isFalse);
     });
 
-    testWidgets('campo fica vazio quando nenhuma placa é encontrada',
+    testWidgets('campo fica vazio e não busca quando nenhuma placa é encontrada',
         (tester) async {
+      var buscou = false;
       await tester.pumpWidget(_buildTestWidget(
         pickImageFn: () async => XFile('/fake/path.jpg'),
         ocrFn: (_) async => 'texto sem placa nenhuma',
+        fetchFn: (_, _) async {
+          buscou = true;
+          return _makeVeiculo();
+        },
       ));
 
       await tester.tap(find.byIcon(Icons.camera_alt));
@@ -88,12 +132,19 @@ void main() {
           .widget<TextFormField>(find.byType(TextFormField))
           .controller;
       expect(controller?.text, isEmpty);
+      expect(buscou, isFalse);
     });
 
-    testWidgets('campo fica vazio quando OCR lança erro', (tester) async {
+    testWidgets('campo fica vazio e não busca quando OCR lança erro',
+        (tester) async {
+      var buscou = false;
       await tester.pumpWidget(_buildTestWidget(
         pickImageFn: () async => XFile('/fake/path.jpg'),
         ocrFn: (_) async => throw Exception('Tesseract error'),
+        fetchFn: (_, _) async {
+          buscou = true;
+          return _makeVeiculo();
+        },
       ));
 
       await tester.tap(find.byIcon(Icons.camera_alt));
@@ -103,6 +154,7 @@ void main() {
           .widget<TextFormField>(find.byType(TextFormField))
           .controller;
       expect(controller?.text, isEmpty);
+      expect(buscou, isFalse);
     });
 
     testWidgets('segundo tap no FAB não dispara scan durante o loading',
@@ -134,6 +186,7 @@ void main() {
       expect(pickCount, 1);
 
       // Finaliza o OCR pendente para não deixar timers/futures em aberto.
+      // Texto sem placa: encerra o scan sem disparar a busca automática.
       ocrCompleter.complete('texto sem placa nenhuma');
       await tester.pumpAndSettle();
     });
@@ -160,6 +213,7 @@ void main() {
       // O OCR resolve com uma placa válida DEPOIS do dispose. Sem o guard
       // `if (!mounted)`, _scanPlaca tentaria _placaController.text = placa e
       // lançaria "A TextEditingController was used after being disposed".
+      // O mesmo guard também barra a busca automática após o dispose.
       ocrCompleter.complete('ABC1D23');
       await tester.pumpAndSettle();
 

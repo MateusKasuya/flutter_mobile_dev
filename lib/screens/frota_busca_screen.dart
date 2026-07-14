@@ -73,6 +73,11 @@ class _FrotaBuscaScreenState extends State<FrotaBuscaScreen> {
       if (placa != null) {
         _placaController.text = placa;
         showSuccessToast('Placa detectada: $placa');
+        // Placa lida com sucesso: ja dispara a busca, poupando o usuario de
+        // tocar em "Buscar". _buscar() cuida sozinho da validacao, do loading
+        // e dos erros (com toast proprio); como ele tambem controla
+        // _isLoading, o indicador segue continuo do OCR ate a busca terminar.
+        await _buscar();
       } else {
         showErrorToast('Nenhuma placa encontrada na imagem');
       }

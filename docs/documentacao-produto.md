@@ -44,7 +44,7 @@ Três áreas: **Frotas** (movimentações a partir do veículo), **Pneus** (cont
 
 ### 3.4 Frotas — consulta por veículo
 
-- Busca do veículo **pela placa**, digitada ou **fotografada**: o app lê a placa na foto (OCR) e preenche o campo sozinho.
+- Busca do veículo **pela placa**, digitada ou **fotografada**: o app lê a placa na foto (OCR), preenche o campo e já busca o veículo sozinho.
 - Ficha do veículo: placa, nº de frota, marca, modelo, ano, cor e tipo.
 - **Diagrama de eixos**: desenho do chassi do veículo com cada pneu na sua posição, respeitando o esquema de eixos (rodado simples/duplo, moto, carreta etc.). Posições vazias aparecem tracejadas.
   - **Toque** num pneu: detalhes (nº, posição, marca, modelo, dimensão, tipo, vida, quilometragens, última atualização).
@@ -72,6 +72,7 @@ O app confirma cada operação com a mensagem retornada pelo sistema e impede fe
 
 - Na busca de veículo, o botão de câmera fotografa a placa; o reconhecimento roda **no próprio aparelho** (sem enviar a foto para o servidor).
 - Reconhece placas nos formatos antigo e Mercosul e ignora textos ao redor (ex.: "BRASIL", nome do município).
+- Reconhecida a placa, o app preenche o campo e **já busca o veículo automaticamente** — sem precisar tocar em "Buscar".
 - Se nenhuma placa for reconhecida, o app avisa e o usuário pode digitar normalmente.
 
 ### 3.8 Experiência
