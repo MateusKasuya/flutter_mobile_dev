@@ -217,17 +217,19 @@ Legado: `assets/tessdata/eng.traineddata` sobrou de uma tentativa anterior com T
 ## 12. Tema e responsividade
 
 - **Breakpoint único**: `kTabletBreakpoint = 600` pixels lógicos (`theme/breakpoints.dart`). `largura >= 600` = layout tablet (um celular em paisagem também cai nele — cenário coberto pelos testes). Muda: layouts centralizados/mais largos, fontes maiores e bottom sheets viram `Dialog`.
+- **Bottom sheets de movimentação com o teclado** (`pneu_movimentacao_/pneu_entrada_/pneu_horizontal_bottom_sheet.dart`): a barra **Cancelar/Confirmar fica fixa fora do scroll** (rodapé, método `_buildBotoes`) — só os campos rolam, então os botões não somem atrás do teclado. Como o rodapé vira altura rígida, o sheet **cresce quando o teclado abre** (constraints `minHeight` = altura de repouso do design, `maxHeight` = tela − 60pt) em vez de espremer header+rodapé numa altura fixa e estourar. Arrastar o formulário pra baixo fecha o teclado (`ScrollViewKeyboardDismissBehavior.onDrag`) — importante porque o teclado numérico do iOS (KM/valor) não tem tecla "OK". No tablet (`Dialog` centralizado) só muda a extração do rodapé; a estratégia de teclado segue a do Flutter para diálogos.
 - **Cores** (`theme/app_colors.dart`): primária `#006F70` (borda `#028687`), texto `#003156`/`#363636`/tons de cinza, fundo `#EDEDED`, gradiente do login `#CEFCF1 → #FFFFFF`, ícones `#00ACAD`. As cores de situação de pneu e das ações de movimentação são definidas junto de quem as usa (§8).
 - **Tipografia** (`theme/app_text_styles.dart`): ~25 estilos Montserrat nomeados por uso (`heading`, `button`, `bigNumbers`, `labelBar`...), `height: 1.0`.
 - **Tema** (`theme/app_theme.dart`): `ColorScheme.fromSeed(seedColor: primary).copyWith(primary: primary)` — o `copyWith` fixa o primary exato (o `fromSeed` sozinho geraria um tom derivado, criando "dois teais").
 
 ## 13. Testes
 
-### Unidade e widget (`test/`, 28 arquivos)
+### Unidade e widget (`test/`, 31 arquivos)
 
 Espelham a estrutura de `lib/`: `models/` (parsing), `services/` (com `MockClient` de `package:http/testing.dart` — verificam método, path, header Bearer, desserialização e mensagens de erro), `providers/`, `screens/`, `components/`, `utils/`.
 
 - **Matriz responsiva** (`test/screens/responsive_matrix_test.dart` + `test/helpers/test_viewport.dart`): **6 telas × 9 perfis de dispositivo = 54 testes**. Perfis: celulares pequeno/padrão/grande, fonte grande (escala 1.3), paisagem, tablet retrato/paisagem/fonte grande. O teste renderiza cada tela em cada viewport e conta com o detector implícito de overflow do Flutter (RenderFlex overflow → erro → teste falha). `usePhoneViewport` existe porque o viewport default do `flutter test` (800×600) cruzaria o breakpoint de tablet.
+- **Barra de botões e teclado** (`test/components/bottom_sheet_teclado_test.dart`): nos três bottom sheets de movimentação, simula um teclado alto (inset de 340pt) num celular estreito e garante que a barra fixa Cancelar/Confirmar (1) **não estoura** o layout e (2) fica **visível acima da linha do teclado**; verifica também que arrastar o formulário pra baixo (com `BouncingScrollPhysics`) **dispensa o teclado**. Cobre a regressão de overflow que o rodapé fixo introduziria nos sheets de altura fixa pequena sem o crescimento por teclado.
 - **Fontes reais** (`test/flutter_test_config.dart`): carrega os `.ttf` da Montserrat via `FontLoader` antes de todo teste. Sem isso o Flutter testa com a fonte fake "Ahem" (glifos quadrados, mais largos), gerando falsos overflows.
 
 ### Integração (`integration_test/`, roda em device/emulador)

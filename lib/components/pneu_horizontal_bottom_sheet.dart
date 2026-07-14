@@ -69,11 +69,20 @@ Future<bool?> showPneuHorizontalSheet(
   }
 
   // Mobile: bottom sheet com faixa de cabeçalho colorida + drag handle.
+  // sheetHeight é a altura de REPOUSO (spec de design). O maxHeight sobe com a
+  // tela pra que, ao abrir o teclado, o sheet possa CRESCER (até 60pt do topo)
+  // e a barra de botões fixa siga visível acima do teclado — em vez de espremer
+  // header+footer numa altura fixa e estourar. O max(...) garante
+  // maxHeight >= minHeight em telas baixas (aí o teclado curto cabe sem crescer).
+  final maxSheetHeight = mq.size.height - (mq.padding.top + 60);
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.white,
-    constraints: BoxConstraints.tightFor(height: sheetHeight),
+    constraints: BoxConstraints(
+      minHeight: sheetHeight,
+      maxHeight: sheetHeight > maxSheetHeight ? sheetHeight : maxSheetHeight,
+    ),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       side: BorderSide(color: AppColors.textHint, width: 1),
@@ -522,6 +531,11 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
               // Formulário
               Flexible(
                 child: SingleChildScrollView(
+                  // Arrastar o formulário pra baixo fecha o teclado. Útil
+                  // sobretudo no Valor: o teclado numérico do iOS não tem
+                  // tecla "OK".
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: EdgeInsets.fromLTRB(
                     widget.isTablet ? 40 : 33,
                     widget.isTablet ? 30 : 27,
@@ -622,85 +636,16 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 40),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          width: 144,
-                          height: 56,
-                          child: OutlinedButton(
-                            // Durante o envio, cancelar fecharia o sheet com a
-                            // requisição ainda em andamento — melhor bloquear.
-                            onPressed: _enviando
-                                ? null
-                                : () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.textMuted,
-                              side: BorderSide(
-                                width: 2,
-                                color: AppColors.textPlaceholder,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                            child: Text(
-                              'Cancelar',
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.buttonSecondary,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          width: 144,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x66000000),
-                                offset: Offset(0, 2),
-                                blurRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: FilledButton(
-                            onPressed: _enviando ? null : _confirmar,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              // Mantém a cor cheia enquanto desabilitado no
-                              // envio, para o spinner não ficar sobre cinza.
-                              disabledBackgroundColor: AppColors.primary,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                            child: _enviando
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Text(
-                                    'Confirmar',
-                                    textAlign: TextAlign.center,
-                                    style: AppTextStyles.buttonPrimary,
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
           ),
+              // Barra de botões fixa: fora do scroll, sempre visível —
+              // inclusive acima do teclado (o Padding(viewInsets.bottom) do
+              // build() sobe todo o conteúdo). Antes ela rolava junto e sumia
+              // atrás do teclado.
+              _buildBotoes(context),
             ],
           ),
           // Botão fechar (X) — só no tablet; mobile fecha via swipe-down.
@@ -733,6 +678,87 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
     // requisição continua e o `if (!mounted) return` engole o sucesso, deixando
     // a UI desatualizada. Navigator.pop explícito (sucesso/X) segue funcionando.
     return PopScope(canPop: !_enviando, child: content);
+  }
+
+  // Rodapé fixo com Cancelar/Confirmar, irmão do SingleChildScrollView no
+  // Column — não rola com os campos e permanece visível acima do teclado.
+  // Padding horizontal igual ao do form (33 mobile / 40 tablet); 16pt de folga
+  // até a base do sheet/modal.
+  Widget _buildBotoes(BuildContext context) {
+    final horizontal = widget.isTablet ? 40.0 : 33.0;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          SizedBox(
+            width: 144,
+            height: 56,
+            child: OutlinedButton(
+              // Durante o envio, cancelar fecharia o sheet com a requisição
+              // ainda em andamento — melhor bloquear.
+              onPressed: _enviando ? null : () => Navigator.pop(context),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.textMuted,
+                side: BorderSide(
+                  width: 2,
+                  color: AppColors.textPlaceholder,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: Text(
+                'Cancelar',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.buttonSecondary,
+              ),
+            ),
+          ),
+          Container(
+            width: 144,
+            height: 56,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x66000000),
+                  offset: Offset(0, 2),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+            child: FilledButton(
+              onPressed: _enviando ? null : _confirmar,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                // Mantém a cor cheia enquanto desabilitado no envio, para o
+                // spinner não ficar sobre cinza.
+                disabledBackgroundColor: AppColors.primary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: _enviando
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Confirmar',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.buttonPrimary,
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Conteúdo "ORIGEM → DESTINO" do header. Reutilizado em mobile (dentro

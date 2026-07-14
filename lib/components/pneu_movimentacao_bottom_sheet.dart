@@ -370,6 +370,9 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
           // Formulário
           Flexible(
             child: SingleChildScrollView(
+              // Arrastar o formulário pra baixo fecha o teclado. Útil sobretudo
+              // no KM de saída: o teclado numérico do iOS não tem tecla "OK".
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.fromLTRB(
                 widget.isTablet ? 40 : 33,
                 30,
@@ -487,92 +490,101 @@ class _PneuMovimentacaoFormState extends State<_PneuMovimentacaoForm> {
                         borderColor: acao.borderColor,
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    // Botões
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SizedBox(
-                          width: 144,
-                          height: 56,
-                          child: OutlinedButton(
-                            // Durante o envio, cancelar fecharia o sheet com a
-                            // requisição ainda em andamento — melhor bloquear.
-                            onPressed: _enviando
-                                ? null
-                                : () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(
-                                color: AppColors.textPlaceholder,
-                                width: 2,
-                              ),
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                            child: Text(
-                              'Cancelar',
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.buttonSecondary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 144,
-                          height: 56,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(15),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x66000000),
-                                  offset: Offset(0, 2),
-                                  blurRadius: 10,
-                                ),
-                              ],
-                            ),
-                            child: FilledButton(
-                              onPressed: _enviando ? null : _confirmar,
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                // Mantém a cor cheia enquanto desabilitado no
-                                // envio, para o spinner não ficar sobre cinza.
-                                disabledBackgroundColor: AppColors.primary,
-                                elevation: 0,
-                                padding: EdgeInsets.zero,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                              ),
-                              child: _enviando
-                                  ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Confirmar',
-                                      textAlign: TextAlign.center,
-                                      style: AppTextStyles.buttonPrimary,
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Margem inferior do form (mobile e tablet): 32pt
-                    // entre a base dos botões e a borda inferior do sheet/modal.
-                    const SizedBox(height: 32),
                   ],
                 ),
               ),
             ),
           ),
+          // Barra de botões fixa: fora do scroll, sempre visível — inclusive
+          // acima do teclado, já que o Padding(viewInsets.bottom) do build()
+          // sobe todo o conteúdo. Antes ela era o último item da lista rolável
+          // e sumia atrás do teclado.
+          _buildBotoes(context),
         ],
+    );
+  }
+
+  // Rodapé fixo com Cancelar/Confirmar. Vive fora do SingleChildScrollView
+  // (é irmão dele no Column), então não rola com os campos e permanece visível
+  // acima do teclado. Padding horizontal igual ao do form (33 mobile / 40
+  // tablet); 32pt de folga até a base do sheet/modal.
+  Widget _buildBotoes(BuildContext context) {
+    final horizontal = widget.isTablet ? 40.0 : 33.0;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 32),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          SizedBox(
+            width: 144,
+            height: 56,
+            child: OutlinedButton(
+              // Durante o envio, cancelar fecharia o sheet com a requisição
+              // ainda em andamento — melhor bloquear.
+              onPressed: _enviando ? null : () => Navigator.pop(context),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(
+                  color: AppColors.textPlaceholder,
+                  width: 2,
+                ),
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              child: Text(
+                'Cancelar',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.buttonSecondary,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 144,
+            height: 56,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x66000000),
+                    offset: Offset(0, 2),
+                    blurRadius: 10,
+                  ),
+                ],
+              ),
+              child: FilledButton(
+                onPressed: _enviando ? null : _confirmar,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  // Mantém a cor cheia enquanto desabilitado no envio, para o
+                  // spinner não ficar sobre cinza.
+                  disabledBackgroundColor: AppColors.primary,
+                  elevation: 0,
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: _enviando
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Confirmar',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.buttonPrimary,
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
