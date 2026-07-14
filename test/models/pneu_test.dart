@@ -57,4 +57,63 @@ void main() {
       expect(pneu.placa, '');
     });
   });
+
+  group('Pneu.copyWith', () {
+    const base = Pneu(
+      nroPneu: '1250',
+      nroSerie: 'SN1',
+      marca: 'Pirelli',
+      modelo: 'Modelo A',
+      dimensao: '295/80R22.5',
+      tipo: 'Radial',
+      situacao: 'Em uso',
+      localEixo: '',
+      codEsqEixo: '1',
+      localizacao: 'ESTOQUE',
+      nroDot: '4523',
+      indRecapagem: 'N',
+      vidaPneu: '80',
+      kmRodado: '50000',
+      kmAcumulador: '40000',
+      kmAtuVei: '150000',
+      kmRodado0: '10000',
+      kmRodado1: '9000',
+      kmRodado2: '8000',
+      kmRodado3: '7000',
+      kmRodado4: '6000',
+      kmRodado5: '0',
+      dataCompra: '2023-01-15',
+      dataAtzKm: '2024-06-01',
+      codFil: '01',
+      nroFrota: '001',
+      placa: 'ABC1D23',
+    );
+
+    test('sobrescreve só os campos informados e preserva o resto', () {
+      // Uso real da correção: ao montar, o pneu de estoque vira FROTA no slot.
+      final montado = base.copyWith(localizacao: 'FROTA', localEixo: '2EI');
+
+      expect(montado.localizacao, 'FROTA');
+      expect(montado.localEixo, '2EI');
+
+      // Amostra dos 25 campos restantes: seguem idênticos à origem.
+      expect(montado.nroPneu, base.nroPneu);
+      expect(montado.codFil, base.codFil);
+      expect(montado.situacao, base.situacao);
+      expect(montado.kmAtuVei, base.kmAtuVei);
+      expect(montado.kmRodado0, base.kmRodado0);
+      expect(montado.dataAtzKm, base.dataAtzKm);
+      expect(montado.placa, base.placa);
+    });
+
+    test('sem argumentos, copia todos os campos', () {
+      final copia = base.copyWith();
+
+      expect(copia.nroPneu, base.nroPneu);
+      expect(copia.localizacao, base.localizacao);
+      expect(copia.localEixo, base.localEixo);
+      expect(copia.kmRodado5, base.kmRodado5);
+      expect(copia.nroFrota, base.nroFrota);
+    });
+  });
 }

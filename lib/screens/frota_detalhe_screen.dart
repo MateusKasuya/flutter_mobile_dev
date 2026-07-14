@@ -46,9 +46,16 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
     final eixoNumero = int.tryParse(localEixo[0]);
     if (eixoNumero == null) return;
     final posicao = localEixo.substring(1);
+    // O pneu vem da lista de estoque, então ainda carrega a localização de
+    // origem (ESTOQUE/CONSERTO/RECAPAGEM). A montagem já foi confirmada na API,
+    // que passa a tratá-lo como FROTA — refletimos isso na cópia local. Sem
+    // isso, o diagrama trataria o pneu recém-montado como se ainda estivesse na
+    // origem: o diálogo de ações bloquearia a desmontagem (mostrando a origem
+    // como localização atual) até um refetch do veículo.
+    final montado = pneu.copyWith(localizacao: 'FROTA', localEixo: localEixo);
     setState(() {
       _eixos = _eixos.map((e) {
-        if (e.numero == eixoNumero) return e.withPneuAt(posicao, pneu);
+        if (e.numero == eixoNumero) return e.withPneuAt(posicao, montado);
         return e;
       }).toList();
     });

@@ -57,6 +57,69 @@ class Pneu {
     required this.placa,
   });
 
+  /// Cópia deste pneu com os campos informados sobrescritos; os demais são
+  /// preservados. Útil para refletir localmente uma mudança já confirmada na
+  /// API sem recarregar tudo — ex.: ao montar um pneu, marcá-lo como `FROTA`.
+  Pneu copyWith({
+    String? nroPneu,
+    String? nroSerie,
+    String? marca,
+    String? modelo,
+    String? dimensao,
+    String? tipo,
+    String? situacao,
+    String? localEixo,
+    String? codEsqEixo,
+    String? localizacao,
+    String? nroDot,
+    String? indRecapagem,
+    String? vidaPneu,
+    String? kmRodado,
+    String? kmAcumulador,
+    String? kmAtuVei,
+    String? kmRodado0,
+    String? kmRodado1,
+    String? kmRodado2,
+    String? kmRodado3,
+    String? kmRodado4,
+    String? kmRodado5,
+    String? dataCompra,
+    String? dataAtzKm,
+    String? codFil,
+    String? nroFrota,
+    String? placa,
+  }) {
+    return Pneu(
+      nroPneu: nroPneu ?? this.nroPneu,
+      nroSerie: nroSerie ?? this.nroSerie,
+      marca: marca ?? this.marca,
+      modelo: modelo ?? this.modelo,
+      dimensao: dimensao ?? this.dimensao,
+      tipo: tipo ?? this.tipo,
+      situacao: situacao ?? this.situacao,
+      localEixo: localEixo ?? this.localEixo,
+      codEsqEixo: codEsqEixo ?? this.codEsqEixo,
+      localizacao: localizacao ?? this.localizacao,
+      nroDot: nroDot ?? this.nroDot,
+      indRecapagem: indRecapagem ?? this.indRecapagem,
+      vidaPneu: vidaPneu ?? this.vidaPneu,
+      kmRodado: kmRodado ?? this.kmRodado,
+      kmAcumulador: kmAcumulador ?? this.kmAcumulador,
+      kmAtuVei: kmAtuVei ?? this.kmAtuVei,
+      kmRodado0: kmRodado0 ?? this.kmRodado0,
+      kmRodado1: kmRodado1 ?? this.kmRodado1,
+      kmRodado2: kmRodado2 ?? this.kmRodado2,
+      kmRodado3: kmRodado3 ?? this.kmRodado3,
+      kmRodado4: kmRodado4 ?? this.kmRodado4,
+      kmRodado5: kmRodado5 ?? this.kmRodado5,
+      dataCompra: dataCompra ?? this.dataCompra,
+      dataAtzKm: dataAtzKm ?? this.dataAtzKm,
+      codFil: codFil ?? this.codFil,
+      nroFrota: nroFrota ?? this.nroFrota,
+      placa: placa ?? this.placa,
+    );
+  }
+
   // As chaves seguem o contrato atual da API (camelCase minúsculo),
   // documentado em /api-frota/swagger/v1/swagger.json.
   factory Pneu.fromJson(Map<String, dynamic> json) {
