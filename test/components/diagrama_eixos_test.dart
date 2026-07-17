@@ -1,8 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:frota_facil_mobile/components/diagrama_eixos.dart';
+import 'package:frota_facil_mobile/components/diagrama_eixos/primitives.dart';
 import 'package:frota_facil_mobile/models/eixo.dart';
 import 'package:frota_facil_mobile/models/pneu.dart';
+
+/// Largura que [numero] ocuparia na fonte do rótulo do pneu, sem nenhuma
+/// restrição de caixa. `flutter_test_config.dart` carrega a Montserrat de
+/// verdade, então esta medida é a mesma do aparelho.
+double _larguraNatural(String numero, {required double fontSize}) {
+  final tp = TextPainter(
+    text: TextSpan(
+      text: numero,
+      style: GoogleFonts.montserrat(
+        fontSize: fontSize,
+        fontWeight: FontWeight.w600,
+        height: 1.0,
+        letterSpacing: 0,
+      ),
+    ),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  return tp.width;
+}
 
 Pneu _makePneu(String nroPneu, String localEixo) {
   return Pneu(
@@ -55,6 +76,50 @@ void main() {
 
       expect(find.text('2397'), findsOneWidget);
       expect(find.text('2396'), findsOneWidget);
+    });
+
+    testWidgets('número de 5 dígitos aparece inteiro no rodado duplo',
+        (tester) async {
+      // '99999' é o pior caso real: 5 dígitos, todos largos. Na fonte do
+      // diagrama ele mede ~31pt contra os 28pt da caixa do rótulo, que tem a
+      // largura do pneu. Rodado duplo porque é onde o vizinho fica a 9pt: não
+      // há folga nenhuma pro número invadir.
+      final eixos = [
+        Eixo(
+          numero: 1,
+          rodadoDuplo: true,
+          esquerdoExterno: _makePneu('99999', '1EE'),
+          esquerdoInterno: _makePneu('88888', '1EI'),
+          direitoExterno: _makePneu('77777', '1DE'),
+          direitoInterno: _makePneu('66666', '1DI'),
+        ),
+      ];
+
+      await tester.pumpWidget(
+        MaterialApp(home: Scaffold(body: DiagramaEixos(eixos: eixos))),
+      );
+
+      // 1) Nada é CORTADO. Se o Text fosse espremido na caixa de 28pt, o
+      //    parágrafo mediria 28 e o resto do último dígito viraria corte
+      //    silencioso — TextOverflow.clip é o default e não gera erro nenhum,
+      //    por isso nem a matriz responsiva pegava isso. Medindo a largura
+      //    natural, provamos que ele foi disposto inteiro e que o encolhimento
+      //    é por ESCALA (FittedBox), não por tesoura.
+      final paragrafo = tester.renderObject<RenderBox>(find.text('99999'));
+      expect(
+        paragrafo.size.width,
+        closeTo(_larguraNatural('99999', fontSize: 10), 0.5),
+        reason: 'o número deve ser medido inteiro; espremido na caixa do pneu, '
+            'o último dígito seria cortado em silêncio',
+      );
+
+      // 2) Já desenhado (escala aplicada), cabe na caixa do próprio pneu — não
+      //    invade o pneu vizinho do rodado duplo.
+      expect(
+        tester.getRect(find.text('99999')).width,
+        lessThanOrEqualTo(tireW + 0.01),
+        reason: 'depois de escalado, o número não pode passar da largura do pneu',
+      );
     });
 
     testWidgets('exibe indicador de frente', (tester) async {

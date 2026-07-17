@@ -7,6 +7,7 @@ import '../models/pneu.dart';
 import 'diagrama_eixos/base_frame.dart';
 import 'diagrama_eixos/esquema_eixo.dart';
 import 'diagrama_eixos/frame_moto.dart';
+import 'diagrama_eixos/primitives.dart';
 
 /// Diagrama de eixos do veículo visto de cima.
 ///
@@ -20,6 +21,13 @@ class DiagramaEixos extends StatelessWidget {
   /// É a fonte de verdade; o código dos pneus só é usado se este vier vazio.
   final String codEsqEixo;
 
+  /// Estepes do veículo, um item por slot na ordem `X1`, `X2` (`null` = vazio),
+  /// como devolve `buildEstepeLayout`. Lista vazia = sem faixa de estepe.
+  ///
+  /// A faixa é irmã do frame, não parte dele: assim vale para qualquer esquema
+  /// (moto inclusive) sem duplicar nada em `BaseFrame`/`FrameMoto`.
+  final List<Pneu?> estepes;
+
   final bool isTablet;
   final void Function(Pneu pneu)? onPneuTap;
   final void Function(Pneu pneu)? onPneuDoubleTap;
@@ -29,6 +37,7 @@ class DiagramaEixos extends StatelessWidget {
     super.key,
     required this.eixos,
     this.codEsqEixo = '',
+    this.estepes = const [],
     this.isTablet = false,
     this.onPneuTap,
     this.onPneuDoubleTap,
@@ -62,18 +71,46 @@ class DiagramaEixos extends StatelessWidget {
         final overhead = isTablet ? 150.0 : 110.0;
         final perEixo = isTablet ? 168.0 : 130.0;
         final minHeight = overhead + eixos.length * perEixo;
+        // A faixa de estepe fica ACIMA do chassi, então come da altura
+        // disponível para o frame: o que sobra (maxHeight − faixa) é o teto do
+        // chassi. Sem descontar, o frame preencheria a tela inteira e a faixa
+        // no topo empurraria o conjunto além do maxHeight, gerando um scroll
+        // desnecessário. bandHeight é uma estimativa generosa da altura da
+        // faixa (que tem altura natural própria); o resultado nunca desce
+        // abaixo de minHeight, então o frame jamais é espremido.
+        final bandHeight = estepes.isEmpty
+            ? 0.0
+            : (isTablet ? estepeBandHeightTablet : estepeBandHeight);
         // maxHeight pode ser infinito quando o parent não limita a altura
         // (ex.: dentro de Column/ListView/SingleChildScrollView). Nesse caso
         // math.max devolveria infinito e o SizedBox abaixo estouraria o layout
         // ("BoxConstraints has infinite height"). Só usamos maxHeight quando é
         // finito; senão caímos na altura mínima calculada por eixo.
         final height = constraints.maxHeight.isFinite
-            ? math.max(constraints.maxHeight, minHeight)
+            ? math.max(constraints.maxHeight - bandHeight, minHeight)
             : minHeight;
 
-        return SingleChildScrollView(
-          child: SizedBox(height: height, child: frame),
-        );
+        // O frame mantém sua própria caixa de altura (os eixos se distribuem
+        // dentro dela). A faixa de estepe entra ACIMA, com altura natural, num
+        // Column que o SingleChildScrollView rola se o conjunto não couber.
+        final frameBox = SizedBox(height: height, child: frame);
+        final conteudo = estepes.isEmpty
+            ? frameBox
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  EstepeBand(
+                    estepes: estepes,
+                    isTablet: isTablet,
+                    onPneuTap: onPneuTap,
+                    onPneuDoubleTap: onPneuDoubleTap,
+                    onSlotVazioDoubleTap: onSlotVazioDoubleTap,
+                  ),
+                  frameBox,
+                ],
+              );
+
+        return SingleChildScrollView(child: conteudo);
       },
     );
   }

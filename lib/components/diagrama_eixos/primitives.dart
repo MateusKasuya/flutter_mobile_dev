@@ -28,6 +28,22 @@ const double tireCenterFromTop = labelH + labelToTireGap + tireH / 2;
 const double tireCenterFromTopTablet =
     labelHTablet + labelToTireGapTablet + tireHTablet / 2;
 
+// Faixa de estepes, ACIMA do chassi. Por ser uma faixa horizontal (e não uma
+// coluna disputando largura com os eixos), o rótulo usa a mesma fonte do rótulo
+// do eixo — não há mais aperto de largura que exigisse encolhê-lo.
+const double estepeLabelFont = 10.0;
+const double estepeLabelFontTablet = 16.0;
+const double estepeSlotGap = 16.0; // respiro horizontal entre X1 e X2
+const double estepeSlotGapTablet = 34.0;
+const double estepeBandBottomGap = 8.0; // respiro entre a faixa e o chassi
+const double estepeBandBottomGapTablet = 16.0;
+
+// Altura aproximada da faixa, usada só no orçamento de altura do diagrama
+// (a faixa em si tem altura natural). Generosa de propósito: se sobrar, vira
+// um respiro; o cálculo nunca depende dela para evitar overflow.
+const double estepeBandHeight = 112.0;
+const double estepeBandHeightTablet = 212.0;
+
 /// Indicador "FRENTE" no topo do diagrama.
 class DirecaoIndicator extends StatelessWidget {
   final bool isTablet;
@@ -473,15 +489,30 @@ class PneuTile extends StatelessWidget {
             width: tw,
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: Text(
-                pneu!.nroPneu,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.montserrat(
-                  color: const Color(0xFF363636),
-                  fontSize: isTablet ? 20 : 10,
-                  fontWeight: FontWeight.w600,
-                  height: 1.0,
-                  letterSpacing: 0,
+              // A caixa do rótulo tem a largura do PNEU (28pt no celular), mas
+              // o número vem da API com até 5 dígitos — que nesta fonte chegam
+              // a ~31pt, porque dígito largo ("9") ocupa mais que estreito
+              // ("1"). Sem o FittedBox o Text corta o excedente EM SILÊNCIO
+              // (TextOverflow.clip é o default do Flutter) e o último dígito
+              // some; no rodado duplo não há sequer pra onde transbordar, já
+              // que os dois pneus ficam a 9pt um do outro.
+              //
+              // scaleDown = reduz só quando não cabe, nunca aumenta: 3 e 4
+              // dígitos (a maioria) seguem exatamente no tamanho de design, e o
+              // de 5 encolhe ~11% em vez de perder um dígito. Acima de 5 continua
+              // legível, encolhendo mais — degrada em vez de cortar.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  pneu!.nroPneu,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(
+                    color: const Color(0xFF363636),
+                    fontSize: isTablet ? 20 : 10,
+                    fontWeight: FontWeight.w600,
+                    height: 1.0,
+                    letterSpacing: 0,
+                  ),
                 ),
               ),
             ),
@@ -491,6 +522,85 @@ class PneuTile extends StatelessWidget {
           CustomPaint(
             size: Size(tw, th),
             painter: const TirePainter(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Faixa de estepes, desenhada ACIMA do chassi.
+///
+/// O estepe não pertence a eixo nenhum — a API o identifica pelo `localeixo`
+/// `X1`/`X2` —, então ele fica fora do frame, numa faixa horizontal no topo do
+/// diagrama: os slots são [PneuTile]s idênticos aos dos eixos (mesmo toque para
+/// detalhes, duplo toque para movimentar/montar), lado a lado, sob o rótulo
+/// comum "ESTEPE". Os slots não são rotulados individualmente (`X1`/`X2` é só a
+/// posição interna, mandada à API na montagem); o número do pneu montado
+/// aparece acima dele, como nos eixos.
+///
+/// Por ser uma faixa (e não uma coluna lateral), não disputa largura com os
+/// eixos: os dois pneus somam ~60pt, que cabem folgado mesmo no celular
+/// pequeno. O custo é altura — a faixa empurra o chassi pra baixo.
+///
+/// [estepes] tem uma posição por slot, na ordem `X1`, `X2`; `null` = vazio.
+class EstepeBand extends StatelessWidget {
+  final List<Pneu?> estepes;
+  final bool isTablet;
+  final void Function(Pneu pneu)? onPneuTap;
+  final void Function(Pneu pneu)? onPneuDoubleTap;
+  final void Function(String localEixo)? onSlotVazioDoubleTap;
+
+  const EstepeBand({
+    super.key,
+    required this.estepes,
+    this.isTablet = false,
+    this.onPneuTap,
+    this.onPneuDoubleTap,
+    this.onSlotVazioDoubleTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fonte = isTablet ? estepeLabelFontTablet : estepeLabelFont;
+    final slotGap = isTablet ? estepeSlotGapTablet : estepeSlotGap;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: isTablet ? estepeBandBottomGapTablet : estepeBandBottomGap,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'ESTEPE',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              fontSize: fonte,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF363636),
+              height: 1.0,
+              letterSpacing: 0,
+            ),
+          ),
+          SizedBox(height: isTablet ? 10 : 6),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < estepes.length; i++) ...[
+                if (i > 0) SizedBox(width: slotGap),
+                PneuTile(
+                  pneu: estepes[i],
+                  isTablet: isTablet,
+                  onTap: onPneuTap,
+                  onDoubleTap: onPneuDoubleTap,
+                  onEmptyDoubleTap: estepes[i] == null
+                      ? () => onSlotVazioDoubleTap?.call('X${i + 1}')
+                      : null,
+                ),
+              ],
+            ],
           ),
         ],
       ),

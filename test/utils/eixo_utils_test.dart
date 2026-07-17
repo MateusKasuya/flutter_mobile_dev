@@ -218,4 +218,70 @@ void main() {
       expect(eixos[1].direitoExterno?.nroPneu, '900');
     });
   });
+
+  group('estepeSlotIndex', () {
+    test('X1 e X2 viram os slots 0 e 1', () {
+      expect(estepeSlotIndex('X1'), 0);
+      expect(estepeSlotIndex('X2'), 1);
+    });
+
+    test('aceita caixa baixa e espaços (dado da API não é confiável)', () {
+      expect(estepeSlotIndex('x1'), 0);
+      expect(estepeSlotIndex(' X2 '), 1);
+    });
+
+    test('posição de eixo não é estepe', () {
+      expect(estepeSlotIndex('1D'), isNull);
+      expect(estepeSlotIndex('2EI'), isNull);
+      expect(estepeSlotIndex(''), isNull);
+    });
+
+    test('estepe fora dos 2 slots suportados é descartado', () {
+      // Não há onde desenhar X0/X3 — melhor ignorar que quebrar o layout.
+      expect(estepeSlotIndex('X0'), isNull);
+      expect(estepeSlotIndex('X3'), isNull);
+      // 'X' sozinho (dado legado) não casa o padrão.
+      expect(estepeSlotIndex('X'), isNull);
+    });
+  });
+
+  group('buildEstepeLayout', () {
+    test('devolve sempre 2 slots, na ordem X1, X2', () {
+      // Dados reais da placa FBW5J92 em homologação: 2 pneus no eixo 2 e os
+      // estepes em X1/X2.
+      final pneus = [
+        _makePneu('1334', '2EE'),
+        _makePneu('937', '2EI'),
+        _makePneu('1361', 'X1'),
+        _makePneu('1380', 'X2'),
+      ];
+
+      final estepes = buildEstepeLayout(pneus);
+
+      expect(estepes, hasLength(kMaxEstepes));
+      expect(estepes[0]?.nroPneu, '1361');
+      expect(estepes[1]?.nroPneu, '1380');
+    });
+
+    test('slot sem estepe fica null, e os 2 slots existem mesmo sem nenhum', () {
+      expect(buildEstepeLayout([_makePneu('1361', 'X2')]), [null, isNotNull]);
+      expect(buildEstepeLayout([_makePneu('100', '1D')]), [null, null]);
+      expect(buildEstepeLayout([]), [null, null]);
+    });
+  });
+
+  group('buildEixoLayout x estepe', () {
+    test('estepe não vira eixo', () {
+      // Regressão: 'X1' no 1º caractere não é número; se o parse tentasse
+      // int.parse('X') a tela inteira caía. O estepe tem lugar próprio
+      // (buildEstepeLayout) e some do layout de eixos.
+      final eixos = buildEixoLayout([
+        _makePneu('1334', '2EE'),
+        _makePneu('1361', 'X1'),
+        _makePneu('1380', 'X2'),
+      ]);
+
+      expect(eixos.map((e) => e.numero), [2]);
+    });
+  });
 }

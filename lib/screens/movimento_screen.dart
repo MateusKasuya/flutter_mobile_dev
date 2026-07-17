@@ -33,57 +33,62 @@ class MovimentoScreen extends StatelessWidget {
               ),
       ),
       backgroundColor: AppColors.backgroundScreen,
-      body: Center(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.all(30),
-          children: <Widget>[
-            if (isTablet) ...[
-              Text(
-                'Adicionar Movimento',
-                style: AppTextStyles.body.copyWith(fontSize: 32),
-                textAlign: TextAlign.center,
+      // Edge-to-edge: o Android desenha a barra de navegação POR CIMA da
+      // tela; o SafeArea recua o conteúdo do rodapé — e da lateral, que é
+      // onde a barra fica em paisagem. Ver §12 da documentação técnica.
+      body: SafeArea(
+        child: Center(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.all(30),
+            children: <Widget>[
+              if (isTablet) ...[
+                Text(
+                  'Adicionar Movimento',
+                  style: AppTextStyles.body.copyWith(fontSize: 32),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+              ],
+              _MovimentoCard(
+                label: 'Frotas',
+                subtitle: 'Movimentações de Frota',
+                svgAsset: 'assets/frota-icon.svg',
+                isTablet: isTablet,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FrotaBuscaScreen(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 30),
+              _MovimentoCard(
+                label: 'Pneus',
+                subtitle: 'Controle de Pneus',
+                svgAsset: 'assets/pneu-icon.svg',
+                isTablet: isTablet,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PneuListaScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 30),
+              _MovimentoCard(
+                label: 'Abastecimento',
+                subtitle: 'Registro de Abastecimento',
+                svgAsset: 'assets/abastec-icon.svg',
+                labelFontSize: 22,
+                isTablet: isTablet,
+              ),
             ],
-            _MovimentoCard(
-              label: 'Frotas',
-              subtitle: 'Movimentações de Frota',
-              svgAsset: 'assets/frota-icon.svg',
-              isTablet: isTablet,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const FrotaBuscaScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 30),
-            _MovimentoCard(
-              label: 'Pneus',
-              subtitle: 'Controle de Pneus',
-              svgAsset: 'assets/pneu-icon.svg',
-              isTablet: isTablet,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const PneuListaScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 30),
-            _MovimentoCard(
-              label: 'Abastecimento',
-              subtitle: 'Registro de Abastecimento',
-              svgAsset: 'assets/abastec-icon.svg',
-              labelFontSize: 22,
-              isTablet: isTablet,
-            ),
-          ],
+          ),
         ),
       ),
     );

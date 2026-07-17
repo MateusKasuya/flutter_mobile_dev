@@ -687,7 +687,12 @@ class _PneuHorizontalFormState extends State<_PneuHorizontalForm> {
   Widget _buildBotoes(BuildContext context) {
     final horizontal = widget.isTablet ? 40.0 : 33.0;
     return Padding(
-      padding: EdgeInsets.fromLTRB(horizontal, 16, horizontal, 16),
+      padding: EdgeInsets.fromLTRB(
+        horizontal,
+        16,
+        horizontal,
+        folgaInferiorBotoes(context, folgaDesign: 16, isTablet: widget.isTablet),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

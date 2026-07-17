@@ -46,17 +46,18 @@ Três áreas: **Frotas** (movimentações a partir do veículo), **Pneus** (cont
 
 - Busca do veículo **pela placa**, digitada ou **fotografada**: o app lê a placa na foto (OCR), preenche o campo e já busca o veículo sozinho.
 - Ficha do veículo: placa, nº de frota, marca, modelo, ano, cor e tipo.
-- **Diagrama de eixos**: desenho do chassi do veículo com cada pneu na sua posição, respeitando o esquema de eixos (rodado simples/duplo, moto, carreta etc.). Posições vazias aparecem tracejadas.
+- **Diagrama de eixos**: desenho do chassi do veículo com cada pneu na sua posição, respeitando o esquema de eixos (rodado simples/duplo, moto, carreta etc.). Posições vazias aparecem tracejadas. O número aparece acima de cada pneu e é exibido **inteiro, com até 5 dígitos** — quando não cabe na largura do pneu ele diminui um pouco, em vez de perder dígito.
+  - **Estepe**: acima do chassi há uma faixa **ESTEPE** com **2 posições**, sempre visíveis. Os estepes montados no veículo aparecem ali (com o número do pneu acima, como nos eixos); as posições livres ficam tracejadas, prontas para montar um pneu (mesmo toque/duplo toque dos pneus dos eixos).
   - **Toque** num pneu: detalhes (nº, posição, marca, modelo, dimensão, tipo, vida, quilometragens, última atualização).
   - **Toque duplo** num pneu: abre as ações de movimentação (desmontagem).
   - **Toque duplo** numa posição vazia: inicia a montagem de um pneu naquela posição.
 
 ### 3.5 Pneus — lista geral
 
-- Lista dos pneus **que não estão montados em veículo** (estoque, conserto, recapagem, sucata, venda), com **busca** por nº do pneu, marca, modelo, placa, frota, série, situação, tipo ou localização.
-- Pneu montado em veículo **não aparece nesta lista**: a movimentação dele é feita somente pela tela **Frotas** (§3.4), a partir do diagrama de eixos.
-- Cada card mostra situação (com cor: NOVO verde, USADO laranja, RECAPADO roxo, SUCATA vermelho), marca/modelo, dimensão e a localização.
+- Lista de todos os pneus da frota com **busca** por nº do pneu, marca, modelo, placa, frota, série, situação, tipo ou localização.
+- Cada card mostra situação (com cor: NOVO verde, USADO laranja, RECAPADO roxo, SUCATA vermelho), marca/modelo, dimensão e onde o pneu está (placa/frota ou localização).
 - Tocar num pneu abre as mesmas ações de movimentação.
+- **Pneu montado em veículo (localização FROTA) é só consulta aqui**: ele aparece na lista normalmente, mas tocá-lo não abre as ações — mostra um aviso de que a movimentação é feita pela tela **Frotas** (§3.4), a partir do diagrama de eixos. O aviso traz a placa do veículo, que é justamente o que a tela Frotas pede.
 
 ### 3.6 Movimentações de pneu
 
@@ -121,7 +122,7 @@ O app confirma cada operação com a mensagem retornada pelo sistema e impede fe
 
 Em resumo: **venda é terminal**; **sucata só pode ser vendida**; pneu em conserto ou recapagem não vai direto para venda (precisa voltar antes). O app desabilita visualmente as opções proibidas e a localização atual.
 
-As movimentações da linha **Veículo (montado)** — desmontagem e montagem — acontecem **somente pela tela Frotas** (diagrama de eixos); a lista geral de Pneus não exibe pneus montados.
+As movimentações da linha **Veículo (montado)** — desmontagem e montagem — acontecem **somente pela tela Frotas** (diagrama de eixos), que é onde existe a posição do eixo de onde o pneu sai ou para onde vai. A lista geral de Pneus **exibe** o pneu montado, mas bloqueia as ações nele e avisa onde movimentá-lo (§3.5).
 
 ### Campos e validações por movimentação
 

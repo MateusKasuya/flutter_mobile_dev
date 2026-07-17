@@ -12,25 +12,62 @@ import 'package:flutter_test/flutter_test.dart';
 /// - [devicePixelRatio]: quantos pixels físicos formam 1 pixel lógico
 ///   (3.0 em celulares de alta densidade, 2.0 em aparelhos de entrada);
 /// - [escalaDeTexto]: multiplicador de fonte que o usuário configura na
-///   acessibilidade do aparelho (1.3 = fonte "grande" no Android).
+///   acessibilidade do aparelho (1.3 = fonte "grande" no Android);
+/// - [barraNavegacao]: altura da barra de navegação do sistema no rodapé.
 class DeviceProfile {
   final String nome;
   final Size tamanhoLogico;
   final double devicePixelRatio;
   final double escalaDeTexto;
 
+  /// Altura, em pixels LÓGICOS, da barra de navegação do sistema no rodapé —
+  /// os 3 botões do Android ou a pílula de gesto. 0 = sem barra.
+  ///
+  /// Isso NÃO diminui a tela: o app roda *edge-to-edge* (o Android exige, para
+  /// `targetSdk >= 35`), ou seja, o sistema entrega a tela inteira e desenha a
+  /// barra POR CIMA. Quem tem de recuar o conteúdo é o app, lendo o inset —
+  /// tipicamente com um `SafeArea`. Sem isso, o conteúdo do rodapé fica embaixo
+  /// da barra: invisível e sem toque, e numa tela sem scroll, inalcançável.
+  ///
+  /// Não confundir com o inset do TECLADO (`viewInsets`, exercitado em
+  /// `bottom_sheet_teclado_test.dart`): teclado vai e vem, barra de navegação é
+  /// permanente. No MediaQuery são campos diferentes — tratar um não cobre o
+  /// outro.
+  final double barraNavegacao;
+
   const DeviceProfile({
     required this.nome,
     required this.tamanhoLogico,
     this.devicePixelRatio = 3.0,
     this.escalaDeTexto = 1.0,
+    this.barraNavegacao = 0,
   });
 }
+
+/// Altura típica da barra de 3 botões do Android (a pílula de gesto é ~24dp;
+/// usamos o caso pior).
+const kAlturaBarraNavegacao = 48.0;
+
+/// Celular padrão COM a barra de navegação do Android desenhada por cima.
+const kCelularComBarraNavegacao = DeviceProfile(
+  nome: 'celular com barra de navegação',
+  tamanhoLogico: Size(390, 844),
+  barraNavegacao: kAlturaBarraNavegacao,
+);
 
 /// O celular "de referência" dos testes (390x844 lógicos, como um iPhone).
 const kCelularPadrao = DeviceProfile(
   nome: 'celular padrão',
   tamanhoLogico: Size(390, 844),
+);
+
+/// O menor celular do parque: 320dp de largura é o piso prático do Android.
+/// É o caso crítico de LARGURA — use-o para testar layouts que disputam faixa
+/// horizontal (ex.: diagrama de eixo duplo + coluna de estepe).
+const kCelularPequeno = DeviceProfile(
+  nome: 'celular pequeno',
+  tamanhoLogico: Size(320, 568),
+  devicePixelRatio: 2.0,
 );
 
 /// Matriz de perfis exercitada pelos testes responsivos
@@ -42,16 +79,13 @@ const kCelularPadrao = DeviceProfile(
 /// ampliada nos dois extremos de tamanho, e tablet nas duas orientações
 /// (largura >= 600dp cruza o kTabletBreakpoint e ativa o layout de tablet).
 const kPerfisDeDispositivo = [
-  DeviceProfile(
-    nome: 'celular pequeno',
-    tamanhoLogico: Size(320, 568),
-    devicePixelRatio: 2.0,
-  ),
+  kCelularPequeno,
   kCelularPadrao,
   DeviceProfile(
     nome: 'celular grande',
     tamanhoLogico: Size(428, 926),
   ),
+  kCelularComBarraNavegacao,
   DeviceProfile(
     nome: 'celular pequeno, fonte grande',
     tamanhoLogico: Size(320, 568),
@@ -95,6 +129,17 @@ void useViewport(WidgetTester tester, DeviceProfile perfil) {
   // physicalSize é em pixels FÍSICOS: lógico × devicePixelRatio.
   tester.view.physicalSize = perfil.tamanhoLogico * perfil.devicePixelRatio;
   tester.view.devicePixelRatio = perfil.devicePixelRatio;
+
+  // padding e viewPadding também são em pixels FÍSICOS. São dois campos porque
+  // o teclado consome o `padding` (quando ele está aberto, o rodapé do sistema
+  // deixa de importar) mas nunca o `viewPadding`, que é a medida crua da tela.
+  // Aqui, sem teclado, os dois são iguais.
+  final barra = FakeViewPadding(
+    bottom: perfil.barraNavegacao * perfil.devicePixelRatio,
+  );
+  tester.view.padding = barra;
+  tester.view.viewPadding = barra;
+
   // A escala de texto vive no platformDispatcher (é configuração do SISTEMA,
   // não da tela); o MediaQuery a entrega aos Text como um TextScaler.
   tester.platformDispatcher.textScaleFactorTestValue = perfil.escalaDeTexto;

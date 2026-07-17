@@ -10,6 +10,7 @@ import '../services/pneu_service.dart' as pneu_service;
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/breakpoints.dart';
+import '../utils/app_toast.dart';
 import '../utils/friendly_error.dart';
 
 class PneuListaScreen extends StatefulWidget {
@@ -59,13 +60,7 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
 
     try {
       final token = context.read<AuthProvider>().token;
-      // Pneus montados num veículo (localização FROTA) ficam fora desta
-      // tela: a movimentação deles é exclusiva da tela de Frotas (toque
-      // duplo no diagrama de eixos). O filtro é da tela — e não do service —
-      // para valer em qualquer fetchFn injetado.
-      final pneus = (await widget.fetchFn(token))
-          .where((p) => p.localizacao.toUpperCase() != 'FROTA')
-          .toList();
+      final pneus = await widget.fetchFn(token);
       if (!mounted) return;
       setState(() {
         _pneus = pneus;
@@ -100,6 +95,37 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
         }).toList();
       }
     });
+  }
+
+  /// Abre as ações de movimentação do [pneu] — a menos que ele esteja montado
+  /// num veículo (localização FROTA): esse pneu aparece na lista (a consulta é
+  /// livre), mas só pode ser movimentado pela tela de Frotas, no duplo toque do
+  /// diagrama de eixos. Só lá existe a posição (`localEixo`) de onde o pneu sai.
+  ///
+  /// O bloqueio mora nesta tela, e não dentro de `showPneuAcoesDialog`, porque
+  /// é esse mesmo diálogo que a tela de Frotas abre para desmontar o pneu —
+  /// bloquear lá dentro mataria a desmontagem junto.
+  void _abrirAcoes(Pneu pneu) {
+    if (pneu.localizacao.toUpperCase() == 'FROTA') {
+      // A placa vai na mensagem porque a tela de Frotas começa pedindo
+      // exatamente ela; sem placa no cadastro, cai no texto genérico.
+      final placa = pneu.placa.trim();
+      showErrorToast(
+        placa.isEmpty
+            ? 'Pneu montado em veículo. Movimente pela tela Frotas.'
+            : 'Pneu montado no veículo $placa. Movimente pela tela Frotas.',
+      );
+      return;
+    }
+
+    showPneuAcoesDialog(
+      context,
+      pneu,
+      // Recarrega a lista após uma movimentação confirmada — senão o card
+      // continua mostrando a localização/situação antiga e o usuário poderia
+      // tentar mover o mesmo pneu de novo (mirror do frota_detalhe_screen).
+      onConfirmed: (_) => _carregarPneus(),
+    );
   }
 
   String _situacaoLabel(String situacao) {
@@ -154,97 +180,102 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
               ),
       ),
       backgroundColor: AppColors.backgroundScreen,
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              Padding(
-            padding: EdgeInsets.fromLTRB(isTablet ? 47 : 28, isTablet ? 36 : 21, isTablet ? 47 : 28, isTablet ? 40 : 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      // Edge-to-edge: o Android desenha a barra de navegação POR CIMA da
+      // tela; o SafeArea recua o conteúdo do rodapé — e da lateral, que é
+      // onde a barra fica em paisagem. Ver §12 da documentação técnica.
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
               children: [
-                if (isTablet) ...[
-                  Text(widget.title, style: AppTextStyles.screenTitleTablet),
-                  const SizedBox(height: 13),
-                ],
-                Text('Buscar pneu', style: AppTextStyles.sublabelForm),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: isTablet ? 740 : double.infinity,
-                  height: 50,
-                  child: TextField(
-                    controller: _searchController,
-                    textAlignVertical: TextAlignVertical.center,
-                    style: AppTextStyles.sublabelForm,
-                    decoration: InputDecoration(
-                      hintText: 'marca, modelo, placa ...',
-                      hintStyle: AppTextStyles.formInputHint,
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.only(left: 20, right: 14),
-                        child: SvgPicture.asset(
-                          'assets/busca.svg',
-                          width: 16,
-                          height: 16,
-                        ),
-                      ),
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 0,
-                        minHeight: 0,
-                      ),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () => _searchController.clear(),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(isTablet ? 47 : 28, isTablet ? 36 : 21, isTablet ? 47 : 28, isTablet ? 40 : 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isTablet) ...[
+                        Text(widget.title, style: AppTextStyles.screenTitleTablet),
+                        const SizedBox(height: 13),
+                      ],
+                      Text('Buscar pneu', style: AppTextStyles.sublabelForm),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: isTablet ? 740 : double.infinity,
+                        height: 50,
+                        child: TextField(
+                          controller: _searchController,
+                          textAlignVertical: TextAlignVertical.center,
+                          style: AppTextStyles.sublabelForm,
+                          decoration: InputDecoration(
+                            hintText: 'marca, modelo, placa ...',
+                            hintStyle: AppTextStyles.formInputHint,
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.only(left: 20, right: 14),
+                              child: SvgPicture.asset(
+                                'assets/busca.svg',
+                                width: 16,
+                                height: 16,
                               ),
-                            )
-                          : null,
-                      suffixIconConstraints: const BoxConstraints(
-                        minWidth: 0,
-                        minHeight: 0,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50),
-                        borderSide: const BorderSide(
-                          color: AppColors.textPlaceholder,
-                          width: 2,
+                            ),
+                            prefixIconConstraints: const BoxConstraints(
+                              minWidth: 0,
+                              minHeight: 0,
+                            ),
+                            suffixIcon: _searchController.text.isNotEmpty
+                                ? Padding(
+                                    padding: const EdgeInsets.only(right: 6),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.clear),
+                                      onPressed: () => _searchController.clear(),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
+                                  )
+                                : null,
+                            suffixIconConstraints: const BoxConstraints(
+                              minWidth: 0,
+                              minHeight: 0,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                              borderSide: const BorderSide(
+                                color: AppColors.textPlaceholder,
+                                width: 2,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                              borderSide: const BorderSide(
+                                color: AppColors.textPlaceholder,
+                                width: 2,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(50),
+                              borderSide: const BorderSide(
+                                color: AppColors.textPlaceholder,
+                                width: 2,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50),
-                        borderSide: const BorderSide(
-                          color: AppColors.textPlaceholder,
-                          width: 2,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50),
-                        borderSide: const BorderSide(
-                          color: AppColors.textPlaceholder,
-                          width: 2,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
+                Expanded(child: _buildBody()),
               ],
             ),
-          ),
-              Expanded(child: _buildBody()),
-            ],
-          ),
-          if (!_isLoading && _erro == null && _filteredPneus.isEmpty)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Center(child: _buildEmptyState()),
+            if (!_isLoading && _erro == null && _filteredPneus.isEmpty)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Center(child: _buildEmptyState()),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -265,9 +296,7 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
         Text(
           isFilterEmpty
               ? 'Nenhum pneu encontrado\npara o filtro'
-              // "disponível", não "cadastrado": pode haver pneus cadastrados
-              // mas todos montados em frota (e portanto fora desta lista).
-              : 'Nenhum pneu disponível',
+              : 'Nenhum pneu cadastrado',
           style: AppTextStyles.label.copyWith(fontSize: 18),
           textAlign: TextAlign.center,
         ),
@@ -318,15 +347,7 @@ class _PneuListaScreenState extends State<PneuListaScreen> {
             isTablet: isTablet,
             onTap: widget.selectionMode
                 ? () => Navigator.pop(context, pneu)
-                : () => showPneuAcoesDialog(
-                    context,
-                    pneu,
-                    // Recarrega a lista após uma movimentação confirmada —
-                    // senão o card continua mostrando a localização/situação
-                    // antiga e o usuário poderia tentar mover o mesmo pneu de
-                    // novo (mirror do frota_detalhe_screen).
-                    onConfirmed: (_) => _carregarPneus(),
-                  ),
+                : () => _abrirAcoes(pneu),
           );
         },
       ),

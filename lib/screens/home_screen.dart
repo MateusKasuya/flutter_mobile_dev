@@ -107,52 +107,57 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       backgroundColor: AppColors.backgroundScreen,
-      body: _isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : _hasError
-          ? _buildErrorState()
-          // RefreshIndicator adiciona o "puxar pra atualizar": ao arrastar o
-          // conteúdo pra baixo, ele chama onRefresh (aqui _load, que re-busca
-          // as localizações). Exige um filho rolável — o SingleChildScrollView
-          // abaixo cumpre isso; AlwaysScrollableScrollPhysics garante que o
-          // gesto funcione mesmo quando o conteúdo cabe na tela sem rolar.
-          : RefreshIndicator(
-              onRefresh: _load,
-              child: LayoutBuilder(
-                builder: (context, constraints) => SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints:
-                        BoxConstraints(minHeight: constraints.maxHeight),
-                    child: Padding(
-                      padding: EdgeInsets.only(bottom: isTablet ? 0 : 80),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              isTablet
-                                  ? 'Monitoramento de movimentações da Frota'
-                                  : 'Monitoramento de\nmovimentações da Frota',
-                              style: isTablet
-                                  ? AppTextStyles.body.copyWith(fontSize: 24)
-                                  : AppTextStyles.body,
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 26),
-                            isTablet ? _buildTabletGrid() : _buildPhoneGrid(),
-                            if (isTablet) ...[
-                              const SizedBox(height: 100),
-                              _buildAddButton(),
+      // Edge-to-edge: o Android desenha a barra de navegação POR CIMA da
+      // tela; o SafeArea recua o conteúdo do rodapé — e da lateral, que é
+      // onde a barra fica em paisagem. Ver §12 da documentação técnica.
+      body: SafeArea(
+        child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _hasError
+            ? _buildErrorState()
+            // RefreshIndicator adiciona o "puxar pra atualizar": ao arrastar o
+            // conteúdo pra baixo, ele chama onRefresh (aqui _load, que re-busca
+            // as localizações). Exige um filho rolável — o SingleChildScrollView
+            // abaixo cumpre isso; AlwaysScrollableScrollPhysics garante que o
+            // gesto funcione mesmo quando o conteúdo cabe na tela sem rolar.
+            : RefreshIndicator(
+                onRefresh: _load,
+                child: LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: isTablet ? 0 : 80),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                isTablet
+                                    ? 'Monitoramento de movimentações da Frota'
+                                    : 'Monitoramento de\nmovimentações da Frota',
+                                style: isTablet
+                                    ? AppTextStyles.body.copyWith(fontSize: 24)
+                                    : AppTextStyles.body,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 26),
+                              isTablet ? _buildTabletGrid() : _buildPhoneGrid(),
+                              if (isTablet) ...[
+                                const SizedBox(height: 100),
+                                _buildAddButton(),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
+      ),
       floatingActionButton: isTablet ? null : _buildAddButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );

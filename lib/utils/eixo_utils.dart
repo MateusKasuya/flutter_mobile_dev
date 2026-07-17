@@ -2,6 +2,40 @@ import '../components/diagrama_eixos/esquema_eixo.dart';
 import '../models/eixo.dart';
 import '../models/pneu.dart';
 
+/// Quantidade de slots de estepe que o diagrama mostra, sempre.
+///
+/// A API identifica estepe pelo `localeixo` `X1`/`X2` (confirmado em
+/// homologação na placa FBW5J92, que traz os dois). Não há campo no esquema de
+/// eixos dizendo quantos estepes o veículo comporta, então fixamos 2 — que é o
+/// teto da operação. Os slots aparecem mesmo vazios, para permitir montar um
+/// pneu no estepe pelo diagrama.
+const int kMaxEstepes = 2;
+
+/// Índice do slot de estepe de um [localEixo]: 0 para `X1`, 1 para `X2`.
+///
+/// Devolve null quando não é estepe (`1D`, `2EI`, vazio...) ou quando o número
+/// está fora dos [kMaxEstepes] slots suportados (`X0`, `X3`) — nesse caso o
+/// pneu não tem onde ser desenhado e é ignorado, em vez de quebrar o layout.
+int? estepeSlotIndex(String localEixo) {
+  final match = RegExp(r'^X(\d+)$').firstMatch(localEixo.trim().toUpperCase());
+  if (match == null) return null;
+  final numero = int.parse(match.group(1)!);
+  if (numero < 1 || numero > kMaxEstepes) return null;
+  return numero - 1;
+}
+
+/// Estepes de [pneus] na ordem dos slots: índice 0 = `X1`, 1 = `X2`.
+///
+/// Sempre devolve [kMaxEstepes] posições; `null` = slot vazio.
+List<Pneu?> buildEstepeLayout(List<Pneu> pneus) {
+  final slots = List<Pneu?>.filled(kMaxEstepes, null);
+  for (final pneu in pneus) {
+    final slot = estepeSlotIndex(pneu.localEixo);
+    if (slot != null) slots[slot] = pneu;
+  }
+  return slots;
+}
+
 /// Organiza uma lista de [Pneu] em [Eixo]s a partir do campo [localEixo].
 ///
 /// O [localEixo] segue o padrão `{eixo}{lado}{posição}`:
@@ -27,10 +61,10 @@ List<Eixo> buildEixoLayout(List<Pneu> pneus, [String codEsqEixo = '']) {
     if (pneu.localEixo.isEmpty) continue;
 
     // localEixo esperado no padrão "{eixo}{posição}" (ex: "1D", "2EI"), com o
-    // número do eixo no 1º caractere. Pneus fora desse padrão — sem posição
-    // num eixo numerado (ex: "X"/estepe, dado legado) — não têm lugar no
-    // diagrama, então são ignorados em vez de quebrar o parse (int.parse('X')
-    // lançaria FormatException e derrubaria a tela inteira).
+    // número do eixo no 1º caractere. Pneus fora desse padrão — estepe (`X1`,
+    // `X2`, que vão para [buildEstepeLayout]) ou dado legado — não pertencem a
+    // eixo nenhum, então são ignorados aqui em vez de quebrar o parse
+    // (int.parse('X') lançaria FormatException e derrubaria a tela inteira).
     final numero = int.tryParse(pneu.localEixo[0]);
     if (numero == null) continue;
 

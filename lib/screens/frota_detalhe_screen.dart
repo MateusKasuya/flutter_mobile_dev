@@ -23,6 +23,7 @@ class FrotaDetalheScreen extends StatefulWidget {
 
 class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
   late List<Eixo> _eixos;
+  late List<Pneu?> _estepes;
 
   @override
   void initState() {
@@ -33,19 +34,22 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
     // em alguns eixos, completa os que faltam. Esquema desconhecido → só os
     // eixos que têm pneu (comportamento antigo).
     _eixos = buildEixoLayout(widget.veiculo.pneus, widget.veiculo.codEsqEixo);
+    // Estepes (localeixo X1/X2) não pertencem a eixo nenhum e são desenhados
+    // numa coluna à parte. Sempre 2 slots, mesmo vazios, para permitir montar.
+    _estepes = buildEstepeLayout(widget.veiculo.pneus);
   }
 
   void _onPneuConfirmed(Pneu pneu) {
     setState(() {
       _eixos = _eixos.map((e) => e.withoutPneu(pneu)).toList();
+      // O pneu desmontado pode ser um estepe: some do slot X também.
+      _estepes = [for (final e in _estepes) e == pneu ? null : e];
     });
   }
 
   void _onSlotVazioConfirmed(String localEixo, Pneu pneu) {
     if (localEixo.isEmpty) return;
-    final eixoNumero = int.tryParse(localEixo[0]);
-    if (eixoNumero == null) return;
-    final posicao = localEixo.substring(1);
+
     // O pneu vem da lista de estoque, então ainda carrega a localização de
     // origem (ESTOQUE/CONSERTO/RECAPAGEM). A montagem já foi confirmada na API,
     // que passa a tratá-lo como FROTA — refletimos isso na cópia local. Sem
@@ -53,6 +57,22 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
     // origem: o diálogo de ações bloquearia a desmontagem (mostrando a origem
     // como localização atual) até um refetch do veículo.
     final montado = pneu.copyWith(localizacao: 'FROTA', localEixo: localEixo);
+
+    // Estepe (X1/X2) não tem eixo: entra direto no slot da coluna.
+    final slotEstepe = estepeSlotIndex(localEixo);
+    if (slotEstepe != null) {
+      setState(() {
+        _estepes = [
+          for (var i = 0; i < _estepes.length; i++)
+            i == slotEstepe ? montado : _estepes[i],
+        ];
+      });
+      return;
+    }
+
+    final eixoNumero = int.tryParse(localEixo[0]);
+    if (eixoNumero == null) return;
+    final posicao = localEixo.substring(1);
     setState(() {
       _eixos = _eixos.map((e) {
         if (e.numero == eixoNumero) return e.withPneuAt(posicao, montado);
@@ -80,44 +100,55 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
           textAlign: TextAlign.center,
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: isTablet
-                ? const EdgeInsets.fromLTRB(47, 30, 47, 0)
-                : const EdgeInsets.fromLTRB(23, 20, 23, 0),
-            child: _VeiculoCard(
-              veiculo: widget.veiculo,
-              isTablet: isTablet,
-            ),
-          ),
-          Expanded(
-            child: Padding(
+      // O app roda *edge-to-edge*: o Android exige isso de quem tem
+      // targetSdk >= 35, ou seja, o sistema entrega a tela INTEIRA e desenha a
+      // barra de navegação (3 botões ou pílula de gesto) POR CIMA — recuar o
+      // conteúdo é responsabilidade do app. O SafeArea faz esse recuo lendo o
+      // inset do MediaQuery. Aqui ele é indispensável: o Column abaixo não rola
+      // e estica o diagrama num Expanded, então sem o recuo o eixo de baixo
+      // ficaria sob a barra — invisível, sem toque e sem scroll que o revele.
+      // Cobre também a barra na lateral, que é onde ela fica em paisagem.
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
               padding: isTablet
-                  ? const EdgeInsets.fromLTRB(45, 67, 45, 0)
-                  : const EdgeInsets.fromLTRB(45, 30, 45, 0),
-              child: DiagramaEixos(
-                eixos: _eixos,
-                codEsqEixo: widget.veiculo.codEsqEixo,
+                  ? const EdgeInsets.fromLTRB(47, 30, 47, 0)
+                  : const EdgeInsets.fromLTRB(23, 20, 23, 0),
+              child: _VeiculoCard(
+                veiculo: widget.veiculo,
                 isTablet: isTablet,
-                onPneuTap: (pneu) => _showPneuDetails(context, pneu),
-                onPneuDoubleTap: (pneu) => showPneuAcoesDialog(
-                  context,
-                  pneu,
-                  onConfirmed: _onPneuConfirmed,
-                ),
-                onSlotVazioDoubleTap: (localEixo) =>
-                    showSlotVazioAcoesDialog(
-                      context,
-                      localEixo,
-                      widget.veiculo,
-                      onConfirmed: _onSlotVazioConfirmed,
-                    ),
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: Padding(
+                padding: isTablet
+                    ? const EdgeInsets.fromLTRB(45, 67, 45, 0)
+                    : const EdgeInsets.fromLTRB(45, 30, 45, 0),
+                child: DiagramaEixos(
+                  eixos: _eixos,
+                  codEsqEixo: widget.veiculo.codEsqEixo,
+                  estepes: _estepes,
+                  isTablet: isTablet,
+                  onPneuTap: (pneu) => _showPneuDetails(context, pneu),
+                  onPneuDoubleTap: (pneu) => showPneuAcoesDialog(
+                    context,
+                    pneu,
+                    onConfirmed: _onPneuConfirmed,
+                  ),
+                  onSlotVazioDoubleTap: (localEixo) =>
+                      showSlotVazioAcoesDialog(
+                        context,
+                        localEixo,
+                        widget.veiculo,
+                        onConfirmed: _onSlotVazioConfirmed,
+                      ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

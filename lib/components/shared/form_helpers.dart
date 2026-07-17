@@ -85,6 +85,31 @@ class BrazilianCurrencyFormatter extends TextInputFormatter {
   }
 }
 
+/// Folga inferior da barra de botões de um bottom sheet: a [folgaDesign] do
+/// layout mais o espaço da barra de navegação do sistema.
+///
+/// O app roda *edge-to-edge* — exigência do Android para `targetSdk >= 35`: o
+/// sistema entrega a tela INTEIRA e desenha a barra de navegação (3 botões ou
+/// pílula de gesto) POR CIMA dela; recuar o conteúdo é responsabilidade do app.
+/// Como a barra Cancelar/Confirmar fica fixa no rodapé, fora do scroll, sem
+/// esse recuo ela nasce parcialmente embaixo da barra do sistema: encoberta e
+/// sem responder ao toque, e sem scroll que a revele.
+///
+/// `padding.bottom` já resolve o caso do teclado sozinho: quando ele está
+/// aberto o inset zera (o teclado cobre a barra de navegação) e quem sobe o
+/// sheet é o `Padding(viewInsets.bottom)` do build.
+///
+/// [isTablet] devolve a folga original: lá o form é um `Dialog` centralizado,
+/// longe do rodapé da tela.
+double folgaInferiorBotoes(
+  BuildContext context, {
+  required double folgaDesign,
+  required bool isTablet,
+}) {
+  if (isTablet) return folgaDesign;
+  return folgaDesign + MediaQuery.of(context).padding.bottom;
+}
+
 /// Converte um valor formatado pelo [BrazilianCurrencyFormatter]
 /// ("12.345,67") em double (12345.67) — o formato numérico que a API espera.
 /// Retorna null se a string estiver vazia ou inválida.
