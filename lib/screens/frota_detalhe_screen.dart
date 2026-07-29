@@ -81,6 +81,15 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
     });
   }
 
+  // Move um estepe já montado (X1/X2) para uma posição de eixo do mesmo
+  // veículo: some do slot de estepe e reaparece no eixo, reaproveitando as
+  // duas atualizações otimistas já existentes (desmontar + montar) em vez de
+  // duplicar a lógica de slot.
+  void _onEstepeMovidoParaEixo(String localEixoDestino, Pneu pneu) {
+    _onPneuConfirmed(pneu);
+    _onSlotVazioConfirmed(localEixoDestino, pneu);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isTablet = MediaQuery.of(context).size.width >= kTabletBreakpoint;
@@ -135,7 +144,10 @@ class _FrotaDetalheScreenState extends State<FrotaDetalheScreen> {
                   onPneuDoubleTap: (pneu) => showPneuAcoesDialog(
                     context,
                     pneu,
+                    veiculo: widget.veiculo,
+                    eixoSlotsVazios: eixoSlotsVazios(_eixos),
                     onConfirmed: _onPneuConfirmed,
+                    onMovidoParaEixo: _onEstepeMovidoParaEixo,
                   ),
                   onSlotVazioDoubleTap: (localEixo) =>
                       showSlotVazioAcoesDialog(

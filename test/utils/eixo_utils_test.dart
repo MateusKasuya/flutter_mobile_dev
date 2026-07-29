@@ -219,6 +219,29 @@ void main() {
     });
   });
 
+  group('descreverEixoSlot', () {
+    test('rodado simples: E e D', () {
+      expect(descreverEixoSlot('1E'), 'Eixo 1 - Esquerdo');
+      expect(descreverEixoSlot('1D'), 'Eixo 1 - Direito');
+    });
+
+    test('rodado duplo: EE, EI, DE, DI', () {
+      expect(descreverEixoSlot('2EE'), 'Eixo 2 - Esquerdo externo');
+      expect(descreverEixoSlot('2EI'), 'Eixo 2 - Esquerdo interno');
+      expect(descreverEixoSlot('2DE'), 'Eixo 2 - Direito externo');
+      expect(descreverEixoSlot('2DI'), 'Eixo 2 - Direito interno');
+    });
+
+    test('aceita caixa baixa e espaços', () {
+      expect(descreverEixoSlot(' 3ei '), 'Eixo 3 - Esquerdo interno');
+    });
+
+    test('slot fora do formato esperado volta sem alteração', () {
+      expect(descreverEixoSlot('X1'), 'X1');
+      expect(descreverEixoSlot(''), '');
+    });
+  });
+
   group('estepeSlotIndex', () {
     test('X1 e X2 viram os slots 0 e 1', () {
       expect(estepeSlotIndex('X1'), 0);
@@ -267,6 +290,35 @@ void main() {
       expect(buildEstepeLayout([_makePneu('1361', 'X2')]), [null, isNotNull]);
       expect(buildEstepeLayout([_makePneu('100', '1D')]), [null, null]);
       expect(buildEstepeLayout([]), [null, null]);
+    });
+  });
+
+  group('eixoSlotsVazios', () {
+    test('eixo simples com um lado ocupado devolve só o lado vazio', () {
+      final eixos = buildEixoLayout([_makePneu('100', '1D')]);
+      expect(eixoSlotsVazios(eixos), ['1E']);
+    });
+
+    test('eixo duplo devolve os 4 sufixos (EE/EI/DE/DI) quando vazio', () {
+      final eixos = buildEixoLayout([], 'A'); // TOCO: eixo 1 simples, 2 duplo
+      final slots = eixoSlotsVazios(eixos);
+
+      expect(slots, containsAll(['1E', '1D', '2EE', '2EI', '2DE', '2DI']));
+      expect(slots, hasLength(6));
+    });
+
+    test('eixo totalmente ocupado não aparece', () {
+      final eixos = buildEixoLayout([
+        _makePneu('1', '2EE'),
+        _makePneu('2', '2EI'),
+        _makePneu('3', '2DE'),
+        _makePneu('4', '2DI'),
+      ]);
+      expect(eixoSlotsVazios(eixos), isEmpty);
+    });
+
+    test('sem eixos devolve lista vazia', () {
+      expect(eixoSlotsVazios([]), isEmpty);
     });
   });
 

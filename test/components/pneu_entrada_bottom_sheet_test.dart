@@ -72,7 +72,8 @@ Widget buildHost({
   required Veiculo veiculo,
   String localEixo = '1DE',
   String codEsqEixo = 'ESQ01',
-  PneuAcao origem = PneuAcao.estoque,
+  OrigemVisual origem = PneuAcao.estoque,
+  String? localizacaoOrigemOverride,
   void Function(bool?)? onResult,
 }) {
   return ChangeNotifierProvider(
@@ -89,6 +90,7 @@ Widget buildHost({
                 localEixo,
                 codEsqEixo,
                 origem,
+                localizacaoOrigemOverride: localizacaoOrigemOverride,
                 client: client,
               );
               onResult?.call(r);
@@ -190,5 +192,54 @@ void main() {
     // O guard aborta antes do POST e mantém a sheet aberta.
     expect(chamou, false);
     expect(find.text('Confirmar'), findsOneWidget);
+  });
+
+  testWidgets(
+      'estepe movido para eixo envia localizacaO_ORIGEM/localizacao FROTA '
+      '(override, não o label de exibição "Estepe")', (tester) async {
+    useLargeViewport(tester);
+
+    Map<String, dynamic>? body;
+    final mock = MockClient((req) async {
+      body = jsonDecode(req.body) as Map<String, dynamic>;
+      return http.Response(
+        jsonEncode({'sucesso': true, 'mensagem': 'OK'}),
+        200,
+      );
+    });
+
+    await tester.pumpWidget(
+      buildHost(
+        client: mock,
+        pneu: buildPneu(nroPneu: '999', codFil: '1'),
+        veiculo: buildVeiculo(placa: 'ABC1D23', nroFrota: '77'),
+        localEixo: '1DE',
+        codEsqEixo: 'ESQ01',
+        origem: const EstepeOrigem(),
+        localizacaoOrigemOverride: 'FROTA',
+      ),
+    );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
+
+    // O header exibe o label visual da origem ("ESTEPE"), mas o payload
+    // enviado à API usa o override, não esse label.
+    expect(find.text('ESTEPE'), findsOneWidget);
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Informe o KM do veículo'),
+      '50000',
+    );
+    await tester.pump();
+
+    await tester.ensureVisible(find.text('Confirmar'));
+    await tester.tap(find.text('Confirmar'));
+    await tester.pumpAndSettle();
+
+    expect(body, isNotNull);
+    expect(body!['localeixo'], '1DE');
+    expect(body!['localizacaO_ORIGEM'], 'FROTA');
+    expect(body!['localizacao'], 'FROTA');
   });
 }

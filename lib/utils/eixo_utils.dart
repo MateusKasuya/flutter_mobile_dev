@@ -36,6 +36,56 @@ List<Pneu?> buildEstepeLayout(List<Pneu> pneus) {
   return slots;
 }
 
+/// Posições de EIXO (não-estepe) vazias em [eixos], no mesmo formato
+/// `{nºeixo}{posição}` aceito por `localEixo` na montagem — usado para
+/// oferecer destinos ao mover um estepe já montado para um eixo do mesmo
+/// veículo (`showPneuAcoesDialog`).
+List<String> eixoSlotsVazios(List<Eixo> eixos) {
+  final slots = <String>[];
+  for (final eixo in eixos) {
+    if (eixo.rodadoDuplo) {
+      if (eixo.esquerdoExterno == null) slots.add('${eixo.numero}EE');
+      if (eixo.esquerdoInterno == null) slots.add('${eixo.numero}EI');
+      if (eixo.direitoExterno == null) slots.add('${eixo.numero}DE');
+      if (eixo.direitoInterno == null) slots.add('${eixo.numero}DI');
+    } else {
+      if (eixo.esquerdoExterno == null) slots.add('${eixo.numero}E');
+      if (eixo.direitoExterno == null) slots.add('${eixo.numero}D');
+    }
+  }
+  return slots;
+}
+
+/// Descrições dos sufixos de posição aceitos em [localEixo] — ver
+/// `descreverEixoSlot`.
+const _descricoesPosicaoEixo = {
+  'E': 'Esquerdo',
+  'D': 'Direito',
+  'EE': 'Esquerdo externo',
+  'EI': 'Esquerdo interno',
+  'DE': 'Direito externo',
+  'DI': 'Direito interno',
+};
+
+/// Descrição legível de um [slot] no formato de [localEixo] (ex.: `2EI` →
+/// "Eixo 2 - Esquerdo interno") — usada para explicar a posição ao usuário
+/// ao escolher para onde mover um estepe (`_showEscolhaEixoDialog`). É o
+/// texto que o motorista de fato lê no dia a dia: o código bruto (`2EI`)
+/// não diz nada pra quem não conhece a nomenclatura interna do app.
+///
+/// Devolve o próprio [slot] sem alteração se ele não casar o formato
+/// esperado (`{nºeixo}{E|D|EE|EI|DE|DI}`) — não deveria acontecer com os
+/// slots gerados por [eixoSlotsVazios], mas a UI não deve quebrar por causa
+/// de um texto explicativo.
+String descreverEixoSlot(String slot) {
+  final match =
+      RegExp(r'^(\d+)(EE|EI|DE|DI|E|D)$').firstMatch(slot.trim().toUpperCase());
+  if (match == null) return slot;
+  final numero = match.group(1)!;
+  final descricao = _descricoesPosicaoEixo[match.group(2)!]!;
+  return 'Eixo $numero - $descricao';
+}
+
 /// Organiza uma lista de [Pneu] em [Eixo]s a partir do campo [localEixo].
 ///
 /// O [localEixo] segue o padrão `{eixo}{lado}{posição}`:

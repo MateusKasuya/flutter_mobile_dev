@@ -20,13 +20,19 @@ import 'shared/form_helpers.dart';
 /// Abre o formulário de montagem do [pneu] na posição [localEixo] do
 /// [veiculo]. O POST /pneu/movimentarpneu acontece no Confirmar do próprio
 /// form; o Future só resolve com valor não-nulo se a API confirmou.
+///
+/// [origem] só controla o visual (ícone/cor/label) do formulário. O valor
+/// enviado à API como origem do pneu é `origem.label` — exceto quando
+/// [localizacaoOrigemOverride] é informado (caso do estepe já montado, cujo
+/// label de exibição não é uma localização real da API; ver [EstepeOrigem]).
 Future<bool?> showPneuEntradaSheet(
   BuildContext context,
   Pneu pneu,
   Veiculo veiculo,
   String localEixo,
   String codEsqEixo,
-  PneuAcao origem, {
+  OrigemVisual origem, {
+  String? localizacaoOrigemOverride,
   http.Client? client,
 }) {
   final mq = MediaQuery.of(context);
@@ -55,6 +61,7 @@ Future<bool?> showPneuEntradaSheet(
             localEixo: localEixo,
             codEsqEixo: codEsqEixo,
             origem: origem,
+            localizacaoOrigemOverride: localizacaoOrigemOverride,
             isTablet: true,
             client: client,
           ),
@@ -87,6 +94,7 @@ Future<bool?> showPneuEntradaSheet(
       localEixo: localEixo,
       codEsqEixo: codEsqEixo,
       origem: origem,
+      localizacaoOrigemOverride: localizacaoOrigemOverride,
       client: client,
     ),
   );
@@ -97,7 +105,8 @@ class _PneuEntradaForm extends StatefulWidget {
   final Veiculo veiculo;
   final String localEixo;
   final String codEsqEixo;
-  final PneuAcao origem;
+  final OrigemVisual origem;
+  final String? localizacaoOrigemOverride;
   // No modo tablet o form vive dentro de um Dialog centralizado — sem drag
   // handle, sem safe-area de teclado por baixo.
   final bool isTablet;
@@ -110,6 +119,7 @@ class _PneuEntradaForm extends StatefulWidget {
     required this.localEixo,
     required this.codEsqEixo,
     required this.origem,
+    this.localizacaoOrigemOverride,
     this.isTablet = false,
     this.client,
   });
@@ -174,6 +184,13 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
     setState(() => _enviando = true);
     try {
       final token = context.read<AuthProvider>().token;
+      // Localização de ORIGEM do pneu em maiúsculas: ESTOQUE/CONSERTO/
+      // RECAPAGEM na montagem normal, ou o override (ex.: FROTA, quando o
+      // pneu é um estepe já montado saindo de X1/X2 para um eixo do mesmo
+      // veículo — nesse caso `origem.label` ("Estepe") é só visual e não é
+      // uma localização real da API).
+      final localizacaoOrigem =
+          widget.localizacaoOrigemOverride ?? widget.origem.label.toUpperCase();
       final mensagem = await pneu_service.movimentarPneu(
         token,
         // A API espera números onde o GET devolve strings
@@ -183,13 +200,11 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
         // (DD/MM/AAAA → DateTime, meia-noite).
         dataEntrada: parseDate(_dataEnvioController.text) ?? DateTime.now(),
         codFil: codFil,
-        // Localização de ORIGEM do pneu em maiúsculas (ESTOQUE/CONSERTO/
-        // RECAPAGEM), de onde ele sai para o veículo.
-        localizacaoOrigem: widget.origem.label.toUpperCase(),
+        localizacaoOrigem: localizacaoOrigem,
         // A API exigia a origem também aqui ("LOCALIZACAO é obrigatória.")
         // antes de existir LOCALIZACAO_ORIGEM — segue enviada até o backend
         // confirmar que a montagem dispensa o campo.
-        localizacao: widget.origem.label.toUpperCase(),
+        localizacao: localizacaoOrigem,
         // Montagem é identificada pelo backend pelos campos do veículo
         // preenchidos (localeixo/placa/nrofrota).
         localEixo: widget.localEixo,
@@ -266,7 +281,7 @@ class _PneuEntradaFormState extends State<_PneuEntradaForm> {
     return PopScope(canPop: !_enviando, child: content);
   }
 
-  Widget _buildContent(BuildContext context, PneuAcao origem, Pneu pneu) {
+  Widget _buildContent(BuildContext context, OrigemVisual origem, Pneu pneu) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

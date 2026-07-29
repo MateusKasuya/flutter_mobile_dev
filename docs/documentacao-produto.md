@@ -48,6 +48,7 @@ Três áreas: **Frotas** (movimentações a partir do veículo), **Pneus** (cont
 - Ficha do veículo: placa, nº de frota, marca, modelo, ano, cor e tipo.
 - **Diagrama de eixos**: desenho do chassi do veículo com cada pneu na sua posição, respeitando o esquema de eixos (rodado simples/duplo, moto, carreta etc.). Posições vazias aparecem tracejadas. O número aparece acima de cada pneu e é exibido **inteiro, com até 5 dígitos** — quando não cabe na largura do pneu ele diminui um pouco, em vez de perder dígito.
   - **Estepe**: acima do chassi há uma faixa **ESTEPE** com **2 posições**, sempre visíveis. Os estepes montados no veículo aparecem ali (com o número do pneu acima, como nos eixos); as posições livres ficam tracejadas, prontas para montar um pneu (mesmo toque/duplo toque dos pneus dos eixos).
+  - **Estepe → eixo**: o duplo toque num pneu que está no estepe abre as mesmas ações de sempre (Estoque, Conserto, Recapagem, Sucata, Venda) e, quando há alguma posição de eixo livre no veículo, mais uma opção: **Eixo** — move o próprio estepe direto para aquela posição (ex.: usar o estepe para substituir um pneu furado), sem precisar desmontá-lo primeiro para uma localização fora do veículo. Havendo mais de uma posição livre, o app pergunta qual.
   - **Toque** num pneu: detalhes (nº, posição, marca, modelo, dimensão, tipo, vida, quilometragens, última atualização).
   - **Toque duplo** num pneu: abre as ações de movimentação (desmontagem).
   - **Toque duplo** numa posição vazia: inicia a montagem de um pneu naquela posição.
@@ -63,7 +64,7 @@ Três áreas: **Frotas** (movimentações a partir do veículo), **Pneus** (cont
 
 Três tipos de operação, todos registrados no servidor na hora:
 
-1. **Montagem** (estoque/conserto/recapagem → veículo): escolhe-se a posição no diagrama, a origem do pneu, o pneu na lista, a data e o KM do veículo.
+1. **Montagem** (estoque/conserto/recapagem → veículo, ou estepe já montado → outro eixo do mesmo veículo, ver §3.4): escolhe-se a posição no diagrama, a origem do pneu (ou o próprio estepe), o pneu na lista, a data e o KM do veículo.
 2. **Desmontagem** (veículo → localização): informa-se data do retorno, KM de saída e observação; se o destino for sucata, o motivo.
 3. **Entre localizações** (ex.: estoque → conserto, conserto → recapagem): campos variam conforme origem e destino — data, valor (quando há custo ou venda), motivo, fornecedor de recauchutagem, observação.
 
