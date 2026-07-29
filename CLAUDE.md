@@ -61,3 +61,13 @@ A documentação vive em `docs/` como Markdown puro (sem Obsidian: nada de wikil
 - **`docs/documentacao-produto.md`** — visão de produto, conceitos do domínio, funcionalidades, fluxos e regras de negócio.
 
 Ao mudar comportamento relevante (endpoint, regra de negócio, fluxo de tela, estratégia de teste), atualize o documento correspondente no mesmo PR/commit.
+
+## Agent skills
+
+### Issue tracker
+
+Issues vivem no GitHub Issues (`github.com/MateusKasuya/flutter_mobile_dev`), via CLI `gh`. Ver `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context, mas usando os docs canônicos já existentes (`docs/documentacao-tecnica.md` + `docs/documentacao-produto.md`) no lugar de `CONTEXT.md`/`docs/adr/`. Ver `docs/agents/domain.md`.
