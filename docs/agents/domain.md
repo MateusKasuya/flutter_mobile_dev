@@ -34,3 +34,7 @@ Se seu output contradisser algum dos dois docs canônicos, sinalize isso explici
 ## No ADRs, no CONTEXT.md
 
 Não crie `CONTEXT.md`, `CONTEXT-MAP.md` ou `docs/adr/` neste repo, mesmo que o comportamento padrão de outra skill sugira isso. As necessidades de domain-modeling deste projeto são atendidas inteiramente pelos dois docs canônicos acima.
+
+## Research outputs
+
+Outputs da skill `/research` (e notas de pesquisa em geral) não viram arquivos novos no repo. Publique as descobertas como comentário na issue relacionada, ou como gist linkado a partir dela. Fatos duráveis vão dobrados no doc canônico correspondente, na mesma mudança.
