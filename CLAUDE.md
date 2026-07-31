@@ -75,3 +75,7 @@ Vocabulário default 1:1 dos cinco papéis canônicos (`needs-triage`, `needs-in
 ### Domain docs
 
 Single-context, mas usando os docs canônicos já existentes (`docs/documentacao-tecnica.md` + `docs/documentacao-produto.md`) no lugar de `CONTEXT.md`/`docs/adr/`. Ver `docs/agents/domain.md`.
+
+### Recomendação de skills
+
+As skills de workflow do plugin `mattpocock-skills` (`/triage`, `/to-spec`, `/to-tickets`, `/implement`, `/wayfinder`, `/grill-with-docs`, `/ask-matt`, …) só rodam por comando do usuário — nunca invocá-las por conta própria. Porém, **recomende proativamente** a skill adequada sempre que julgar que o momento pede: conversa madura para virar spec → sugerir `/mattpocock-skills:to-spec`; issues cruas acumuladas → `/mattpocock-skills:triage`; trabalho grande demais para uma sessão → `/mattpocock-skills:wayfinder`.
